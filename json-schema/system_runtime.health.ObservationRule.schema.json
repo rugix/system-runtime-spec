@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.ObservationRule",
+  "type": "object",
+  "description": "Constraints on externally supplied observations.",
+  "properties": {
+    "maxAgeMs": {
+      "type": "integer",
+      "format": "uint32",
+      "maximum": 4294967295,
+      "minimum": 0
+    },
+    "expectedTag": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "unevaluatedProperties": false
+}

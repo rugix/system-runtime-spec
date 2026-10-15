@@ -1,0 +1,128 @@
+//! Named health observations and aggregation rules.
+
+/// Identifier of a health graph node, serialized as a string.
+#[rust(derive(Eq, PartialOrd, Ord, Hash))]
+wrapper HealthNodeId: string
+
+/// A health check or function in a directed acyclic graph.
+record HealthNode {
+    /// Unique health node ID.
+    id: HealthNodeId,
+    /// Ownership group for replacement or removal, matched exactly.
+    origin?: string,
+    /// Human-readable label.
+    label?: string,
+    /// Related component IDs; these associations do not imply health dependencies.
+    components?: [string],
+    /// How this node's health is determined.
+    rule: HealthRule,
+}
+
+/// Definition of an observed or aggregate node.
+#[json(tag = "rule", rename_all = "lowercase")]
+variant HealthRule {
+    /// Health is supplied by an external status record.
+    Observed: ObservationRule,
+    /// Health is evaluated from other nodes.
+    Aggregate: AggregationRule,
+}
+
+/// Constraints on externally supplied observations.
+record ObservationRule {
+    /// Optional consumer limit on status age, in milliseconds.
+    max_age_ms?: u32,
+    /// Optional tag that published status records must match exactly.
+    expected_tag?: string,
+}
+
+/// Minimum and desired health targets.
+record AggregationRule {
+    /// Distinct input node IDs.
+    inputs: [HealthNodeId],
+    /// Minimum input count with confirmed usability required.
+    required: u32,
+    /// Desired healthy input count; required <= healthy <= inputs length.
+    healthy: u32,
+}
+
+/// Reported status of one observed node within a boot.
+record HealthStatus {
+    /// Observed node ID.
+    id: HealthNodeId,
+    /// Ownership group; must match the node's origin when one is specified.
+    origin?: string,
+    /// Reported health.
+    state: HealthState,
+    /// Boot identifier defining the observation clock domain.
+    boot_id: string,
+    /// Milliseconds on the boot-time clock when health was observed.
+    observed_at_ms: u64,
+    /// Finite positive validity duration in milliseconds.
+    max_age_ms: u32,
+    /// Opaque label identifying the check configuration or instance.
+    tag?: string,
+    /// Explanation supplied by the observer.
+    message?: string,
+}
+
+/// Health relative to a node's declared expectations.
+#[json(tagged = externally, tag = "state", rename_all = "lowercase")]
+#[rust(derive(Copy, Eq))]
+variant HealthState {
+    /// Desired health criteria are confirmed.
+    Healthy,
+    /// Minimum criteria are confirmed, with a known concern.
+    Degraded,
+    /// Minimum criteria are confirmed to be unmet.
+    Unhealthy,
+    /// Evidence does not determine health.
+    Unknown,
+}
+
+/// Clock context supplied by a consumer.
+record HealthContext {
+    /// Current boot identifier.
+    boot_id: string,
+    /// Current boot-time clock value in milliseconds.
+    now_ms: u64,
+}
+
+/// Paired wall-clock and boot-time sample from the system being observed.
+record HealthClockSample {
+    /// Boot identifier and boot-time milliseconds at sampling.
+    context: HealthContext,
+    /// Wall-clock timestamp at the same instant, serialized as an RFC 3339 string.
+    timestamp: timestamp,
+}
+
+/// Transport view of a health graph and the evidence used to evaluate it.
+record HealthSnapshot {
+    /// Clock correlation sampled after collecting the records.
+    clock: HealthClockSample,
+    /// Health definitions, including their origins.
+    nodes: [HealthNode],
+    /// Original status records; observation times and validity are preserved.
+    statuses: [HealthStatus],
+}
+
+/// Evaluated graph, in declaration order.
+record HealthReport {
+    /// Evaluated nodes.
+    nodes: [HealthNodeResult],
+}
+
+/// Evaluated state and evidence for a node.
+record HealthNodeResult {
+    /// Node ID.
+    id: HealthNodeId,
+    /// Origin of the evaluated node.
+    origin?: string,
+    /// Evaluated health.
+    state: HealthState,
+    /// Whether minimum criteria are met; absent when usability is unknown.
+    usable?: bool,
+    /// Direct dependencies explaining an aggregate result.
+    inputs: [HealthNodeId],
+    /// Observation message or freshness explanation.
+    message?: string,
+}

@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.HealthSnapshot",
+  "type": "object",
+  "description": "Transport view of a health graph and the evidence used to evaluate it.",
+  "properties": {
+    "clock": {
+      "$ref": "#/$defs/system_runtime.health.HealthClockSample"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.health.HealthNode"
+      }
+    },
+    "statuses": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.health.HealthStatus"
+      }
+    }
+  },
+  "required": [
+    "clock",
+    "nodes",
+    "statuses"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.health.HealthClockSample": {
+      "type": "object",
+      "description": "Paired wall-clock and boot-time sample from the system being observed.",
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/system_runtime.health.HealthContext"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "context",
+        "timestamp"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.health.HealthContext": {
+      "type": "object",
+      "description": "Clock context supplied by a consumer.",
+      "properties": {
+        "bootId": {
+          "type": "string"
+        },
+        "nowMs": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "format": "uint64",
+          "minimum": 0,
+          "pattern": "^[0-9]+$"
+        }
+      },
+      "required": [
+        "bootId",
+        "nowMs"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.health.HealthNode": {
+      "type": "object",
+      "description": "A health check or function in a directed acyclic graph.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rule": {
+          "$ref": "#/$defs/system_runtime.health.HealthRule"
+        }
+      },
+      "required": [
+        "id",
+        "rule"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.health.HealthNodeId": {
+      "type": "string",
+      "description": "Identifier of a health graph node, serialized as a string."
+    },
+    "system_runtime.health.HealthRule": {
+      "description": "Definition of an observed or aggregate node.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "rule": {
+              "const": "observed"
+            },
+            "maxAgeMs": {
+              "type": "integer",
+              "format": "uint32",
+              "maximum": 4294967295,
+              "minimum": 0
+            },
+            "expectedTag": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rule"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "rule": {
+              "const": "aggregate"
+            },
+            "inputs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+              }
+            },
+            "required": {
+              "type": "integer",
+              "format": "uint32",
+              "maximum": 4294967295,
+              "minimum": 0
+            },
+            "healthy": {
+              "type": "integer",
+              "format": "uint32",
+              "maximum": 4294967295,
+              "minimum": 0
+            }
+          },
+          "required": [
+            "rule",
+            "inputs",
+            "required",
+            "healthy"
+          ]
+        }
+      ]
+    },
+    "system_runtime.health.HealthState": {
+      "enum": [
+        "healthy",
+        "degraded",
+        "unhealthy",
+        "unknown"
+      ],
+      "description": "Health relative to a node's declared expectations."
+    },
+    "system_runtime.health.HealthStatus": {
+      "type": "object",
+      "description": "Reported status of one observed node within a boot.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/system_runtime.health.HealthState"
+        },
+        "bootId": {
+          "type": "string"
+        },
+        "observedAtMs": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "format": "uint64",
+          "minimum": 0,
+          "pattern": "^[0-9]+$"
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "format": "uint32",
+          "maximum": 4294967295,
+          "minimum": 0
+        },
+        "tag": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "state",
+        "bootId",
+        "observedAtMs",
+        "maxAgeMs"
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

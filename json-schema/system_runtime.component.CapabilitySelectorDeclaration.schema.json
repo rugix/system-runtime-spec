@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.component.CapabilitySelectorDeclaration",
+  "type": "object",
+  "description": "A selector over provided capabilities.",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "unevaluatedProperties": false
+}

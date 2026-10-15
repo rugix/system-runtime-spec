@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = ["crates/libs/system-runtime"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Silitics GmbH <info@silitics.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rugix/system-runtime-spec"
+
+[workspace.dependencies]
+anyver = "0.1.0"
+sidex = { git = "https://github.com/silitics/sidex.git", tag = "v0.4.1", features = ["serde-1"] }
+thiserror = "2"
+tracing = "0.1"
+rustix = { version = "1", features = ["time"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"

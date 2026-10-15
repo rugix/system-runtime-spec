@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.component.ClaimProblem",
+  "type": "object",
+  "description": "Duplicate exclusive ownership.",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "components"
+  ],
+  "unevaluatedProperties": false
+}

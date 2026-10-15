@@ -1,0 +1,18 @@
+{
+  "name": "@rugix/system-runtime",
+  "version": "0.1.0",
+  "description": "System component compatibility and operational health.",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "exports": {".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"}},
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE-APACHE", "LICENSE-MIT"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs"
+  },
+  "dependencies": {"@sidex/types": "0.4.1"},
+  "devDependencies": {"typescript": "6.0.3"}
+}

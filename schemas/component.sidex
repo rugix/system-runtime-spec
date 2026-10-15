@@ -1,0 +1,100 @@
+//! Component declarations and compatibility reports.
+
+/// A participant in a system composition.
+record ComponentDeclaration {
+    /// Unique component ID within the composition.
+    id: string,
+    /// Ownership group for replacement or removal, matched exactly.
+    origin?: string,
+    /// Component version, also provided as an implicit capability.
+    version?: string,
+    /// Explicit capabilities.
+    provides?: [CapabilityDeclaration],
+    /// Exclusive resource ownership.
+    claims?: [ClaimDeclaration],
+    /// Selectors that must each match at least one capability.
+    requires?: [CapabilitySelectorDeclaration],
+    /// Selectors that must not match any capability, including this component's.
+    conflicts?: [CapabilitySelectorDeclaration],
+}
+
+/// An exclusive resource key.
+record ClaimDeclaration {
+    /// Resource ID.
+    id: string,
+}
+
+/// A fact supplied by a component.
+record CapabilityDeclaration {
+    /// Capability ID.
+    id: string,
+    /// Version, mutually exclusive with value.
+    version?: string,
+    /// Exact string value, mutually exclusive with version.
+    value?: string,
+}
+
+/// A selector over provided capabilities.
+record CapabilitySelectorDeclaration {
+    /// Capability ID.
+    id: string,
+    /// Version requirement, mutually exclusive with value.
+    version?: string,
+    /// Exact value requirement, mutually exclusive with version.
+    value?: string,
+}
+
+/// Result of evaluating the complete component set.
+record CompatibilityReport {
+    /// Whether all constraints are satisfied.
+    consistent: bool,
+    /// Violated constraints in deterministic evaluation order.
+    problems: [CompatibilityProblem],
+}
+
+/// A violated composition constraint.
+#[json(tag = "problem", rename_all = "camelCase")]
+variant CompatibilityProblem {
+    /// Multiple components use one ID.
+    DuplicateComponent: ComponentIdProblem,
+    /// Multiple components own one resource.
+    DuplicateClaim: ClaimProblem,
+    /// No provided capability matches a requirement.
+    UnsatisfiedRequirement: SelectorProblem,
+    /// A provided capability matches a conflict.
+    Conflict: ConflictProblem,
+}
+
+/// Duplicate component ID.
+record ComponentIdProblem {
+    /// Component ID.
+    id: string,
+}
+
+/// Duplicate exclusive ownership.
+record ClaimProblem {
+    /// Resource ID.
+    id: string,
+    /// IDs of owning components.
+    components: [string],
+}
+
+/// Unsatisfied selector.
+record SelectorProblem {
+    /// Requiring component.
+    component: string,
+    /// Unsatisfied requirement.
+    selector: CapabilitySelectorDeclaration,
+}
+
+/// A matching conflict.
+record ConflictProblem {
+    /// Component declaring the conflict.
+    component: string,
+    /// Matching selector.
+    selector: CapabilitySelectorDeclaration,
+    /// Component providing the capability.
+    provider: string,
+    /// Matching capability.
+    capability: CapabilityDeclaration,
+}

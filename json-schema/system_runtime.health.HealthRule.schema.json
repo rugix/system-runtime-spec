@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.HealthRule",
+  "description": "Definition of an observed or aggregate node.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "rule": {
+          "const": "observed"
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "format": "uint32",
+          "maximum": 4294967295,
+          "minimum": 0
+        },
+        "expectedTag": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "rule": {
+          "const": "aggregate"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+          }
+        },
+        "required": {
+          "type": "integer",
+          "format": "uint32",
+          "maximum": 4294967295,
+          "minimum": 0
+        },
+        "healthy": {
+          "type": "integer",
+          "format": "uint32",
+          "maximum": 4294967295,
+          "minimum": 0
+        }
+      },
+      "required": [
+        "rule",
+        "inputs",
+        "required",
+        "healthy"
+      ]
+    }
+  ],
+  "$defs": {
+    "system_runtime.health.HealthNodeId": {
+      "type": "string",
+      "description": "Identifier of a health graph node, serialized as a string."
+    }
+  }
+}

@@ -1,0 +1,5 @@
+id = "ignored"
+state = "healthy"
+bootId = "boot"
+observedAtMs = 100
+maxAgeMs = 10

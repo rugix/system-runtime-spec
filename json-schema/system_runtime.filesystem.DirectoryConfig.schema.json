@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.filesystem.DirectoryConfig",
+  "type": "object",
+  "description": "Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.",
+  "properties": {
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "healthNodes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "healthStatuses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [],
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,38 @@
+[tools]
+rust = "1.99.0"
+node = "24"
+python = "3.12"
+uv = "0.12.15"
+
+[tasks.generate]
+run = "python scripts/generate.py"
+
+[tasks."check:generated"]
+run = ["sidex fmt --check", "python scripts/generate.py --check"]
+
+[tasks."check:rust"]
+run = [
+    "cargo fmt --all --check",
+    "cargo clippy --workspace --all-targets --locked -- -D warnings",
+    "cargo test --workspace --locked",
+    "cargo build --workspace --release --locked",
+    'RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --locked',
+]
+
+[tasks."check:python"]
+dir = "python"
+run = [
+    "uv sync --locked",
+    "uv run ruff format --check .",
+    "uv run ruff check .",
+    "uv run mypy system_runtime",
+    "uv run pytest",
+    "uv build",
+]
+
+[tasks."check:typescript"]
+dir = "typescript"
+run = ["npm ci", "npm run check", "npm test", "npm pack"]
+
+[tasks.check]
+depends = ["check:generated", "check:rust", "check:python", "check:typescript"]

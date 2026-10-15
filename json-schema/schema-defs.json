@@ -1,0 +1,645 @@
+{
+  "system_runtime.component.CapabilityDeclaration": {
+    "type": "object",
+    "description": "A fact supplied by a component.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "version": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.CapabilitySelectorDeclaration": {
+    "type": "object",
+    "description": "A selector over provided capabilities.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "version": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.ClaimDeclaration": {
+    "type": "object",
+    "description": "An exclusive resource key.",
+    "properties": {
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.ClaimProblem": {
+    "type": "object",
+    "description": "Duplicate exclusive ownership.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "components": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "components"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.CompatibilityProblem": {
+    "description": "A violated composition constraint.",
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "problem": {
+            "const": "duplicateComponent"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "problem",
+          "id"
+        ]
+      },
+      {
+        "type": "object",
+        "properties": {
+          "problem": {
+            "const": "duplicateClaim"
+          },
+          "id": {
+            "type": "string"
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "problem",
+          "id",
+          "components"
+        ]
+      },
+      {
+        "type": "object",
+        "properties": {
+          "problem": {
+            "const": "unsatisfiedRequirement"
+          },
+          "component": {
+            "type": "string"
+          },
+          "selector": {
+            "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
+          }
+        },
+        "required": [
+          "problem",
+          "component",
+          "selector"
+        ]
+      },
+      {
+        "type": "object",
+        "properties": {
+          "problem": {
+            "const": "conflict"
+          },
+          "component": {
+            "type": "string"
+          },
+          "selector": {
+            "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "capability": {
+            "$ref": "#/components/schemas/system_runtime.component.CapabilityDeclaration"
+          }
+        },
+        "required": [
+          "problem",
+          "component",
+          "selector",
+          "provider",
+          "capability"
+        ]
+      }
+    ]
+  },
+  "system_runtime.component.CompatibilityReport": {
+    "type": "object",
+    "description": "Result of evaluating the complete component set.",
+    "properties": {
+      "consistent": {
+        "type": "boolean"
+      },
+      "problems": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.component.CompatibilityProblem"
+        }
+      }
+    },
+    "required": [
+      "consistent",
+      "problems"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.ComponentDeclaration": {
+    "type": "object",
+    "description": "A participant in a system composition.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "origin": {
+        "type": "string"
+      },
+      "version": {
+        "type": "string"
+      },
+      "provides": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.component.CapabilityDeclaration"
+        }
+      },
+      "claims": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.component.ClaimDeclaration"
+        }
+      },
+      "requires": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
+        }
+      },
+      "conflicts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
+        }
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.ComponentIdProblem": {
+    "type": "object",
+    "description": "Duplicate component ID.",
+    "properties": {
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.ConflictProblem": {
+    "type": "object",
+    "description": "A matching conflict.",
+    "properties": {
+      "component": {
+        "type": "string"
+      },
+      "selector": {
+        "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
+      },
+      "provider": {
+        "type": "string"
+      },
+      "capability": {
+        "$ref": "#/components/schemas/system_runtime.component.CapabilityDeclaration"
+      }
+    },
+    "required": [
+      "component",
+      "selector",
+      "provider",
+      "capability"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.component.SelectorProblem": {
+    "type": "object",
+    "description": "Unsatisfied selector.",
+    "properties": {
+      "component": {
+        "type": "string"
+      },
+      "selector": {
+        "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
+      }
+    },
+    "required": [
+      "component",
+      "selector"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.filesystem.DirectoryConfig": {
+    "type": "object",
+    "description": "Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.",
+    "properties": {
+      "components": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "healthNodes": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "healthStatuses": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.filesystem.RuntimeSnapshot": {
+    "type": "object",
+    "description": "Complete collection loaded from a filesystem or supplied directly.",
+    "properties": {
+      "components": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.component.ComponentDeclaration"
+        }
+      },
+      "healthNodes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthNode"
+        }
+      },
+      "healthStatuses": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthStatus"
+        }
+      }
+    },
+    "required": [
+      "components",
+      "healthNodes",
+      "healthStatuses"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.AggregationRule": {
+    "type": "object",
+    "description": "Minimum and desired health targets.",
+    "properties": {
+      "inputs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+        }
+      },
+      "required": {
+        "type": "integer",
+        "format": "uint32",
+        "maximum": 4294967295,
+        "minimum": 0
+      },
+      "healthy": {
+        "type": "integer",
+        "format": "uint32",
+        "maximum": 4294967295,
+        "minimum": 0
+      }
+    },
+    "required": [
+      "inputs",
+      "required",
+      "healthy"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthClockSample": {
+    "type": "object",
+    "description": "Paired wall-clock and boot-time sample from the system being observed.",
+    "properties": {
+      "context": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthContext"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "context",
+      "timestamp"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthContext": {
+    "type": "object",
+    "description": "Clock context supplied by a consumer.",
+    "properties": {
+      "bootId": {
+        "type": "string"
+      },
+      "nowMs": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
+      }
+    },
+    "required": [
+      "bootId",
+      "nowMs"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthNode": {
+    "type": "object",
+    "description": "A health check or function in a directed acyclic graph.",
+    "properties": {
+      "id": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+      },
+      "origin": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "components": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "rule": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthRule"
+      }
+    },
+    "required": [
+      "id",
+      "rule"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthNodeId": {
+    "type": "string",
+    "description": "Identifier of a health graph node, serialized as a string."
+  },
+  "system_runtime.health.HealthNodeResult": {
+    "type": "object",
+    "description": "Evaluated state and evidence for a node.",
+    "properties": {
+      "id": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+      },
+      "origin": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthState"
+      },
+      "usable": {
+        "type": "boolean"
+      },
+      "inputs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+        }
+      },
+      "message": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "state",
+      "inputs"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthReport": {
+    "type": "object",
+    "description": "Evaluated graph, in declaration order.",
+    "properties": {
+      "nodes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthNodeResult"
+        }
+      }
+    },
+    "required": [
+      "nodes"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthRule": {
+    "description": "Definition of an observed or aggregate node.",
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "const": "observed"
+          },
+          "maxAgeMs": {
+            "type": "integer",
+            "format": "uint32",
+            "maximum": 4294967295,
+            "minimum": 0
+          },
+          "expectedTag": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule"
+        ]
+      },
+      {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "const": "aggregate"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+            }
+          },
+          "required": {
+            "type": "integer",
+            "format": "uint32",
+            "maximum": 4294967295,
+            "minimum": 0
+          },
+          "healthy": {
+            "type": "integer",
+            "format": "uint32",
+            "maximum": 4294967295,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "rule",
+          "inputs",
+          "required",
+          "healthy"
+        ]
+      }
+    ]
+  },
+  "system_runtime.health.HealthSnapshot": {
+    "type": "object",
+    "description": "Transport view of a health graph and the evidence used to evaluate it.",
+    "properties": {
+      "clock": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthClockSample"
+      },
+      "nodes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthNode"
+        }
+      },
+      "statuses": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.HealthStatus"
+        }
+      }
+    },
+    "required": [
+      "clock",
+      "nodes",
+      "statuses"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthState": {
+    "enum": [
+      "healthy",
+      "degraded",
+      "unhealthy",
+      "unknown"
+    ],
+    "description": "Health relative to a node's declared expectations."
+  },
+  "system_runtime.health.HealthStatus": {
+    "type": "object",
+    "description": "Reported status of one observed node within a boot.",
+    "properties": {
+      "id": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+      },
+      "origin": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthState"
+      },
+      "bootId": {
+        "type": "string"
+      },
+      "observedAtMs": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
+      },
+      "maxAgeMs": {
+        "type": "integer",
+        "format": "uint32",
+        "maximum": 4294967295,
+        "minimum": 0
+      },
+      "tag": {
+        "type": "string"
+      },
+      "message": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "state",
+      "bootId",
+      "observedAtMs",
+      "maxAgeMs"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.ObservationRule": {
+    "type": "object",
+    "description": "Constraints on externally supplied observations.",
+    "properties": {
+      "maxAgeMs": {
+        "type": "integer",
+        "format": "uint32",
+        "maximum": 4294967295,
+        "minimum": 0
+      },
+      "expectedTag": {
+        "type": "string"
+      }
+    },
+    "required": [],
+    "unevaluatedProperties": false
+  }
+}

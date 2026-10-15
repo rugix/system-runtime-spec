@@ -1,0 +1,2411 @@
+{
+  "versions": [
+    {
+      "version": "5",
+      "requirement": "5.0.0",
+      "matches": true
+    },
+    {
+      "version": "0005.02",
+      "requirement": "==5.2",
+      "matches": true
+    },
+    {
+      "version": "2026.6.25",
+      "requirement": ">=2026.1,<2027",
+      "matches": true
+    },
+    {
+      "version": "1-rc.1",
+      "requirement": "<1",
+      "matches": true
+    },
+    {
+      "version": "1-2",
+      "requirement": "<1-alpha",
+      "matches": true
+    },
+    {
+      "version": "1-alpha",
+      "requirement": "<1-alpha.1",
+      "matches": true
+    },
+    {
+      "version": "1-rc.01",
+      "requirement": "1-rc.1",
+      "matches": true
+    },
+    {
+      "version": "1+build.4",
+      "requirement": "==1+build.9",
+      "matches": true
+    },
+    {
+      "version": "1.2.3.4",
+      "requirement": ">1.2.3",
+      "matches": true
+    },
+    {
+      "version": "1.2",
+      "requirement": "!=1.2.0",
+      "matches": false
+    },
+    {
+      "version": "1",
+      "requirement": ">1",
+      "matches": false
+    },
+    {
+      "version": "1",
+      "requirement": "<=1",
+      "matches": true
+    },
+    {
+      "version": "1",
+      "requirement": ">=1",
+      "matches": true
+    },
+    {
+      "version": "1",
+      "requirement": "<2",
+      "matches": true
+    },
+    {
+      "version": "1",
+      "requirement": "*",
+      "matches": true
+    },
+    {
+      "version": "1-rc.1",
+      "requirement": ">=1-rc.1,<1",
+      "matches": true
+    },
+    {
+      "version": " 1.0 ",
+      "requirement": " = 1 ",
+      "matches": true
+    },
+    {
+      "version": "18446744073709551615",
+      "requirement": ">18446744073709551614",
+      "matches": true
+    },
+    {
+      "version": "9007199254740993",
+      "requirement": ">9007199254740992",
+      "matches": true
+    },
+    {
+      "version": "1-18446744073709551615",
+      "requirement": ">1-18446744073709551614",
+      "matches": true
+    },
+    {
+      "version": "1+18446744073709551616",
+      "requirement": "1",
+      "matches": true
+    },
+    {
+      "version": "0",
+      "requirement": "0.0",
+      "matches": true
+    },
+    {
+      "version": "v1",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1..2",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1-",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1+",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1-ä",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "18446744073709551616",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1-18446744073709551616",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1+build..x",
+      "requirement": "*",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": ">=1,",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "*,<2",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "^1",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "~1",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": ">=",
+      "error": true
+    }
+  ],
+  "components": [
+    {
+      "name": "implicit capability",
+      "components": [
+        {
+          "id": "runtime",
+          "version": "2"
+        },
+        {
+          "id": "app",
+          "requires": [
+            {
+              "id": "runtime",
+              "version": ">=2"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": true,
+        "problems": []
+      }
+    },
+    {
+      "name": "value and multiple providers",
+      "components": [
+        {
+          "id": "a",
+          "provides": [
+            {
+              "id": "feature",
+              "value": "yes"
+            }
+          ]
+        },
+        {
+          "id": "b",
+          "provides": [
+            {
+              "id": "feature",
+              "value": "no"
+            }
+          ]
+        },
+        {
+          "id": "c",
+          "requires": [
+            {
+              "id": "feature",
+              "value": "yes"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": true,
+        "problems": []
+      }
+    },
+    {
+      "name": "unversioned wildcard",
+      "components": [
+        {
+          "id": "runtime"
+        },
+        {
+          "id": "app",
+          "requires": [
+            {
+              "id": "runtime",
+              "version": "*"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": false,
+        "problems": [
+          {
+            "problem": "unsatisfiedRequirement",
+            "component": "app",
+            "selector": {
+              "id": "runtime",
+              "version": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "self conflict",
+      "components": [
+        {
+          "id": "a",
+          "conflicts": [
+            {
+              "id": "a"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": false,
+        "problems": [
+          {
+            "problem": "conflict",
+            "component": "a",
+            "selector": {
+              "id": "a"
+            },
+            "provider": "a",
+            "capability": {
+              "id": "a"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "claim repeated by owner",
+      "components": [
+        {
+          "id": "a",
+          "claims": [
+            {
+              "id": "port"
+            },
+            {
+              "id": "port"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": true,
+        "problems": []
+      }
+    },
+    {
+      "name": "duplicate claims and IDs",
+      "components": [
+        {
+          "id": "a",
+          "claims": [
+            {
+              "id": "port"
+            }
+          ]
+        },
+        {
+          "id": "a",
+          "claims": [
+            {
+              "id": "port"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": false,
+        "problems": [
+          {
+            "problem": "duplicateComponent",
+            "id": "a"
+          },
+          {
+            "problem": "duplicateClaim",
+            "id": "port",
+            "components": [
+              "a",
+              "a"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "all matching conflicts",
+      "components": [
+        {
+          "id": "a",
+          "provides": [
+            {
+              "id": "feature"
+            }
+          ]
+        },
+        {
+          "id": "b",
+          "provides": [
+            {
+              "id": "feature"
+            }
+          ]
+        },
+        {
+          "id": "c",
+          "conflicts": [
+            {
+              "id": "feature"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": false,
+        "problems": [
+          {
+            "problem": "conflict",
+            "component": "c",
+            "selector": {
+              "id": "feature"
+            },
+            "provider": "a",
+            "capability": {
+              "id": "feature"
+            }
+          },
+          {
+            "problem": "conflict",
+            "component": "c",
+            "selector": {
+              "id": "feature"
+            },
+            "provider": "b",
+            "capability": {
+              "id": "feature"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ambiguous capability",
+      "components": [
+        {
+          "id": "a",
+          "provides": [
+            {
+              "id": "x",
+              "version": "1",
+              "value": "yes"
+            }
+          ]
+        }
+      ],
+      "error": true
+    },
+    {
+      "name": "invalid unmatched selector",
+      "components": [
+        {
+          "id": "a",
+          "requires": [
+            {
+              "id": "missing",
+              "version": "^1"
+            }
+          ]
+        }
+      ],
+      "error": true
+    },
+    {
+      "name": "empty composition",
+      "components": [],
+      "report": {
+        "consistent": true,
+        "problems": []
+      }
+    },
+    {
+      "name": "long zero padding",
+      "components": [
+        {
+          "id": "provider",
+          "version": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
+        },
+        {
+          "id": "consumer",
+          "requires": [
+            {
+              "id": "provider",
+              "version": "1"
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": true,
+        "problems": []
+      }
+    },
+    {
+      "name": "Unicode diagnostic order",
+      "components": [
+        {
+          "id": "𐀀",
+          "claims": [
+            {
+              "id": "𐀀"
+            },
+            {
+              "id": ""
+            }
+          ]
+        },
+        {
+          "id": "𐀀",
+          "claims": [
+            {
+              "id": "𐀀"
+            },
+            {
+              "id": ""
+            }
+          ]
+        },
+        {
+          "id": "",
+          "claims": [
+            {
+              "id": "𐀀"
+            },
+            {
+              "id": ""
+            }
+          ]
+        },
+        {
+          "id": "",
+          "claims": [
+            {
+              "id": "𐀀"
+            },
+            {
+              "id": ""
+            }
+          ]
+        }
+      ],
+      "report": {
+        "consistent": false,
+        "problems": [
+          {
+            "problem": "duplicateComponent",
+            "id": ""
+          },
+          {
+            "problem": "duplicateComponent",
+            "id": "𐀀"
+          },
+          {
+            "problem": "duplicateClaim",
+            "id": "",
+            "components": [
+              "𐀀",
+              "𐀀",
+              "",
+              ""
+            ]
+          },
+          {
+            "problem": "duplicateClaim",
+            "id": "𐀀",
+            "components": [
+              "𐀀",
+              "𐀀",
+              "",
+              ""
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "health": [
+    {
+      "name": "healthy,healthy 2/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "healthy",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "healthy,degraded 2/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "healthy,unhealthy 2/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unhealthy",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": false
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "healthy,unknown 2/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "unhealthy,unknown 2/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unhealthy",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": false
+          },
+          {
+            "id": "a",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "healthy,unhealthy 1/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "healthy,unknown 1/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "healthy,unknown 1/1",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "healthy",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "degraded,unknown 1/1",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "degraded,unhealthy 1/1",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "unhealthy,unknown 1/1",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "unhealthy,unhealthy 1/1",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unhealthy",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": false
+          },
+          {
+            "id": "a",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          },
+          {
+            "id": "b",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown,unknown 1/2",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "nested availability evidence",
+      "nodes": [
+        {
+          "id": "parent",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "root"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "parent",
+            "state": "unknown",
+            "inputs": [
+              "root"
+            ],
+            "usable": true
+          },
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "usable": true
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing observation",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expired",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 80,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status has expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "future",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 101,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status is in the future"
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong boot",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "old",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status belongs to another boot"
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong tag",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed",
+            "expectedTag": "8"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20,
+          "tag": "7"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status tag does not match"
+          }
+        ]
+      }
+    },
+    {
+      "name": "consumer age cap",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed",
+            "maxAgeMs": 10
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status has expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "large clock values",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": "9007199254740993",
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": "9007199254741003"
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "matching tag",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed",
+            "expectedTag": "7"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20,
+          "message": "Concern",
+          "tag": "7"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true,
+            "message": "Concern"
+          }
+        ]
+      }
+    },
+    {
+      "name": "orphan status",
+      "nodes": [],
+      "statuses": [
+        {
+          "id": "removed",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": []
+      }
+    },
+    {
+      "name": "duplicate nodes",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "duplicate statuses",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "missing input",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "missing"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "cycle",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "duplicate input",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "a"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "invalid thresholds",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a"
+            ],
+            "required": 2,
+            "healthy": 1
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "aggregate status",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "root",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "zero node age",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed",
+            "maxAgeMs": 0
+          }
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "zero status age",
+      "nodes": [
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 0
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "nested impossible healthy target",
+      "nodes": [
+        {
+          "id": "parent",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "inner",
+              "c"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "inner",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b"
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unknown",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "c",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "parent",
+            "state": "degraded",
+            "inputs": [
+              "inner",
+              "c"
+            ],
+            "usable": true
+          },
+          {
+            "id": "inner",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "b",
+            "state": "unknown",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "matching origin",
+      "nodes": [
+        {
+          "id": "app.health",
+          "rule": {
+            "rule": "observed"
+          },
+          "origin": "rugix.apps.example"
+        }
+      ],
+      "statuses": [
+        {
+          "id": "app.health",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 3500,
+          "maxAgeMs": 2000,
+          "origin": "rugix.apps.example"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 5000
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "app.health",
+            "origin": "rugix.apps.example",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong origin",
+      "nodes": [
+        {
+          "id": "app.health",
+          "rule": {
+            "rule": "observed"
+          },
+          "origin": "rugix.apps.example"
+        }
+      ],
+      "statuses": [
+        {
+          "id": "app.health",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 3500,
+          "maxAgeMs": 2000,
+          "origin": "rugix.system"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 5000
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "app.health",
+            "origin": "rugix.apps.example",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status origin does not match"
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing origin",
+      "nodes": [
+        {
+          "id": "app.health",
+          "rule": {
+            "rule": "observed"
+          },
+          "origin": "rugix.apps.example"
+        }
+      ],
+      "statuses": [
+        {
+          "id": "app.health",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 3500,
+          "maxAgeMs": 2000
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 5000
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "app.health",
+            "origin": "rugix.apps.example",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status origin does not match"
+          }
+        ]
+      }
+    },
+    {
+      "name": "aggregate origin inherited",
+      "nodes": [
+        {
+          "id": "root",
+          "origin": "rugix.system",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "app.health"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "app.health",
+          "rule": {
+            "rule": "observed"
+          },
+          "origin": "rugix.apps.example"
+        }
+      ],
+      "statuses": [
+        {
+          "id": "app.health",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 3500,
+          "maxAgeMs": 2000,
+          "origin": "rugix.apps.example"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 5000
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "origin": "rugix.system",
+            "state": "healthy",
+            "usable": true,
+            "inputs": [
+              "app.health"
+            ]
+          },
+          {
+            "id": "app.health",
+            "origin": "rugix.apps.example",
+            "state": "healthy",
+            "usable": true,
+            "inputs": []
+          }
+        ]
+      }
+    }
+  ]
+}

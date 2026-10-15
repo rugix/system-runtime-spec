@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.HealthContext",
+  "type": "object",
+  "description": "Clock context supplied by a consumer.",
+  "properties": {
+    "bootId": {
+      "type": "string"
+    },
+    "nowMs": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
+    }
+  },
+  "required": [
+    "bootId",
+    "nowMs"
+  ],
+  "unevaluatedProperties": false
+}

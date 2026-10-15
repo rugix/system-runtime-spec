@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.AggregationRule",
+  "type": "object",
+  "description": "Minimum and desired health targets.",
+  "properties": {
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+      }
+    },
+    "required": {
+      "type": "integer",
+      "format": "uint32",
+      "maximum": 4294967295,
+      "minimum": 0
+    },
+    "healthy": {
+      "type": "integer",
+      "format": "uint32",
+      "maximum": 4294967295,
+      "minimum": 0
+    }
+  },
+  "required": [
+    "inputs",
+    "required",
+    "healthy"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.health.HealthNodeId": {
+      "type": "string",
+      "description": "Identifier of a health graph node, serialized as a string."
+    }
+  }
+}

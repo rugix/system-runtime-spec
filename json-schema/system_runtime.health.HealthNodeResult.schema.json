@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.HealthNodeResult",
+  "type": "object",
+  "description": "Evaluated state and evidence for a node.",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/system_runtime.health.HealthState"
+    },
+    "usable": {
+      "type": "boolean"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+      }
+    },
+    "message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "state",
+    "inputs"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.health.HealthNodeId": {
+      "type": "string",
+      "description": "Identifier of a health graph node, serialized as a string."
+    },
+    "system_runtime.health.HealthState": {
+      "enum": [
+        "healthy",
+        "degraded",
+        "unhealthy",
+        "unknown"
+      ],
+      "description": "Health relative to a node's declared expectations."
+    }
+  }
+}

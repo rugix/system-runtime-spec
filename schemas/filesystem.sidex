@@ -1,0 +1,27 @@
+//! Directory extensions and the collected runtime view.
+
+import component::ComponentDeclaration
+import health::HealthNode
+import health::HealthStatus
+
+/// Additional absolute directory paths supplied by packages or administrators.
+/// Whole `*` path segments match real directories in lexical order on each load.
+/// Explicit path segments may follow symlinks; `..` and partial wildcards are invalid.
+record DirectoryConfig {
+    /// Additional component declaration directories.
+    components?: [string],
+    /// Additional health definition directories.
+    health_nodes?: [string],
+    /// Additional health status directories.
+    health_statuses?: [string],
+}
+
+/// Complete collection loaded from a filesystem or supplied directly.
+record RuntimeSnapshot {
+    /// Component declarations.
+    components: [ComponentDeclaration],
+    /// Health definitions.
+    health_nodes: [HealthNode],
+    /// Published health status records.
+    health_statuses: [HealthStatus],
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.component.ComponentDeclaration",
+  "type": "object",
+  "description": "A participant in a system composition.",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "provides": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.component.CapabilityDeclaration"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.component.ClaimDeclaration"
+      }
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.component.CapabilitySelectorDeclaration"
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.component.CapabilitySelectorDeclaration"
+      }
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.component.CapabilityDeclaration": {
+      "type": "object",
+      "description": "A fact supplied by a component.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.component.CapabilitySelectorDeclaration": {
+      "type": "object",
+      "description": "A selector over provided capabilities.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.component.ClaimDeclaration": {
+      "type": "object",
+      "description": "An exclusive resource key.",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

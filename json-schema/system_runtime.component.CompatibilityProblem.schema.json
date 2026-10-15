@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.component.CompatibilityProblem",
+  "description": "A violated composition constraint.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "problem": {
+          "const": "duplicateComponent"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "problem",
+        "id"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "problem": {
+          "const": "duplicateClaim"
+        },
+        "id": {
+          "type": "string"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "problem",
+        "id",
+        "components"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "problem": {
+          "const": "unsatisfiedRequirement"
+        },
+        "component": {
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/$defs/system_runtime.component.CapabilitySelectorDeclaration"
+        }
+      },
+      "required": [
+        "problem",
+        "component",
+        "selector"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "problem": {
+          "const": "conflict"
+        },
+        "component": {
+          "type": "string"
+        },
+        "selector": {
+          "$ref": "#/$defs/system_runtime.component.CapabilitySelectorDeclaration"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "capability": {
+          "$ref": "#/$defs/system_runtime.component.CapabilityDeclaration"
+        }
+      },
+      "required": [
+        "problem",
+        "component",
+        "selector",
+        "provider",
+        "capability"
+      ]
+    }
+  ],
+  "$defs": {
+    "system_runtime.component.CapabilityDeclaration": {
+      "type": "object",
+      "description": "A fact supplied by a component.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.component.CapabilitySelectorDeclaration": {
+      "type": "object",
+      "description": "A selector over provided capabilities.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

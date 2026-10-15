@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.HealthState",
+  "enum": [
+    "healthy",
+    "degraded",
+    "unhealthy",
+    "unknown"
+  ],
+  "description": "Health relative to a node's declared expectations."
+}
