@@ -78,10 +78,10 @@ export const ValueObservation = {
 /**
  * Semantic unit; display prefixes, precision, and conversions are consumer choices.
  */
- export type ValueUnit = ("celsius" | "bytes" | "seconds" | "ratio" | "count" | "bytesPerSecond" | "hertz" | "volts" | "amperes" | "watts" | "revolutionsPerMinute");
+ export type ValueUnit = ("celsius" | "bytes" | "seconds" | "ratio" | "count" | "bytes-per-second" | "hertz" | "volts" | "amperes" | "watts" | "revolutions-per-minute");
 
 export const ValueUnit = {
-    ...__sidex_types.checker<ValueUnit>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["celsius", null, null], ["bytes", null, null], ["seconds", null, null], ["ratio", null, null], ["count", null, null], ["bytesPerSecond", null, null], ["hertz", null, null], ["volts", null, null], ["amperes", null, null], ["watts", null, null], ["revolutionsPerMinute", null, null]])),
+    ...__sidex_types.checker<ValueUnit>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["celsius", null, null], ["bytes", null, null], ["seconds", null, null], ["ratio", null, null], ["count", null, null], ["bytes-per-second", null, null], ["hertz", null, null], ["volts", null, null], ["amperes", null, null], ["watts", null, null], ["revolutions-per-minute", null, null]])),
 };
 /**
  * One endpoint of a numeric range, in the referenced value's unit.

@@ -242,7 +242,8 @@ numbers, serialized as JSON numbers. Negative and fractional values are
 supported. NaN and infinities are invalid. Large byte counts are approximate:
 above 2⁵³ bytes, not every individual byte can be represented.
 
-Every observation and threshold endpoint uses the referenced definition's unit:
+Unit names use kebab-case. Every observation and threshold endpoint uses the
+referenced definition's unit:
 
 | Unit | Meaning | Example Display |
 | --- | --- | --- |
@@ -251,12 +252,12 @@ Every observation and threshold endpoint uses the referenced definition's unit:
 | `seconds` | Seconds | 150 ms |
 | `ratio` | Dimensionless fraction; 1 means 100% | 83% |
 | `count` | Number of items or events | 12 |
-| `bytesPerSecond` | Bytes per second | 8.2 MiB/s |
+| `bytes-per-second` | Bytes per second | 8.2 MiB/s |
 | `hertz` | Cycles per second | 1.2 GHz |
 | `volts` | Electric potential | 5 V |
 | `amperes` | Electric current | 250 mA |
 | `watts` | Power | 12 W |
-| `revolutionsPerMinute` | Rotational speed | 2400 RPM |
+| `revolutions-per-minute` | Rotational speed | 2400 RPM |
 
 Units describe the measurement. Consumers choose display precision, prefixes,
 and conversions, such as Fahrenheit or binary byte prefixes. A ratio is not

@@ -390,12 +390,12 @@
         "seconds",
         "ratio",
         "count",
-        "bytesPerSecond",
+        "bytes-per-second",
         "hertz",
         "volts",
         "amperes",
         "watts",
-        "revolutionsPerMinute"
+        "revolutions-per-minute"
       ],
       "description": "Semantic unit; display prefixes, precision, and conversions are consumer choices."
     }

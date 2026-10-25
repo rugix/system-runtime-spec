@@ -43,7 +43,7 @@ record ValueObservation {
 }
 
 /// Semantic unit; display prefixes, precision, and conversions are consumer choices.
-#[json(tagged = externally, rename_all = "camelCase")]
+#[json(tagged = externally, rename_all = "kebab-case")]
 #[rust(derive(Copy, Eq))]
 variant ValueUnit {
     /// Degrees Celsius; consumers may convert for display.
