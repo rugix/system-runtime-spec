@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS = {
-    "rust": ROOT / "crates/libs/system-runtime/src/generated",
+    "rust": ROOT / "crates/libs/system-runtime/src/types",
     "py": ROOT / "python/system_runtime/models",
     "ts": ROOT / "typescript/src/generated",
     "json-schema": ROOT / "json-schema",

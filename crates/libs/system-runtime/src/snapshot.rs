@@ -1,6 +1,6 @@
 //! Select contributions by their ownership origin before evaluating a candidate.
 
-use crate::filesystem::RuntimeSnapshot;
+use crate::types::filesystem::RuntimeSnapshot;
 
 /// Return a snapshot without records with this exact origin.
 ///

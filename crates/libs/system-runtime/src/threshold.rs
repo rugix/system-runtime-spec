@@ -3,8 +3,10 @@
 use std::collections::BTreeMap;
 
 use crate::Error;
-use crate::health::{HealthContext, HealthNode, HealthNodeResult, HealthState, ThresholdRule};
-use crate::value::{ValueDefinition, ValueId, ValueObservation, ValueRange};
+use crate::types::health::{
+    HealthContext, HealthNode, HealthNodeResult, HealthState, ThresholdRule,
+};
+use crate::types::value::{ValueDefinition, ValueId, ValueObservation, ValueRange};
 
 /// Validated definitions and measurements shared by threshold nodes.
 pub(crate) struct ValueEvidence<'a> {

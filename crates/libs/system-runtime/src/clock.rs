@@ -2,7 +2,7 @@
 
 use sidex::types::Timestamp;
 
-use crate::health::{HealthClockSample, HealthStatus};
+use crate::types::health::{HealthClockSample, HealthStatus};
 
 // Use Python datetime's representable years for consistent SDK display.
 const MIN_TIMESTAMP_MS: i128 = -62_135_596_800_000;
@@ -13,9 +13,9 @@ const MAX_TIMESTAMP_MS: i128 = 253_402_300_799_999;
 /// The midpoint approximates the instant of the wall-clock sample.
 #[cfg(target_os = "linux")]
 pub fn current_clock_sample() -> Result<HealthClockSample, crate::Error> {
-    let mut context = crate::current_context()?;
+    let mut context = crate::evaluation::current_context()?;
     let timestamp = Timestamp::now();
-    let after = crate::current_context()?.now_ms;
+    let after = crate::evaluation::current_context()?.now_ms;
     context.now_ms += (after - context.now_ms) / 2;
     Ok(HealthClockSample { context, timestamp })
 }

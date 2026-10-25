@@ -14,6 +14,8 @@ system-runtime-spec = "0.1"
 ```
 
 The package is named `system-runtime-spec`; import the crate as `system_runtime`.
+Specification models live under `types`; helpers are accessed through their
+`compatibility`, `evaluation`, `discovery`, `clock`, and `snapshot` modules.
 
 ## Read and Check a System
 
@@ -24,7 +26,9 @@ and observations.
 
 ```rust
 use system_runtime::{
-    RuntimeDirectories, check_components, current_context, evaluate_health_with_values,
+    compatibility::check_components,
+    discovery::RuntimeDirectories,
+    evaluation::{current_context, evaluate_health_with_values},
 };
 
 fn main() -> Result<(), system_runtime::Error> {
@@ -60,7 +64,7 @@ Use extension files as described in the
 or extend the sources in code:
 
 ```rust
-use system_runtime::{RuntimeDirectories, filesystem::DirectoryConfig};
+use system_runtime::{discovery::RuntimeDirectories, types::filesystem::DirectoryConfig};
 
 fn main() -> Result<(), system_runtime::Error> {
     let mut directories = RuntimeDirectories::standard("/");
@@ -90,7 +94,10 @@ Other records retain their requirements and references.
 
 ```rust
 use system_runtime::{
-    RuntimeDirectories, check_components, component::ComponentDeclaration, without_origin,
+    compatibility::check_components,
+    discovery::RuntimeDirectories,
+    snapshot::without_origin,
+    types::component::ComponentDeclaration,
 };
 
 fn main() -> Result<(), system_runtime::Error> {
@@ -123,7 +130,9 @@ records first, then sample the observed system's clock:
 
 ```rust
 use system_runtime::{
-    RuntimeDirectories, current_clock_sample, health::HealthSnapshot, status_timestamp,
+    clock::{current_clock_sample, status_timestamp},
+    discovery::RuntimeDirectories,
+    types::health::HealthSnapshot,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -155,8 +164,9 @@ capture time. Obtain current evidence before making an update decision.
 
 ## Models
 
-Generated models live in `component`, `health`, `value`, and `filesystem`. Health node IDs
-use a distinct `HealthNodeId` type: construct one with
+Generated models live in `types::component`, `types::health`, `types::value`, and
+`types::filesystem`. Health node IDs use the distinct
+`types::health::HealthNodeId` type: construct one with
 `HealthNodeId::from("database")` and read its string with `as_str()`.
 
 See the [specification](https://github.com/rugix/system-runtime-spec) for wire

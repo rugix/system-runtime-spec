@@ -3,9 +3,9 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use crate::Error;
-use crate::health::*;
 use crate::threshold::ValueEvidence;
-use crate::value::{ValueDefinition, ValueObservation};
+use crate::types::health::*;
+use crate::types::value::{ValueDefinition, ValueObservation};
 
 /// Read the Linux boot identifier and CLOCK_BOOTTIME in milliseconds.
 #[cfg(target_os = "linux")]
