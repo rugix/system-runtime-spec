@@ -1,18 +1,18 @@
 # System Runtime for Python
 
-Use `system-runtime` to load component and health files on Linux, check component
+Use `system-runtime-spec` to load component and health files on Linux, check component
 compatibility, and evaluate health graphs. Its models implement the
 [System Runtime Specification](https://github.com/rugix/system-runtime-spec).
 
 ## Installation
 
-Python 3.12 or later is required. Install from a local checkout:
+Python 3.12 or later is required. Install from PyPI:
 
 ```sh
-python -m pip install /path/to/system-runtime-spec/python
+python -m pip install system-runtime-spec
 ```
 
-The distribution is named `system-runtime`; import it as `system_runtime`.
+The distribution is named `system-runtime-spec`; import it as `system_runtime`.
 
 ## Read and Check a System
 

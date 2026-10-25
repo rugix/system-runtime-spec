@@ -1,17 +1,19 @@
 # System Runtime for Rust
 
-Use `system-runtime` to load component and health files on Linux, check component
+Use `system-runtime-spec` to load component and health files on Linux, check component
 compatibility, and evaluate health graphs. Its models implement the
 [System Runtime Specification](https://github.com/rugix/system-runtime-spec).
 
 ## Installation
 
-Add the crate from a local checkout to your project's `Cargo.toml`:
+Add the crate from crates.io to your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-system-runtime = { path = "/path/to/system-runtime-spec/crates/libs/system-runtime" }
+system-runtime-spec = "0.1"
 ```
+
+The package is named `system-runtime-spec`; import the crate as `system_runtime`.
 
 ## Read and Check a System
 

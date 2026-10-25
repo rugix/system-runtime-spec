@@ -18,7 +18,7 @@ jobs:
           toolchain: 1.99.0
           components: rustfmt
       - name: Install Sidex
-        run: cargo install --git https://github.com/silitics/sidex.git --tag v0.4.1 --locked --bin sidex
+        run: cargo install --git https://github.com/silitics/sidex.git --tag v0.5.0 --locked --bin sidex
       - name: Check Schemas and Generated Sources
         run: |
           sidex fmt --check

@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "system-runtime"
+name = "system-runtime-spec"
 version = "0.1.0"
 description = "System component compatibility, health evaluation, and filesystem discovery."
 requires-python = ">=3.12"
@@ -12,6 +12,11 @@ license = "MIT OR Apache-2.0"
 license-files = ["LICENSE-APACHE", "LICENSE-MIT"]
 readme = "README.md"
 authors = [{name = "Silitics GmbH", email = "info@silitics.com"}]
+
+[project.urls]
+Repository = "https://github.com/rugix/system-runtime-spec"
+Documentation = "https://github.com/rugix/system-runtime-spec#readme"
+Issues = "https://github.com/rugix/system-runtime-spec/issues"
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.11", "mypy>=1.15"]
