@@ -1,0 +1,87 @@
+//! Numeric runtime values, their units, and threshold ranges.
+
+/// Identifier of a runtime value, unique independently of health node IDs.
+#[rust(derive(Eq, PartialOrd, Ord, Hash))]
+wrapper ValueId: string
+
+/// A named measurement, independent of any health policy.
+record ValueDefinition {
+    /// Unique value ID.
+    id: ValueId,
+    /// Ownership group for replacement or removal, matched exactly.
+    origin?: string,
+    /// Human-readable label.
+    label?: string,
+    /// Related component IDs; these associations do not imply health dependencies.
+    components?: [string],
+    /// Unit shared by observations and all thresholds referencing this value.
+    unit: ValueUnit,
+    /// Optional consumer limit on observation age, in milliseconds; must be positive.
+    max_age_ms?: u32,
+    /// Optional tag that observations must match exactly.
+    expected_tag?: string,
+}
+
+/// One measurement within a boot; publishing it does not assert health.
+record ValueObservation {
+    /// Observed value ID.
+    id: ValueId,
+    /// Ownership group; must match the definition's origin when specified.
+    origin?: string,
+    /// Finite measurement in the definition's unit.
+    value: f64,
+    /// Boot identifier defining the observation clock domain.
+    boot_id: string,
+    /// Milliseconds on the boot-time clock when the measurement was taken.
+    observed_at_ms: u64,
+    /// Positive validity duration in milliseconds.
+    max_age_ms: u32,
+    /// Opaque label identifying the measurement configuration or instance.
+    tag?: string,
+    /// Explanation supplied by the observer.
+    message?: string,
+}
+
+/// Semantic unit; display prefixes, precision, and conversions are consumer choices.
+#[json(tagged = externally, rename_all = "camelCase")]
+#[rust(derive(Copy, Eq))]
+variant ValueUnit {
+    /// Degrees Celsius; consumers may convert for display.
+    Celsius,
+    /// Bytes; consumers may display decimal or binary prefixes.
+    Bytes,
+    /// Seconds; consumers may display subsecond units.
+    Seconds,
+    /// Dimensionless fraction, with 1 corresponding to 100 percent.
+    Ratio,
+    /// Number of items or events.
+    Count,
+    /// Bytes per second.
+    BytesPerSecond,
+    /// Cycles per second.
+    Hertz,
+    /// Electric potential in volts.
+    Volts,
+    /// Electric current in amperes.
+    Amperes,
+    /// Power in watts.
+    Watts,
+    /// Revolutions per minute.
+    RevolutionsPerMinute,
+}
+
+/// One endpoint of a numeric range, in the referenced value's unit.
+record ValueBound {
+    /// Finite endpoint in the referenced value's unit.
+    value: f64,
+    /// Whether equality with this endpoint is inside the range.
+    inclusive: bool,
+}
+
+/// A nonempty interval; omitted endpoints are unbounded.
+record ValueRange {
+    /// Optional lower endpoint.
+    lower?: ValueBound,
+    /// Optional upper endpoint.
+    upper?: ValueBound,
+}

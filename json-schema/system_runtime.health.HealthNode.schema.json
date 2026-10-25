@@ -34,7 +34,7 @@
       "description": "Identifier of a health graph node, serialized as a string."
     },
     "system_runtime.health.HealthRule": {
-      "description": "Definition of an observed or aggregate node.",
+      "description": "Definition of an observed, threshold, or aggregate node.",
       "oneOf": [
         {
           "type": "object",
@@ -54,6 +54,35 @@
           },
           "required": [
             "rule"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "rule": {
+              "const": "threshold"
+            },
+            "value": {
+              "$ref": "#/$defs/system_runtime.value.ValueId"
+            },
+            "healthy": {
+              "$ref": "#/$defs/system_runtime.value.ValueRange"
+            },
+            "usable": {
+              "$ref": "#/$defs/system_runtime.value.ValueRange"
+            },
+            "maxAgeMs": {
+              "type": "integer",
+              "format": "uint32",
+              "maximum": 4294967295,
+              "minimum": 0
+            }
+          },
+          "required": [
+            "rule",
+            "value",
+            "healthy",
+            "usable"
           ]
         },
         {
@@ -89,6 +118,45 @@
           ]
         }
       ]
+    },
+    "system_runtime.value.ValueBound": {
+      "type": "object",
+      "description": "One endpoint of a numeric range, in the referenced value's unit.",
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "pattern": "^(NaN|[+-]?Infinity)$"
+        },
+        "inclusive": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "value",
+        "inclusive"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.value.ValueId": {
+      "type": "string",
+      "description": "Identifier of a runtime value, unique independently of health node IDs."
+    },
+    "system_runtime.value.ValueRange": {
+      "type": "object",
+      "description": "A nonempty interval; omitted endpoints are unbounded.",
+      "properties": {
+        "lower": {
+          "$ref": "#/$defs/system_runtime.value.ValueBound"
+        },
+        "upper": {
+          "$ref": "#/$defs/system_runtime.value.ValueBound"
+        }
+      },
+      "required": [],
+      "unevaluatedProperties": false
     }
   }
 }

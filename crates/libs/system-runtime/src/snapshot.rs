@@ -9,6 +9,20 @@ use crate::filesystem::RuntimeSnapshot;
 #[tracing::instrument(level = "debug", skip_all)]
 pub fn without_origin(snapshot: &RuntimeSnapshot, origin: &str) -> RuntimeSnapshot {
     RuntimeSnapshot {
+        values: snapshot.values.as_ref().map(|records| {
+            records
+                .iter()
+                .filter(|r| r.origin.as_deref() != Some(origin))
+                .cloned()
+                .collect()
+        }),
+        value_observations: snapshot.value_observations.as_ref().map(|records| {
+            records
+                .iter()
+                .filter(|r| r.origin.as_deref() != Some(origin))
+                .cloned()
+                .collect()
+        }),
         components: snapshot
             .components
             .iter()

@@ -85,6 +85,8 @@ fn health_transport() {
         clock,
         nodes: source.health_nodes,
         statuses: source.health_statuses,
+        values: source.values,
+        value_observations: source.value_observations,
     };
     let encoded = sidex::formats::json::to_string(&snapshot).unwrap();
     let mut received: HealthSnapshot = sidex::formats::json::from_str(&encoded).unwrap();

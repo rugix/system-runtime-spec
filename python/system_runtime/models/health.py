@@ -9,6 +9,9 @@ import pydantic_core  # noqa: F401
 
 from . import _sidex  # noqa: F401
 
+if TYPE_CHECKING:
+    from . import value as _schema_value  # noqa: F401
+
 
 # Identifier of a health graph node, serialized as a string.
 type HealthNodeId = str
@@ -31,6 +34,16 @@ class ObservationRule(_sidex.Model):
 
     max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on status age, in milliseconds.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     expected_tag: str | None = pydantic.Field(default=None, description="Optional tag that published status records must match exactly.", validation_alias="expectedTag", serialization_alias="expectedTag")
+
+
+class ThresholdRule(_sidex.Model):
+    """Desired and minimum ranges for one runtime value."""
+    model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
+
+    value: _schema_value.ValueId = pydantic.Field(description="Value definition supplying the unit, identity, and freshness constraints.")
+    healthy: _schema_value.ValueRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
+    usable: _schema_value.ValueRange = pydantic.Field(description="Minimum range for usability.")
+    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on observation age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
 
 
 class AggregationRule(_sidex.Model):
@@ -79,6 +92,8 @@ class HealthSnapshot(_sidex.Model):
     clock: HealthClockSample = pydantic.Field(description="Clock correlation sampled after collecting the records.")
     nodes: list[HealthNode] = pydantic.Field(description="Health definitions, including their origins.")
     statuses: list[HealthStatus] = pydantic.Field(description="Original status records; observation times and validity are preserved.")
+    values: list[_schema_value.ValueDefinition] | None = pydantic.Field(default=None, description="Value definitions used by threshold nodes or displayed independently.")
+    value_observations: list[_schema_value.ValueObservation] | None = pydantic.Field(default=None, description="Original measurements; observation times and validity are preserved.", validation_alias="valueObservations", serialization_alias="valueObservations")
 
 
 class HealthReport(_sidex.Model):
@@ -110,6 +125,18 @@ class HealthRule_Observed(_sidex.Model):
         return ObservationRule(max_age_ms=self.max_age_ms, expected_tag=self.expected_tag)
 
 
+class HealthRule_Threshold(_sidex.Model):
+    model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
+
+    rule: Literal["threshold"] = "threshold"
+    value: _schema_value.ValueId = pydantic.Field(description="Value definition supplying the unit, identity, and freshness constraints.")
+    healthy: _schema_value.ValueRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
+    usable: _schema_value.ValueRange = pydantic.Field(description="Minimum range for usability.")
+    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on observation age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    def payload(self) -> "ThresholdRule":
+        return ThresholdRule(value=self.value, healthy=self.healthy, usable=self.usable, max_age_ms=self.max_age_ms)
+
+
 class HealthRule_Aggregate(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
@@ -121,8 +148,8 @@ class HealthRule_Aggregate(_sidex.Model):
         return AggregationRule(inputs=self.inputs, required=self.required, healthy=self.healthy)
 
 
-# Definition of an observed or aggregate node.
-type HealthRule = Annotated[HealthRule_Observed | HealthRule_Aggregate, pydantic.Discriminator("rule")]
+# Definition of an observed, threshold, or aggregate node.
+type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate, pydantic.Discriminator("rule")]
 
 
 class HealthState_Healthy(pydantic.RootModel[Literal["healthy"]]):

@@ -17,19 +17,22 @@ system-runtime = { path = "/path/to/system-runtime-spec/crates/libs/system-runti
 
 `RuntimeDirectories::standard("/")` loads the specification's standard
 directories and extension configurations. The returned `RuntimeSnapshot`
-contains components, health node definitions, and status records.
+contains components, health nodes and statuses, and optional value definitions
+and observations.
 
 ```rust
 use system_runtime::{
-    RuntimeDirectories, check_components, current_context, evaluate_health,
+    RuntimeDirectories, check_components, current_context, evaluate_health_with_values,
 };
 
 fn main() -> Result<(), system_runtime::Error> {
     let snapshot = RuntimeDirectories::standard("/").load()?;
     let compatibility = check_components(&snapshot.components)?;
-    let health = evaluate_health(
+    let health = evaluate_health_with_values(
         &snapshot.health_nodes,
         &snapshot.health_statuses,
+        snapshot.values.as_deref().unwrap_or_default(),
+        snapshot.value_observations.as_deref().unwrap_or_default(),
         &current_context()?,
     )?;
     println!("{compatibility:?}\n{health:?}");
@@ -42,6 +45,11 @@ checks. This helper and `current_clock_sample()` are available only on Linux.
 For records from another system, supply that system's `HealthContext`.
 Invalid declarations and discovery failures return `Error`; a valid but
 incompatible composition returns a report with `consistent: false`.
+
+The `evaluate_health_with_values` function handles numeric threshold nodes as
+well as observed and aggregate nodes. Use `evaluate_health` for graphs without
+values. The [value and threshold reference](https://github.com/rugix/system-runtime-spec#runtime-values-and-thresholds)
+describes units, ranges, and evidence freshness.
 
 ## Add Directories
 
@@ -58,6 +66,8 @@ fn main() -> Result<(), system_runtime::Error> {
         components: Some(vec!["/opt/example/components".into()]),
         health_nodes: None,
         health_statuses: None,
+        values: None,
+        value_observations: None,
     });
     let snapshot = directories.load()?;
     println!("{snapshot:?}");
@@ -120,6 +130,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         clock: current_clock_sample()?,
         nodes: records.health_nodes,
         statuses: records.health_statuses,
+        values: records.values,
+        value_observations: records.value_observations,
     };
     let payload = serde_json::to_string(&snapshot)?;
     let received: HealthSnapshot = serde_json::from_str(&payload)?;
@@ -141,7 +153,7 @@ capture time. Obtain current evidence before making an update decision.
 
 ## Models
 
-Generated models live in `component`, `health`, and `filesystem`. Health node IDs
+Generated models live in `component`, `health`, `value`, and `filesystem`. Health node IDs
 use a distinct `HealthNodeId` type: construct one with
 `HealthNodeId::from("database")` and read its string with `as_str()`.
 

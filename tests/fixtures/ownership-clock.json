@@ -101,6 +101,27 @@
             "observedAtMs": 3500,
             "maxAgeMs": 2000
           }
+        ],
+        "values": [
+          {
+            "id": "free",
+            "origin": "rugix.system",
+            "unit": "bytes"
+          },
+          {
+            "id": "charge",
+            "unit": "ratio"
+          }
+        ],
+        "valueObservations": [
+          {
+            "id": "free",
+            "origin": "rugix.system",
+            "value": 104857600,
+            "bootId": "boot",
+            "observedAtMs": 100,
+            "maxAgeMs": 10
+          }
         ]
       },
       "origin": "rugix.system",
@@ -174,7 +195,14 @@
             "observedAtMs": 3500,
             "maxAgeMs": 2000
           }
-        ]
+        ],
+        "values": [
+          {
+            "id": "charge",
+            "unit": "ratio"
+          }
+        ],
+        "valueObservations": []
       },
       "replacement": {
         "id": "os-new",

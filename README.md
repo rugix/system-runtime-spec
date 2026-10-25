@@ -2,7 +2,7 @@
 
 This repository contains the *System Runtime Specification*, developed by the
 Rugix Project. It defines a common format for describing a system's components,
-their compatibility requirements, and their health.
+their compatibility requirements, numeric runtime values, and their health.
 
 A system image and its applications may be maintained and updated independently.
 An image update can remove a runtime that an installed application still needs.
@@ -35,7 +35,9 @@ competing claims.
 
 Health uses runtime evidence to describe whether a system's functions behave
 as expected. A health graph connects checks to the functions they support.
-Individual checks are observed nodes, whose statuses are supplied by services. Aggregate nodes combine results to describe larger functions. An
+Checks can receive health states published by services or derive health from
+numeric measurements. Aggregate nodes combine results to describe larger
+functions. An
 application's health might depend on a responsive process and an available
 database, with the same database check contributing to several applications.
 These health dependencies are declared separately from compatibility
@@ -66,6 +68,14 @@ instance from confirming the replacement's health.
 
 A graph can expose several top-level results, called roots. Separate roots can
 describe availability and update readiness using the same underlying checks.
+
+### Runtime Values
+
+Numeric values expose measurements with units, independently of health checks.
+Threshold nodes derive health by comparing a measurement with declared healthy
+and usable ranges. A temperature sensor can publish a reading once, while separate threshold nodes
+use it to determine thermal health and update readiness. Consumers can display
+the reading, its age, and the ranges behind its health without parsing messages.
 
 ### Ownership and Updates
 
@@ -180,11 +190,148 @@ Requirements are comma-separated conjunctions of `=`, `==`, `!=`, `>`, `>=`,
 versions. Outer whitespace is ignored. Prereleases use the same comparisons
 without implicit exclusion. SemVer shorthand such as `^` and `~` is not accepted.
 
+### Runtime Values and Thresholds
+
+A runtime value is a named numeric measurement, such as CPU temperature, free
+disk space, or battery charge. A `ValueDefinition` declares its ID, unit, optional
+label, associated components, origin, and evidence constraints. A separate
+`ValueObservation` supplies the measurement. Values can be displayed without a
+health policy, and several threshold nodes can reference the same value.
+
+Value IDs are opaque, case-sensitive strings, unique within the value collection.
+They are independent of component and health node IDs. For example, a CPU sensor
+can declare:
+
+```json
+{
+  "id": "cpu.temperature",
+  "origin": "platform.sensors",
+  "label": "CPU temperature",
+  "unit": "celsius",
+  "maxAgeMs": 10000,
+  "expectedTag": "sensor-v1"
+}
+```
+
+Its service publishes a separate observation:
+
+```json
+{
+  "id": "cpu.temperature",
+  "origin": "platform.sensors",
+  "value": 72.5,
+  "bootId": "e09a482c-4a41-4f95-891e-042af3d3c4a4",
+  "observedAtMs": 42000,
+  "maxAgeMs": 5000,
+  "tag": "sensor-v1"
+}
+```
+
+Observation identity and freshness follow the health status rules: the boot must
+match, the observation cannot be in the future, and its age must be strictly less
+than its positive validity duration. A definition's `maxAgeMs` and a threshold
+rule's `maxAgeMs` can each shorten that duration. An observation must match the
+definition's origin and expected tag when specified. The health node may have a
+different origin, allowing another contributor to define a policy for the sensor.
+Observation messages are optional and are preserved in fresh threshold results.
+
+#### Numbers and Units
+
+Measurements and threshold endpoints use finite IEEE 754 binary64 (`f64`)
+numbers, serialized as JSON numbers. Negative and fractional values are
+supported. NaN and infinities are invalid. Large byte counts are approximate:
+above 2⁵³ bytes, not every individual byte can be represented.
+
+Every observation and threshold endpoint uses the referenced definition's unit:
+
+| Unit | Meaning | Example Display |
+| --- | --- | --- |
+| `celsius` | Degrees Celsius | 72.5 °C |
+| `bytes` | Bytes | 2.4 GiB |
+| `seconds` | Seconds | 150 ms |
+| `ratio` | Dimensionless fraction; 1 means 100% | 83% |
+| `count` | Number of items or events | 12 |
+| `bytesPerSecond` | Bytes per second | 8.2 MiB/s |
+| `hertz` | Cycles per second | 1.2 GHz |
+| `volts` | Electric potential | 5 V |
+| `amperes` | Electric current | 250 mA |
+| `watts` | Power | 12 W |
+| `revolutionsPerMinute` | Rotational speed | 2400 RPM |
+
+Units describe the measurement. Consumers choose display precision, prefixes,
+and conversions, such as Fahrenheit or binary byte prefixes. A ratio is not
+implicitly restricted to 0–1. Gauge display bounds are separate from health
+thresholds.
+
+#### Threshold Rules
+
+A threshold health node references one value and declares a desired `healthy`
+range and a minimum `usable` range. For example:
+
+```json
+{
+  "id": "cpu.thermal-health",
+  "origin": "platform.policy",
+  "rule": {
+    "rule": "threshold",
+    "value": "cpu.temperature",
+    "healthy": {
+      "upper": {"value": 75, "inclusive": true}
+    },
+    "usable": {
+      "upper": {"value": 90, "inclusive": true}
+    }
+  }
+}
+```
+
+A range has optional `lower` and `upper` bounds. Each bound explicitly states
+whether equality is included. An omitted bound is unbounded; `{}` accepts every
+finite value. Ranges must be nonempty, and the healthy range must be a subset of
+the usable range, including endpoint inclusion.
+
+A fresh observation inside the healthy range produces `healthy`. Otherwise, an
+observation inside the usable range produces `degraded`, and one outside it
+produces `unhealthy`. In the example, 75 °C is healthy, 90 °C is degraded, and
+anything above 90 °C is unhealthy. Lower bounds can express minimum free space,
+and two bounds can express acceptable voltage ranges.
+
+Missing, expired, future, wrong-boot, wrong-origin, or wrong-tag measurements
+produce `unknown`. A threshold result has no health-node inputs; its source value
+is identified by its rule. It contributes to aggregate health like an observed
+node. Writers must not supply a `HealthStatus` for a threshold node.
+
+Duplicate value definitions or observations, missing referenced definitions,
+non-finite numbers, zero validity durations, empty or reversed ranges, and
+healthy ranges outside usable ranges are evaluation errors. Observations without
+a current definition are ignored after validation. Unreferenced values remain
+valid for display. Callers supply one current observation per ID; evaluators do
+not select from a history.
+
+Threshold evaluation is stateless. Debouncing, hysteresis, and historical
+aggregation remain the observer's responsibility. A UI may retain a last known
+measurement, but it must show its stale state separately from current health.
+
+#### Value Transport
+
+`HealthSnapshot` and `RuntimeSnapshot` optionally carry `values` and
+`valueObservations`. Omitted collections mean empty collections. A health
+snapshot must include every definition referenced by its threshold nodes.
+The clock sample also correlates value observation times with wall time, using
+the same arithmetic as health status timestamps. Transport preserves evidence
+age and does not renew validity.
+
+Existing records retain their wire format. Readers that predate threshold rules
+cannot evaluate graphs containing them. In Rust, new optional record fields and
+the added health rule variant require updates to struct literals and exhaustive
+matches.
+
 ### Health Graphs
 
 A health graph is a directed acyclic graph of named `HealthNode` definitions.
 Nodes have opaque, case-sensitive string IDs, represented by `HealthNodeId` in
 the schema. An observed node receives a `HealthStatus` record from a service.
+A threshold node derives health from a numeric value and its declared ranges.
 An aggregate node evaluates other nodes, named by its `inputs`. Roots are nodes that no other
 node uses as an input. Separate roots can describe different system functions or
 policies, such as availability and readiness to commit an update (accept it as
@@ -209,7 +356,7 @@ inherits its node's origin and includes its state and optional `usable` value.
 Usability indicates whether minimum criteria are met: healthy and degraded
 observations have `usable: true`, unhealthy observations have `usable: false`,
 and unknown observations omit `usable`. A result's `inputs` name its direct
-dependencies; observed nodes have no inputs. Its optional `message` carries the
+dependencies; observed and threshold nodes have no inputs. Its optional `message` carries the
 observer's explanation or the reason a status evaluated to unknown.
 
 #### Observed Nodes and Status Records
@@ -323,7 +470,7 @@ health; its state alone is not enough to evaluate its parent.
 #### Graph Validation
 
 Missing input nodes, duplicate node IDs or inputs, invalid thresholds, cycles,
-duplicate statuses, statuses supplied for aggregate nodes, and zero `maxAgeMs`
+duplicate statuses, statuses supplied for aggregate or threshold nodes, and zero `maxAgeMs`
 values are evaluation errors. Statuses without a current node are ignored after
 validation. An invalid graph or status prevents evaluation of the whole graph.
 
@@ -374,7 +521,7 @@ transport delays and subsequent changes can make that evidence stale.
 
 ### Origins and Update Candidates
 
-An `origin` groups components, health nodes, and statuses owned by one system
+An `origin` groups components, health nodes, statuses, value definitions, and observations owned by one system
 image, app, or other contributor. Evaluated health results inherit their node's
 origin. Origin names are opaque, case-sensitive strings matched by exact
 equality. For Rugix integration, use `rugix.system` for a system image and
@@ -395,7 +542,8 @@ status records from the running system.
 ### File Discovery
 
 Each regular `.json` file contains one component declaration, health node, status
-record, or directory configuration, according to its directory. Writers must
+record, value definition, value observation, or directory configuration, according
+to its directory. Writers must
 omit optional fields when they are unset. Readers must ignore unknown record
 fields for forward compatibility.
 
@@ -404,6 +552,8 @@ fields for forward compatibility.
 | Components | `/usr/lib/system-runtime/components`, `/etc/system-runtime/components`, `/run/system-runtime/components` |
 | Health nodes | `/usr/lib/system-runtime/health/nodes`, `/etc/system-runtime/health/nodes`, `/run/system-runtime/health/nodes` |
 | Health statuses | `/run/system-runtime/health/status` |
+| Value definitions | `/usr/lib/system-runtime/values/definitions`, `/etc/system-runtime/values/definitions`, `/run/system-runtime/values/definitions` |
+| Value observations | `/run/system-runtime/values/observations` |
 | Directory configurations | `/usr/lib/system-runtime/directories`, `/etc/system-runtime/directories`, `/run/system-runtime/directories` |
 
 Readers combine contributions without filename overrides. They process sources
@@ -419,7 +569,7 @@ so changing an activation symlink cannot redirect files already discovered.
 Nested symlinks and files with other extensions are skipped.
 
 A `DirectoryConfig` appends absolute paths through `components`, `healthNodes`,
-and `healthStatuses`.
+`healthStatuses`, `values`, and `valueObservations`.
 
 A whole `*` path segment matches real directories at that level. Matched directory
 symlinks are skipped; explicit segments such as `current` may follow symlinks.
@@ -495,7 +645,7 @@ evaluation across implementations.
 | TypeScript | [`@rugix/system-runtime`](typescript/README.md) |
 
 All three packages provide generated models, compatibility checking, and health
-evaluation. Rust and Python also implement file discovery. Package READMEs cover
+evaluation, including numeric thresholds. Rust and Python also implement file discovery. Package READMEs cover
 installation and API usage.
 
 ## Development

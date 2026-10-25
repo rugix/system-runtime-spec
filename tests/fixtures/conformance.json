@@ -2406,6 +2406,2275 @@
           }
         ]
       }
+    },
+    {
+      "name": "temperature below desired upper limit",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "temperature at inclusive desired limit",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 75,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "temperature in usable range",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 80,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "temperature at inclusive usable limit",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 90,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "temperature beyond usable limit",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 91,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "negative temperature",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": -12.5,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "observation message is preserved",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1",
+          "message": "CPU sensor"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true,
+            "message": "CPU sensor"
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing measurement",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing value observation"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expired measurement",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 110
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value has expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong boot measurement",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "old",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value belongs to another boot"
+          }
+        ]
+      }
+    },
+    {
+      "name": "future measurement",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 101,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value is in the future"
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong measurement owner",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "other",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value origin does not match"
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong measurement tag",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "old"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value tag does not match"
+          }
+        ]
+      }
+    },
+    {
+      "name": "definition shortens measurement validity",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1",
+          "maxAgeMs": 5
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 105
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value has expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "threshold shortens measurement validity",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            },
+            "maxAgeMs": 4
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 104
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Value has expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "exclusive desired endpoint",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": false
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 75,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "exclusive usable endpoint",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": false
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 90,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unhealthy",
+            "inputs": [],
+            "usable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "free storage between minimum and desired limits",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "lower": {
+                "value": 104857600,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "lower": {
+                "value": 10485760,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "bytes",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 52428800,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "two-sided voltage range",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "lower": {
+                "value": 4.8,
+                "inclusive": true
+              },
+              "upper": {
+                "value": 5.2,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "lower": {
+                "value": 4.5,
+                "inclusive": true
+              },
+              "upper": {
+                "value": 5.5,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 4.6,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "unbounded ranges",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {},
+            "usable": {}
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": -50,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing value definition is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "duplicate value definitions are invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        },
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "duplicate value observations are invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        },
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "zero maxAgeMs in values is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1",
+          "maxAgeMs": 0
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "zero maxAgeMs in valueObservations is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 0,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "zero threshold maxAgeMs is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            },
+            "maxAgeMs": 0
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "reversed range is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "lower": {
+                "value": 80,
+                "inclusive": true
+              },
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {}
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "empty range is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "lower": {
+                "value": 75,
+                "inclusive": false
+              },
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {}
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "healthy range outside usable range is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 95,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "unbounded healthy range outside bounded usable is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {},
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "healthy includes excluded usable endpoint is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": false
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "status for threshold node is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "thermal",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10
+        }
+      ],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "threshold result contributes to aggregate health",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        },
+        {
+          "id": "system",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "thermal"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 80,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "degraded",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "system",
+            "state": "degraded",
+            "usable": true,
+            "inputs": [
+              "thermal"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "one measurement supports distinct threshold policies",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        },
+        {
+          "id": "commit",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 70,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "healthy",
+            "inputs": [],
+            "usable": true
+          },
+          {
+            "id": "commit",
+            "origin": "policy",
+            "state": "degraded",
+            "usable": true,
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "nonfinite NaN in observation is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": "NaN",
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "nonfinite NaN in endpoint is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": "NaN",
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "nonfinite Infinity in observation is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": "Infinity",
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "nonfinite Infinity in endpoint is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": "Infinity",
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "nonfinite -Infinity in observation is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": "-Infinity",
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "nonfinite -Infinity in endpoint is invalid",
+      "nodes": [
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": "-Infinity",
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 72,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
     }
   ]
 }

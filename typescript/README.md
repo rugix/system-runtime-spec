@@ -108,6 +108,7 @@ if (!health.HealthSnapshot.is(received)) {
 }
 const report = evaluateHealth(
   received.nodes, received.statuses, received.clock.context,
+  received.values, received.valueObservations,
 );
 console.log(report);
 for (const status of received.statuses) {
@@ -123,9 +124,14 @@ its boot-time context.
 `undefined` for a wrong boot, future observation, or unsupported timestamp range.
 Sampling uncertainty and wall-clock corrections limit the estimate.
 
+Pass optional value definitions and observations as the fourth and fifth
+arguments to evaluate numeric threshold nodes. The
+[value and threshold reference](https://github.com/rugix/system-runtime-spec#runtime-values-and-thresholds)
+describes units, ranges, and evidence freshness.
+
 ## Models
 
-Sidex generates models and runtime checkers in the `component`, `health`, and
+Sidex generates models and runtime checkers in the `component`, `health`, `value`, and
 `filesystem` namespaces. Fields use the serialized names, such as `bootId`.
 A model's `is(value)` method narrows its type; `check(value)` returns validation
 details. Health node IDs are nominal strings, validated by

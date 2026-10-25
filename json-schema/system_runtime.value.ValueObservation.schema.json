@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.value.ValueObservation",
+  "type": "object",
+  "description": "One measurement within a boot; publishing it does not assert health.",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/system_runtime.value.ValueId"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "value": {
+      "type": [
+        "number",
+        "string"
+      ],
+      "pattern": "^(NaN|[+-]?Infinity)$"
+    },
+    "bootId": {
+      "type": "string"
+    },
+    "observedAtMs": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
+    },
+    "maxAgeMs": {
+      "type": "integer",
+      "format": "uint32",
+      "maximum": 4294967295,
+      "minimum": 0
+    },
+    "tag": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "value",
+    "bootId",
+    "observedAtMs",
+    "maxAgeMs"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.value.ValueId": {
+      "type": "string",
+      "description": "Identifier of a runtime value, unique independently of health node IDs."
+    }
+  }
+}

@@ -1,5 +1,8 @@
 /** Evaluate health graphs using caller-supplied boot-time evidence. */
 
+import { ValueEvidence } from "./threshold.js";
+import type { ValueDefinition, ValueObservation } from "./generated/value.js";
+
 import { HealthStatus, HealthContext, HealthNode } from "./generated/health.js";
 import type {
   AggregationRule, HealthNodeId, HealthNodeResult, HealthReport, HealthState, ObservationRule,
@@ -8,7 +11,9 @@ import type {
 /** Validate the graph, then evaluate every node in declaration order. */
 export function evaluateHealth(
   nodes: readonly HealthNode[], statuses: readonly HealthStatus[], context: HealthContext,
+  values: readonly ValueDefinition[] = [], valueObservations: readonly ValueObservation[] = [],
 ): HealthReport {
+  const evidence = new ValueEvidence(values, valueObservations);
   const clockCheck = HealthContext.check(context);
   if (clockCheck.isErr()) throw new Error(clockCheck.toString());
   const byId = new Map<HealthNodeId, HealthNode>();
@@ -24,8 +29,9 @@ export function evaluateHealth(
     if (validation.isErr()) throw new Error(validation.toString());
     if (observations.has(status.id)) throw new Error("Duplicate health status ID");
     if (!status.maxAgeMs) throw new Error(`Status ${status.id} has zero maxAgeMs`);
-    if (byId.get(status.id)?.rule.rule === "aggregate") {
-      throw new Error(`Status supplied for aggregate ${status.id}`);
+    const node = byId.get(status.id);
+    if (node !== undefined && node.rule.rule !== "observed") {
+      throw new Error(`Status supplied for derived node ${status.id}`);
     }
     observations.set(status.id, status);
   }
@@ -35,6 +41,9 @@ export function evaluateHealth(
     const rule = node.rule;
     if (rule.rule === "observed") {
       if (rule.maxAgeMs === 0) throw new Error(`Node ${node.id} has zero maxAgeMs`);
+      remaining.set(node.id, 0);
+    } else if (rule.rule === "threshold") {
+      evidence.validate(rule);
       remaining.set(node.id, 0);
     } else {
       if (!(1 <= rule.required && rule.required <= rule.healthy && rule.healthy <= rule.inputs.length)) {
@@ -57,6 +66,9 @@ export function evaluateHealth(
     let result: HealthNodeResult;
     if (node.rule.rule === "observed") {
       result = observe(id, node.rule, observations.get(id), context, node.origin);
+      canBeHealthy.set(id, result.state === "healthy" || result.state === "unknown");
+    } else if (node.rule.rule === "threshold") {
+      result = evidence.evaluate(node, node.rule, context);
       canBeHealthy.set(id, result.state === "healthy" || result.state === "unknown");
     } else {
       const possibleHealthy = node.rule.inputs.filter((input) => canBeHealthy.get(input)).length;

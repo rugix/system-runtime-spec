@@ -18,7 +18,7 @@ The distribution is named `system-runtime`; import it as `system_runtime`.
 
 `RuntimeDirectories.standard()` loads the specification's standard directories
 and extension configurations. The returned `RuntimeSnapshot` contains components,
-health node definitions, and status records.
+health nodes and statuses, and optional value definitions and observations.
 
 ```python
 from system_runtime import (
@@ -31,7 +31,11 @@ from system_runtime import (
 snapshot = RuntimeDirectories.standard().load()
 compatibility = check_components(snapshot.components)
 health = evaluate_health(
-    snapshot.health_nodes, snapshot.health_statuses, current_context()
+    snapshot.health_nodes,
+    snapshot.health_statuses,
+    current_context(),
+    values=snapshot.values or [],
+    value_observations=snapshot.value_observations or [],
 )
 print(compatibility.model_dump_json(), health.model_dump_json())
 ```
@@ -40,6 +44,10 @@ print(compatibility.model_dump_json(), health.model_dump_json())
 checks. For records from another system, supply that system's `HealthContext`.
 Invalid declarations and discovery failures raise exceptions; a valid but
 incompatible composition returns a report with `consistent == False`.
+
+Pass `values` and `value_observations` to evaluate numeric threshold nodes.
+The [value and threshold reference](https://github.com/rugix/system-runtime-spec#runtime-values-and-thresholds)
+describes units, ranges, and evidence freshness.
 
 ## Add Directories
 
@@ -127,6 +135,8 @@ snapshot = HealthSnapshot(
     clock=current_clock_sample(),
     nodes=records.health_nodes,
     statuses=records.health_statuses,
+    values=records.values,
+    value_observations=records.value_observations,
 )
 payload = snapshot.model_dump_json()
 received = HealthSnapshot.model_validate_json(payload)
@@ -145,7 +155,8 @@ current evidence before making an update decision.
 ## Models
 
 Sidex generates Pydantic models in `system_runtime.models.component`,
-`system_runtime.models.health`, and `system_runtime.models.filesystem`. Python
+`system_runtime.models.health`, `system_runtime.models.value`, and
+`system_runtime.models.filesystem`. Python
 attributes use snake_case, such as `boot_id`; serialized fields use names such as
 `bootId`. Use `model_validate` or `model_validate_json` to parse records and
 `model_dump_json()` to serialize them in the specified wire format. Unset

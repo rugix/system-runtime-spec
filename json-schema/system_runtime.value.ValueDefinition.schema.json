@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.value.ValueDefinition",
+  "type": "object",
+  "description": "A named measurement, independent of any health policy.",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/system_runtime.value.ValueId"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unit": {
+      "$ref": "#/$defs/system_runtime.value.ValueUnit"
+    },
+    "maxAgeMs": {
+      "type": "integer",
+      "format": "uint32",
+      "maximum": 4294967295,
+      "minimum": 0
+    },
+    "expectedTag": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "unit"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.value.ValueId": {
+      "type": "string",
+      "description": "Identifier of a runtime value, unique independently of health node IDs."
+    },
+    "system_runtime.value.ValueUnit": {
+      "enum": [
+        "celsius",
+        "bytes",
+        "seconds",
+        "ratio",
+        "count",
+        "bytesPerSecond",
+        "hertz",
+        "volts",
+        "amperes",
+        "watts",
+        "revolutionsPerMinute"
+      ],
+      "description": "Semantic unit; display prefixes, precision, and conversions are consumer choices."
+    }
+  }
+}

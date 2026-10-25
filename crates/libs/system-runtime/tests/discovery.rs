@@ -1,8 +1,10 @@
 use std::path::Path;
 
 use system_runtime::filesystem::DirectoryConfig;
-use system_runtime::health::{HealthContext, HealthState};
-use system_runtime::{RuntimeDirectories, check_components, evaluate_health};
+use system_runtime::health::{HealthContext, HealthNode, HealthState};
+use system_runtime::{
+    RuntimeDirectories, check_components, evaluate_health, evaluate_health_with_values,
+};
 
 /// Copy a shared filesystem use case into an isolated test root.
 fn copy_tree(source: &Path, destination: &Path) {
@@ -30,6 +32,8 @@ fn directory_integration() {
     );
     let mut directories = RuntimeDirectories::standard(root.path());
     directories.extend(&DirectoryConfig {
+        values: None,
+        value_observations: None,
         components: Some(vec!["/apps/7/components".into()]),
         health_nodes: None,
         health_statuses: None,
@@ -57,9 +61,40 @@ fn directory_integration() {
             .state,
         HealthState::Healthy
     );
+    let value_node: HealthNode = sidex::formats::json::from_str(
+        r#"{
+        "id":"storage", "rule":{"rule":"threshold", "value":"storage.free",
+        "healthy":{"lower":{"value":104857600,"inclusive":true}},
+        "usable":{}}}"#,
+    )
+    .unwrap();
+    let values = snapshot.values.as_deref().unwrap();
+    let observations = snapshot.value_observations.as_deref().unwrap();
+    assert_eq!(values.len(), 1);
+    assert_eq!(observations.len(), 1);
+    assert_eq!(
+        evaluate_health_with_values(
+            std::slice::from_ref(&value_node),
+            &[],
+            values,
+            observations,
+            &context
+        )
+        .unwrap()
+        .nodes[0]
+            .state,
+        HealthState::Healthy
+    );
     context.now_ms = 110;
     assert_eq!(
         evaluate_health(&snapshot.health_nodes, &snapshot.health_statuses, &context)
+            .unwrap()
+            .nodes[0]
+            .state,
+        HealthState::Unknown
+    );
+    assert_eq!(
+        evaluate_health_with_values(&[value_node], &[], values, observations, &context)
             .unwrap()
             .nodes[0]
             .state,

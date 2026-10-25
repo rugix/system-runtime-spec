@@ -4,6 +4,8 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use crate::Error;
 use crate::health::*;
+use crate::threshold::ValueEvidence;
+use crate::value::{ValueDefinition, ValueObservation};
 
 /// Read the Linux boot identifier and CLOCK_BOOTTIME in milliseconds.
 #[cfg(target_os = "linux")]
@@ -26,6 +28,19 @@ pub fn evaluate_health(
     statuses: &[HealthStatus],
     context: &HealthContext,
 ) -> Result<HealthReport, Error> {
+    evaluate_health_with_values(nodes, statuses, &[], &[], context)
+}
+
+/// Validate numeric evidence and evaluate observed, threshold, and aggregate nodes.
+#[tracing::instrument(level = "debug", skip_all)]
+pub fn evaluate_health_with_values(
+    nodes: &[HealthNode],
+    statuses: &[HealthStatus],
+    values: &[ValueDefinition],
+    value_observations: &[ValueObservation],
+    context: &HealthContext,
+) -> Result<HealthReport, Error> {
+    let evidence = ValueEvidence::new(values, value_observations)?;
     let indices: BTreeMap<_, _> = nodes
         .iter()
         .enumerate()
@@ -47,10 +62,10 @@ pub fn evaluate_health(
         }
         if indices
             .get(&status.id)
-            .is_some_and(|i| matches!(nodes[*i].rule, HealthRule::Aggregate(_)))
+            .is_some_and(|i| !matches!(nodes[*i].rule, HealthRule::Observed(_)))
         {
             return Err(Error::Invalid(format!(
-                "status supplied for aggregate {:?}",
+                "status supplied for derived node {:?}",
                 status.id
             )));
         }
@@ -67,6 +82,7 @@ pub fn evaluate_health(
                     )));
                 }
             }
+            HealthRule::Threshold(rule) => evidence.validate(rule)?,
             HealthRule::Aggregate(rule) => {
                 if !(1 <= rule.required
                     && rule.required <= rule.healthy
@@ -103,6 +119,12 @@ pub fn evaluate_health(
         results[index] = Some(match &node.rule {
             HealthRule::Observed(rule) => {
                 let result = observe(node, rule, observations.get(&node.id).copied(), context);
+                can_be_healthy[index] =
+                    matches!(result.state, HealthState::Healthy | HealthState::Unknown);
+                result
+            }
+            HealthRule::Threshold(rule) => {
+                let result = evidence.evaluate(node, rule, context);
                 can_be_healthy[index] =
                     matches!(result.state, HealthState::Healthy | HealthState::Unknown);
                 result

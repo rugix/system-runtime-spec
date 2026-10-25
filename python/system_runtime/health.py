@@ -12,8 +12,8 @@ from .models.health import (
     HealthNodeId,
     HealthNodeResult,
     HealthReport,
-    HealthRule_Aggregate,
     HealthRule_Observed,
+    HealthRule_Threshold,
     HealthState,
     HealthState_Degraded,
     HealthState_Healthy,
@@ -21,6 +21,8 @@ from .models.health import (
     HealthState_Unknown,
     HealthStatus,
 )
+from .models.value import ValueDefinition, ValueObservation
+from .threshold import ValueEvidence
 
 StateName = Literal["healthy", "degraded", "unhealthy", "unknown"]
 
@@ -37,12 +39,16 @@ def evaluate_health(
     nodes: Sequence[HealthNode],
     statuses: Sequence[HealthStatus],
     context: HealthContext,
+    *,
+    values: Sequence[ValueDefinition] = (),
+    value_observations: Sequence[ValueObservation] = (),
 ) -> HealthReport:
     """Validate the graph, then evaluate every node in declaration order.
 
     Malformed graphs and duplicate observations raise ValueError. Missing, expired,
     future, wrong-boot, or wrong-tag evidence yields unknown health.
     """
+    evidence = ValueEvidence(values, value_observations)
     by_id = {node.id: node for node in nodes}
     if len(by_id) != len(nodes):
         raise ValueError("Duplicate health node ID")
@@ -52,10 +58,10 @@ def evaluate_health(
     for status in statuses:
         if status.max_age_ms == 0:
             raise ValueError(f"Status {status.id!r} has zero maxAgeMs")
-        if status.id in by_id and isinstance(
-            by_id[status.id].rule, HealthRule_Aggregate
+        if status.id in by_id and not isinstance(
+            by_id[status.id].rule, HealthRule_Observed
         ):
-            raise ValueError(f"Status supplied for aggregate {status.id!r}")
+            raise ValueError(f"Status supplied for derived node {status.id!r}")
     remaining: dict[HealthNodeId, int] = {}
     dependents: dict[HealthNodeId, list[HealthNodeId]] = {node.id: [] for node in nodes}
     for node in nodes:
@@ -63,6 +69,9 @@ def evaluate_health(
         if isinstance(rule, HealthRule_Observed):
             if rule.max_age_ms == 0:
                 raise ValueError(f"Node {node.id!r} has zero maxAgeMs")
+            remaining[node.id] = 0
+        elif isinstance(rule, HealthRule_Threshold):
+            evidence.validate(rule)
             remaining[node.id] = 0
         else:
             if not 1 <= rule.required <= rule.healthy <= len(rule.inputs):
@@ -82,6 +91,9 @@ def evaluate_health(
         node = by_id[id]
         if isinstance(node.rule, HealthRule_Observed):
             results[id] = _observe(node, observations.get(id), context)
+            can_be_healthy[id] = results[id].state.root in ("healthy", "unknown")
+        elif isinstance(node.rule, HealthRule_Threshold):
+            results[id] = evidence.evaluate(node, context)
             can_be_healthy[id] = results[id].state.root in ("healthy", "unknown")
         else:
             inputs = [results[id] for id in node.rule.inputs]

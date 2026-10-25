@@ -1,6 +1,6 @@
 //! System component compatibility, health graphs, and file discovery.
 //!
-//! Generated types live in [`component`], [`health`], and [`filesystem`].
+//! Generated types live in [`component`], [`health`], [`value`], and [`filesystem`].
 //! Use [`check_components`] and [`evaluate_health`] with in-memory declarations,
 //! or load file contributions with [`RuntimeDirectories`].
 
@@ -11,6 +11,7 @@ mod evaluation;
 pub mod generated;
 mod node_id;
 mod snapshot;
+mod threshold;
 
 #[cfg(target_os = "linux")]
 pub use clock::current_clock_sample;
@@ -19,8 +20,8 @@ pub use compatibility::check_components;
 pub use discovery::RuntimeDirectories;
 #[cfg(target_os = "linux")]
 pub use evaluation::current_context;
-pub use evaluation::evaluate_health;
-pub use generated::{component, filesystem, health};
+pub use evaluation::{evaluate_health, evaluate_health_with_values};
+pub use generated::{component, filesystem, health, value};
 pub use snapshot::without_origin;
 
 /// Failure to validate a specification or read a file contribution.
