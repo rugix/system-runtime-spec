@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.AggregationInput",
+  "type": "object",
+  "description": "One dependency of an aggregate health node.",
+  "properties": {
+    "node": {
+      "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+    },
+    "required": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "node"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.health.HealthNodeId": {
+      "type": "string",
+      "description": "Identifier of a health graph node, serialized as a string."
+    }
+  }
+}

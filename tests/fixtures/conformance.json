@@ -566,8 +566,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 2,
             "healthy": 2
@@ -637,8 +641,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 2,
             "healthy": 2
@@ -708,8 +716,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 2,
             "healthy": 2
@@ -779,8 +791,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 2,
             "healthy": 2
@@ -850,8 +866,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 2,
             "healthy": 2
@@ -921,8 +941,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -992,8 +1016,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -1063,8 +1091,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1134,8 +1166,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1205,8 +1241,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1276,8 +1316,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1347,8 +1391,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1418,8 +1466,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -1489,7 +1541,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "root"
+              {
+                "node": "root"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1500,8 +1554,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -1922,7 +1980,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "missing"
+              {
+                "node": "missing"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1944,7 +2004,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a"
+              {
+                "node": "a"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -1972,8 +2034,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "a"
+              {
+                "node": "a"
+              },
+              {
+                "node": "a"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -2001,7 +2067,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a"
+              {
+                "node": "a"
+              }
             ],
             "required": 2,
             "healthy": 1
@@ -2029,7 +2097,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a"
+              {
+                "node": "a"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -2102,8 +2172,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "inner",
-              "c"
+              {
+                "node": "inner"
+              },
+              {
+                "node": "c"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -2114,8 +2188,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              }
             ],
             "required": 2,
             "healthy": 2
@@ -2321,7 +2399,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "app.health"
+              {
+                "node": "app.health"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -4187,7 +4267,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "thermal"
+              {
+                "node": "thermal"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -4629,7 +4711,9 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "replicas"
+              {
+                "node": "replicas"
+              }
             ],
             "required": 1,
             "healthy": 1
@@ -4640,9 +4724,15 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "a",
-              "b",
-              "c"
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              },
+              {
+                "node": "c"
+              }
             ],
             "required": 2,
             "healthy": 3
@@ -4739,8 +4829,12 @@
           "rule": {
             "rule": "aggregate",
             "inputs": [
-              "application",
-              "thermal"
+              {
+                "node": "application"
+              },
+              {
+                "node": "thermal"
+              }
             ],
             "required": 1,
             "healthy": 2
@@ -4816,6 +4910,1162 @@
             "state": "unknown",
             "inputs": [],
             "message": "Missing value observation"
+          }
+        ]
+      }
+    },
+    {
+      "name": "required input cannot be replaced by healthy workers",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "unhealthy",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing required input prevents confirmed functioning despite healthy workers",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "unknown",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          },
+          {
+            "id": "worker-a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "degraded required input prevents full health despite enough healthy workers",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "degraded",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "degraded",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "required input counts toward minimum with degraded worker",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 3
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "degraded",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "state": "degraded",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "unhealthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "required healthy input allows full health despite optional failure",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "healthy",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "unhealthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "explicit false required flag preserves count-only evaluation",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": false
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "healthy",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "impossible minimum count overrides unknown required input",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "worker-a",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "unhealthy",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          },
+          {
+            "id": "worker-a",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "unhealthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "failed mandatory input overrides another mandatory input with missing evidence",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a",
+                "required": true
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "worker-a",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "unhealthy",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          },
+          {
+            "id": "worker-a",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "every mandatory input must be healthy for full health",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a",
+                "required": true
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "degraded",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "state": "degraded",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "mandatory aggregate preserves a nested warning",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "worker-a"
+              },
+              {
+                "node": "worker-b"
+              }
+            ],
+            "required": 2,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "storage"
+              }
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "storage",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "storage",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "degraded",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "state": "degraded",
+            "inputs": [
+              "storage"
+            ]
+          },
+          {
+            "id": "worker-a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "storage",
+            "state": "degraded",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate dependency IDs remain invalid when required flags differ",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "database",
+                "required": true
+              },
+              {
+                "node": "database",
+                "required": false
+              }
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "database",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "worker-b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "database",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "worker-b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "mandatory threshold failure cannot be replaced by healthy workers",
+      "nodes": [
+        {
+          "id": "service",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "thermal",
+                "required": true
+              },
+              {
+                "node": "worker"
+              }
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        },
+        {
+          "id": "worker",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "worker",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "value": 91,
+          "bootId": "boot",
+          "observedAtMs": 100,
+          "maxAgeMs": 10,
+          "tag": "v1"
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "state": "unhealthy",
+            "inputs": [
+              "thermal",
+              "worker"
+            ]
+          },
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "worker",
+            "state": "healthy",
+            "inputs": []
           }
         ]
       }

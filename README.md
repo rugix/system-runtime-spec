@@ -322,8 +322,7 @@ The clock sample also correlates value observation times with wall time, using
 the same arithmetic as health status timestamps. Transport preserves evidence
 age and does not renew validity.
 
-Existing records retain their wire format. Readers that predate threshold rules
-cannot evaluate graphs containing them. In Rust, new optional record fields and
+Readers that predate threshold rules cannot evaluate graphs containing them. In Rust, new optional record fields and
 the added health rule variant require updates to struct literals and exhaustive
 matches.
 
@@ -408,9 +407,14 @@ not extend its lifetime, and wall-clock changes do not affect freshness.
 
 #### Aggregate Nodes
 
-An aggregate declares distinct `inputs`, a minimum `required` count of healthy
-or degraded inputs, and a desired `healthy` count. Thresholds must satisfy
+An aggregate declares `inputs`, a minimum `required` count of healthy or
+degraded inputs, and a desired `healthy` count. Each input is a record with a
+referenced `node` ID and an optional `required` flag, which defaults to false.
+Node IDs must be distinct. Count thresholds must satisfy
 `1 <= required <= healthy <= inputs.length`.
+
+Existing declarations must convert string inputs such as `"storage"` to
+`{"node": "storage"}`, even when no input is individually required.
 
 ```json
 {
@@ -418,16 +422,42 @@ or degraded inputs, and a desired `healthy` count. Thresholds must satisfy
   "origin": "rugix.system",
   "rule": {
     "rule": "aggregate",
-    "inputs": ["storage", "application"],
+    "inputs": [{"node": "storage"}, {"node": "application"}],
     "required": 2,
     "healthy": 2
   }
 }
 ```
 
-Both input nodes must exist in the graph. Setting both thresholds to the input
-count expresses all-of; setting both to one expresses any-of. Setting `required`
-below `healthy` expresses redundancy that can tolerate some failures.
+Both input nodes must exist in the graph. Without individually required inputs,
+setting both thresholds to the input count expresses all-of; setting both to one
+expresses any-of. Setting `required` below `healthy` expresses redundancy that
+can tolerate some failures.
+
+An input with `required: true` is mandatory. It must be healthy or degraded for
+the aggregate to meet its minimum criteria, and healthy for the aggregate to be
+healthy. For example, a database can be mandatory while workers are redundant:
+
+```json
+{
+  "id": "service",
+  "rule": {
+    "rule": "aggregate",
+    "inputs": [
+      {"node": "database", "required": true},
+      {"node": "worker-a"},
+      {"node": "worker-b"}
+    ],
+    "required": 2,
+    "healthy": 3
+  }
+}
+```
+
+The database counts toward both totals. Minimum functioning requires the
+database and at least one worker; full health requires all three to be healthy.
+Healthy workers cannot compensate for an unhealthy database. A degraded database
+prevents full health even if the desired healthy count is otherwise satisfied.
 
 Evaluation counts three kinds of input evidence:
 
@@ -439,12 +469,17 @@ Evaluation counts three kinds of input evidence:
 
 Apply these rules in order to determine an aggregate's state:
 
-1. If `H >= healthy`, the state is `healthy`.
-2. If `M >= required`, the state is `degraded`.
-3. If `P < required`, the state is `unhealthy`.
-4. Otherwise, the state is `unknown`.
+1. If any mandatory input is unhealthy or `P < required`, the state is `unhealthy`.
+2. If any mandatory input is unknown or `M < required`, the state is `unknown`.
+3. If every mandatory input is healthy and `H >= healthy`, the state is `healthy`.
+4. Otherwise, the state is `degraded`.
 
-For two observed inputs with `required: 1, healthy: 2`, the results include:
+A confirmed failure takes precedence over uncertainty. An unknown mandatory
+input produces `unknown` unless another mandatory input is unhealthy or the
+minimum count is already impossible.
+
+For two observed inputs without mandatory flags and with
+`required: 1, healthy: 2`, the results include:
 
 | Input States | Aggregate State |
 | --- | --- |
@@ -458,11 +493,12 @@ For two observed inputs with `required: 1, healthy: 2`, the results include:
 A healthy input confirms the minimum and desired criteria; a degraded input
 confirms only the minimum. An unknown input contributes only to `P`. These same
 rules apply when an input is itself an aggregate. Its state contains all the
-information required by its parent.
+information required by its parent. Result `inputs` list dependency node IDs;
+the mandatory flags belong to the aggregate definition.
 
 #### Graph Validation
 
-Missing input nodes, duplicate node IDs or inputs, invalid thresholds, cycles,
+Missing input nodes, duplicate node IDs or referenced input IDs, invalid thresholds, cycles,
 duplicate statuses, statuses supplied for aggregate or threshold nodes, and zero `maxAgeMs`
 values are evaluation errors. Statuses without a current node are ignored after
 validation. An invalid graph or status prevents evaluation of the whole graph.
