@@ -331,8 +331,9 @@ dependencies = [
 
 [[package]]
 name = "sidex"
-version = "0.4.1"
-source = "git+https://github.com/silitics/sidex.git?tag=v0.4.1#76909d137a1d4baeea27d6c590c81442268d7577"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c84d9251a5fbab171fe49739154739f5111b4bf019de0a358ba95bda11d256e"
 dependencies = [
  "base64",
  "indexmap",
@@ -365,7 +366,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "system-runtime"
+name = "system-runtime-spec"
 version = "0.1.0"
 dependencies = [
  "anyver",

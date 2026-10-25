@@ -1,6 +1,6 @@
 # System Runtime for TypeScript
 
-Use `@rugix/system-runtime` to check component compatibility and evaluate health
+Use `system-runtime-spec` to check component compatibility and evaluate health
 graphs in update tools, services, or user interfaces. Its models and runtime
 validators implement the
 [System Runtime Specification](https://github.com/rugix/system-runtime-spec).
@@ -10,17 +10,12 @@ discovery and local clock sampling are provided by the Rust and Python packages.
 
 ## Installation
 
-The package uses ES modules and includes TypeScript declarations. Build it in a
-local checkout:
+The package uses ES modules and includes TypeScript declarations. Install it
+from npm:
 
 ```sh
-cd /path/to/system-runtime-spec/typescript
-npm ci
-npm run build
+npm install system-runtime-spec
 ```
-
-Then run `npm install /path/to/system-runtime-spec/typescript` in the consuming
-project.
 
 ## Check Component Compatibility
 
@@ -28,7 +23,7 @@ Validate incoming declarations with the generated model checkers, then evaluate
 their requirements, conflicts, and claims:
 
 ```typescript
-import { component, checkComponents } from "@rugix/system-runtime";
+import { component, checkComponents } from "system-runtime-spec";
 
 const app = {
   id: "example.app",
@@ -56,7 +51,7 @@ record objects are shared with the original snapshot; copy a record before
 modifying its fields:
 
 ```typescript
-import { checkComponents, filesystem, withoutOrigin } from "@rugix/system-runtime";
+import { checkComponents, filesystem, withoutOrigin } from "system-runtime-spec";
 
 const current: filesystem.RuntimeSnapshot = {
   components: [
@@ -87,7 +82,7 @@ A `HealthSnapshot` carries node definitions, original status records, and a cloc
 sample from the observed system. Validate a received snapshot before evaluation:
 
 ```typescript
-import { evaluateHealth, health, statusTimestamp } from "@rugix/system-runtime";
+import { evaluateHealth, health, statusTimestamp } from "system-runtime-spec";
 
 const received: unknown = {
   clock: {

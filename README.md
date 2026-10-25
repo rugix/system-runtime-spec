@@ -641,9 +641,9 @@ evaluation across implementations.
 
 | Language | Package and Documentation |
 | --- | --- |
-| Rust | [`system-runtime`](crates/libs/system-runtime/README.md) |
-| Python | [`system-runtime`](python/README.md) |
-| TypeScript | [`@rugix/system-runtime`](typescript/README.md) |
+| Rust | [`system-runtime-spec`](crates/libs/system-runtime/README.md) |
+| Python | [`system-runtime-spec`](python/README.md) |
+| TypeScript | [`system-runtime-spec`](typescript/README.md) |
 
 All three packages provide generated models, compatibility checking, and health
 evaluation, including numeric thresholds. Rust and Python also implement file discovery. Package READMEs cover
@@ -656,12 +656,12 @@ them and run formatting, linting, type, conformance, and package build checks:
 
 ```sh
 mise install
-cargo install --git https://github.com/silitics/sidex.git --tag v0.4.1 --locked --bin sidex
 mise run generate
 mise run check
 ```
 
-CI runs the same checks.
+CI runs the same checks. See [Releasing the Packages](RELEASING.md) for registry
+publication.
 
 ## License
 

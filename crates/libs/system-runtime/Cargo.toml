@@ -1,5 +1,5 @@
 [package]
-name = "system-runtime"
+name = "system-runtime-spec"
 description = "System component compatibility, operational health, and filesystem discovery."
 version.workspace = true
 edition.workspace = true
@@ -7,6 +7,9 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 include = ["src/**", "Cargo.toml", "README.md", "LICENSE-*"]
+
+[lib]
+name = "system_runtime"
 
 [dependencies]
 anyver.workspace = true
