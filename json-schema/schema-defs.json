@@ -473,9 +473,6 @@
       "state": {
         "$ref": "#/components/schemas/system_runtime.health.HealthState"
       },
-      "usable": {
-        "type": "boolean"
-      },
       "inputs": {
         "type": "array",
         "items": {

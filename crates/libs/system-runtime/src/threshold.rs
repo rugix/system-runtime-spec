@@ -124,7 +124,6 @@ impl<'a> ValueEvidence<'a> {
                 id: node.id.clone(),
                 origin: node.origin.clone(),
                 state: HealthState::Unknown,
-                usable: None,
                 inputs: Vec::new(),
                 message: Some(reason.into()),
             };
@@ -141,7 +140,6 @@ impl<'a> ValueEvidence<'a> {
             id: node.id.clone(),
             origin: node.origin.clone(),
             state,
-            usable: Some(state != HealthState::Unhealthy),
             inputs: Vec::new(),
             message: observation.message.clone(),
         }

@@ -58,7 +58,7 @@ record ThresholdRule {
 record AggregationRule {
     /// Distinct input node IDs.
     inputs: [HealthNodeId],
-    /// Minimum input count with confirmed usability required.
+    /// Minimum healthy or degraded input count required.
     required: u32,
     /// Desired healthy input count; required <= healthy <= inputs length.
     healthy: u32,
@@ -90,11 +90,11 @@ record HealthStatus {
 variant HealthState {
     /// Desired health criteria are confirmed.
     Healthy,
-    /// Minimum criteria are confirmed, with a known concern.
+    /// Minimum criteria are confirmed; desired criteria are unconfirmed or unmet.
     Degraded,
     /// Minimum criteria are confirmed to be unmet.
     Unhealthy,
-    /// Evidence does not determine health.
+    /// Evidence does not determine whether minimum criteria are met.
     Unknown,
 }
 
@@ -142,8 +142,6 @@ record HealthNodeResult {
     origin?: string,
     /// Evaluated health.
     state: HealthState,
-    /// Whether minimum criteria are met; absent when usability is unknown.
-    usable?: bool,
     /// Direct dependencies explaining an aggregate result.
     inputs: [HealthNodeId],
     /// Observation message or freshness explanation.

@@ -86,7 +86,7 @@ export const ThresholdRule = {
                                             * Distinct input node IDs.
                                             */
                                                         "inputs": HealthNodeId[], /**
-                                            * Minimum input count with confirmed usability required.
+                                            * Minimum healthy or degraded input count required.
                                             */
                                                         "required": __sidex_types.builtins.U32, /**
                                             * Desired healthy input count; required <= healthy <= inputs length.
@@ -211,9 +211,6 @@ export const HealthReport = {
                                             * Evaluated health.
                                             */
                                                         "state": HealthState, /**
-                                            * Whether minimum criteria are met; absent when usability is unknown.
-                                            */
-                                                        "usable"?: __sidex_types.builtins.Bool, /**
                                             * Direct dependencies explaining an aggregate result.
                                             */
                                                         "inputs": HealthNodeId[], /**
@@ -222,5 +219,5 @@ export const HealthReport = {
                                                         "message"?: __sidex_types.builtins.String };
 
 export const HealthNodeResult = {
-    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["origin", __sidex_types.builtin("string"), true], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["usable", __sidex_types.builtin("bool"), true], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["message", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["origin", __sidex_types.builtin("string"), true], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["message", __sidex_types.builtin("string"), true]], [])),
 };

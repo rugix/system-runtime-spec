@@ -85,42 +85,36 @@ def evaluate_health(
                 dependents[input_id].append(node.id)
     ready = deque(id for id, count in remaining.items() if count == 0)
     results: dict[HealthNodeId, HealthNodeResult] = {}
-    can_be_healthy: dict[HealthNodeId, bool] = {}
     while ready:
         id = ready.popleft()
         node = by_id[id]
         if isinstance(node.rule, HealthRule_Observed):
             results[id] = _observe(node, observations.get(id), context)
-            can_be_healthy[id] = results[id].state.root in ("healthy", "unknown")
         elif isinstance(node.rule, HealthRule_Threshold):
             results[id] = evidence.evaluate(node, context)
-            can_be_healthy[id] = results[id].state.root in ("healthy", "unknown")
         else:
             inputs = [results[id] for id in node.rule.inputs]
             healthy = sum(result.state.root == "healthy" for result in inputs)
-            possible_healthy = sum(
-                can_be_healthy[input_id] for input_id in node.rule.inputs
+            minimum_met = sum(
+                result.state.root in ("healthy", "degraded") for result in inputs
             )
-            can_be_healthy[id] = possible_healthy >= node.rule.healthy
-            usable = sum(result.usable is True for result in inputs)
-            possible_usable = sum(result.usable is not False for result in inputs)
+            possible_minimum = sum(
+                result.state.root != "unhealthy" for result in inputs
+            )
             state: StateName
             if healthy >= node.rule.healthy:
                 state = "healthy"
-            elif possible_usable < node.rule.required:
-                state = "unhealthy"
-            elif usable < node.rule.required or possible_healthy >= node.rule.healthy:
-                state = "unknown"
-            else:
+            elif minimum_met >= node.rule.required:
                 state = "degraded"
+            elif possible_minimum < node.rule.required:
+                state = "unhealthy"
+            else:
+                state = "unknown"
             results[id] = HealthNodeResult(
                 id=id,
                 origin=node.origin,
                 state=_state(state),
                 inputs=node.rule.inputs,
-                usable=True
-                if usable >= node.rule.required
-                else (False if possible_usable < node.rule.required else None),
             )
         for dependent in dependents[id]:
             remaining[dependent] -= 1
@@ -162,14 +156,12 @@ def _observe(
             message=reason,
         )
     assert status is not None
-    name = status.state.root
     return HealthNodeResult(
         id=node.id,
         origin=node.origin,
         state=status.state,
         inputs=[],
         message=status.message,
-        usable=None if name == "unknown" else name in ("healthy", "degraded"),
     )
 
 

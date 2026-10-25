@@ -2060,7 +2060,7 @@ pub mod health {
     pub struct AggregationRule {
         #[doc = "Distinct input node IDs.\n"]
         pub inputs: ::std::vec::Vec<HealthNodeId>,
-        #[doc = "Minimum input count with confirmed usability required.\n"]
+        #[doc = "Minimum healthy or degraded input count required.\n"]
         pub required: u32,
         #[doc = "Desired healthy input count; required <= healthy <= inputs length.\n"]
         pub healthy: u32,
@@ -2076,7 +2076,7 @@ pub mod health {
                 )
                 .with_docs("Distinct input node IDs.\n"),
                 ::sidex::shape::FieldShape::new("required", ::sidex::shape::shape_of::<u32>)
-                    .with_docs("Minimum input count with confirmed usability required.\n"),
+                    .with_docs("Minimum healthy or degraded input count required.\n"),
                 ::sidex::shape::FieldShape::new("healthy", ::sidex::shape::shape_of::<u32>)
                     .with_docs(
                         "Desired healthy input count; required <= healthy <= inputs length.\n",
@@ -2357,65 +2357,16 @@ pub mod health {
     pub enum HealthState {
         #[doc = "Desired health criteria are confirmed.\n"]
         Healthy,
-        #[doc = "Minimum criteria are confirmed, with a known concern.\n"]
+        #[doc = "Minimum criteria are confirmed; desired criteria are unconfirmed or unmet.\n"]
         Degraded,
         #[doc = "Minimum criteria are confirmed to be unmet.\n"]
         Unhealthy,
-        #[doc = "Evidence does not determine health.\n"]
+        #[doc = "Evidence does not determine whether minimum criteria are met.\n"]
         Unknown,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthState {
-        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::health::HealthState",
-            ::sidex::shape::ShapeKind::Variant(
-                ::sidex::shape::VariantShape::new(&[
-                    ::sidex::shape::CaseShape::new("Healthy", ::std::option::Option::None)
-                        .with_docs("Desired health criteria are confirmed.\n")
-                        .json_name("healthy"),
-                    ::sidex::shape::CaseShape::new("Degraded", ::std::option::Option::None)
-                        .with_docs("Minimum criteria are confirmed, with a known concern.\n")
-                        .json_name("degraded"),
-                    ::sidex::shape::CaseShape::new("Unhealthy", ::std::option::Option::None)
-                        .with_docs("Minimum criteria are confirmed to be unmet.\n")
-                        .json_name("unhealthy"),
-                    ::sidex::shape::CaseShape::new("Unknown", ::std::option::Option::None)
-                        .with_docs("Evidence does not determine health.\n")
-                        .json_name("unknown"),
-                ])
-                .json_tagging(::sidex::formats::json::Tagging::External),
-            ),
-        )
-        .with_docs("Health relative to a node's declared expectations.\n")
-        .with_attrs(&[
-            ::sidex::shape::Attr::List {
-                path: "json",
-                args: &[
-                    ::sidex::shape::Attr::Assign {
-                        path: "tagged",
-                        value: ::sidex::shape::AttrValue::Path("externally"),
-                    },
-                    ::sidex::shape::Attr::Assign {
-                        path: "tag",
-                        value: ::sidex::shape::AttrValue::String("state"),
-                    },
-                    ::sidex::shape::Attr::Assign {
-                        path: "rename_all",
-                        value: ::sidex::shape::AttrValue::String("lowercase"),
-                    },
-                ],
-            },
-            ::sidex::shape::Attr::List {
-                path: "rust",
-                args: &[::sidex::shape::Attr::List {
-                    path: "derive",
-                    args: &[
-                        ::sidex::shape::Attr::Path("Copy"),
-                        ::sidex::shape::Attr::Path("Eq"),
-                    ],
-                }],
-            },
-        ]);
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthState" , :: sidex :: shape :: ShapeKind :: Variant (:: sidex :: shape :: VariantShape :: new (& [:: sidex :: shape :: CaseShape :: new ("Healthy" , :: std :: option :: Option :: None) . with_docs ("Desired health criteria are confirmed.\n") . json_name ("healthy") , :: sidex :: shape :: CaseShape :: new ("Degraded" , :: std :: option :: Option :: None) . with_docs ("Minimum criteria are confirmed; desired criteria are unconfirmed or unmet.\n") . json_name ("degraded") , :: sidex :: shape :: CaseShape :: new ("Unhealthy" , :: std :: option :: Option :: None) . with_docs ("Minimum criteria are confirmed to be unmet.\n") . json_name ("unhealthy") , :: sidex :: shape :: CaseShape :: new ("Unknown" , :: std :: option :: Option :: None) . with_docs ("Evidence does not determine whether minimum criteria are met.\n") . json_name ("unknown")]) . json_tagging (:: sidex :: formats :: json :: Tagging :: External))) . with_docs ("Health relative to a node's declared expectations.\n") . with_attrs (& [:: sidex :: shape :: Attr :: List { path : "json" , args : & [:: sidex :: shape :: Attr :: Assign { path : "tagged" , value : :: sidex :: shape :: AttrValue :: Path ("externally") } , :: sidex :: shape :: Attr :: Assign { path : "tag" , value : :: sidex :: shape :: AttrValue :: String ("state") } , :: sidex :: shape :: Attr :: Assign { path : "rename_all" , value : :: sidex :: shape :: AttrValue :: String ("lowercase") }] } , :: sidex :: shape :: Attr :: List { path : "rust" , args : & [:: sidex :: shape :: Attr :: List { path : "derive" , args : & [:: sidex :: shape :: Attr :: Path ("Copy") , :: sidex :: shape :: Attr :: Path ("Eq")] }] }]) ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for HealthState {
@@ -2932,8 +2883,6 @@ pub mod health {
         pub origin: ::std::option::Option<::std::string::String>,
         #[doc = "Evaluated health.\n"]
         pub state: HealthState,
-        #[doc = "Whether minimum criteria are met; absent when usability is unknown.\n"]
-        pub usable: ::std::option::Option<bool>,
         #[doc = "Direct dependencies explaining an aggregate result.\n"]
         pub inputs: ::std::vec::Vec<HealthNodeId>,
         #[doc = "Observation message or freshness explanation.\n"]
@@ -2954,11 +2903,6 @@ pub mod health {
                 .optional(),
                 ::sidex::shape::FieldShape::new("state", ::sidex::shape::shape_of::<HealthState>)
                     .with_docs("Evaluated health.\n"),
-                ::sidex::shape::FieldShape::new("usable", ::sidex::shape::shape_of::<bool>)
-                    .with_docs(
-                        "Whether minimum criteria are met; absent when usability is unknown.\n",
-                    )
-                    .optional(),
                 ::sidex::shape::FieldShape::new(
                     "inputs",
                     ::sidex::shape::shape_of::<::std::vec::Vec<HealthNodeId>>,
@@ -2994,12 +2938,8 @@ pub mod health {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.state)),
-                3usize => self
-                    .usable
-                    .as_ref()
-                    .map(|value| ::sidex::Encode::encode(value)),
-                4usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.inputs)),
-                5usize => self
+                3usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.inputs)),
+                4usize => self
                     .message
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
@@ -3016,9 +2956,8 @@ pub mod health {
             let mut __field_0 = ::std::option::Option::<HealthNodeId>::None;
             let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_2 = ::std::option::Option::<HealthState>::None;
-            let mut __field_3 = ::std::option::Option::<bool>::None;
-            let mut __field_4 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
-            let mut __field_5 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_3 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
+            let mut __field_4 = ::std::option::Option::<::std::string::String>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -3037,16 +2976,12 @@ pub mod health {
                         )
                     }
                     3usize => {
-                        __field_3 =
-                            ::std::option::Option::Some(<bool as ::sidex::Decode>::decode(decoder)?)
-                    }
-                    4usize => {
-                        __field_4 = ::std::option::Option::Some(
+                        __field_3 = ::std::option::Option::Some(
                             <::std::vec::Vec<HealthNodeId> as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
-                    5usize => {
-                        __field_5 = ::std::option::Option::Some(
+                    4usize => {
+                        __field_4 = ::std::option::Option::Some(
                             <::std::string::String as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
@@ -3059,10 +2994,9 @@ pub mod health {
                 origin: __field_1,
                 state: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `state`"))?,
-                usable: __field_3,
-                inputs: __field_4
+                inputs: __field_3
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `inputs`"))?,
-                message: __field_5,
+                message: __field_4,
             })
         }
     }
