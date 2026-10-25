@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 use std::path::{Component, Path, PathBuf};
 
 use crate::Error;
-use crate::filesystem::{DirectoryConfig, RuntimeSnapshot};
+use crate::types::filesystem::{DirectoryConfig, RuntimeSnapshot};
 
 const PREFIXES: [&str; 3] = [
     "/usr/lib/system-runtime",
@@ -279,7 +279,7 @@ fn read<T: sidex::Decode>(path: &Path) -> Result<T, Error> {
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
-    use crate::component::ComponentDeclaration;
+    use crate::types::component::ComponentDeclaration;
 
     /// Switching current after discovery preserves the collected generation's files.
     #[test]

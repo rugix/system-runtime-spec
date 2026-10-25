@@ -1,10 +1,10 @@
 use std::path::Path;
 
-use system_runtime::filesystem::DirectoryConfig;
-use system_runtime::health::{HealthContext, HealthNode, HealthState};
-use system_runtime::{
-    RuntimeDirectories, check_components, evaluate_health, evaluate_health_with_values,
-};
+use system_runtime::compatibility::check_components;
+use system_runtime::discovery::RuntimeDirectories;
+use system_runtime::evaluation::{evaluate_health, evaluate_health_with_values};
+use system_runtime::types::filesystem::DirectoryConfig;
+use system_runtime::types::health::{HealthContext, HealthNode, HealthState};
 
 /// Copy a shared filesystem use case into an isolated test root.
 fn copy_tree(source: &Path, destination: &Path) {

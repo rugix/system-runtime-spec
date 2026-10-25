@@ -1,6 +1,6 @@
 //! String access and construction for generated health node and value identifiers.
 
-use crate::health::HealthNodeId;
+use crate::types::health::HealthNodeId;
 
 impl HealthNodeId {
     /// Borrow the identifier's string representation.
@@ -21,20 +21,20 @@ impl From<&str> for HealthNodeId {
     }
 }
 
-impl crate::value::ValueId {
+impl crate::types::value::ValueId {
     /// Borrow the identifier's string representation.
     pub fn as_str(&self) -> &str {
         &self.0
     }
 }
 
-impl From<&str> for crate::value::ValueId {
+impl From<&str> for crate::types::value::ValueId {
     fn from(id: &str) -> Self {
         Self(id.into())
     }
 }
 
-impl From<String> for crate::value::ValueId {
+impl From<String> for crate::types::value::ValueId {
     fn from(id: String) -> Self {
         Self(id)
     }

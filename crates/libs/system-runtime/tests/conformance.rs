@@ -1,10 +1,11 @@
 use serde::Deserialize;
-use system_runtime::component::{
+use system_runtime::compatibility::check_components;
+use system_runtime::evaluation::evaluate_health_with_values;
+use system_runtime::types::component::{
     CapabilitySelectorDeclaration, CompatibilityReport, ComponentDeclaration,
 };
-use system_runtime::health::{HealthContext, HealthNode, HealthReport, HealthStatus};
-use system_runtime::value::{ValueDefinition, ValueObservation};
-use system_runtime::{check_components, evaluate_health_with_values};
+use system_runtime::types::health::{HealthContext, HealthNode, HealthReport, HealthStatus};
+use system_runtime::types::value::{ValueDefinition, ValueObservation};
 
 #[derive(Deserialize)]
 struct Fixtures {

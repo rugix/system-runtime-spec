@@ -1,28 +1,18 @@
 //! System component compatibility, health graphs, and file discovery.
 //!
-//! Generated types live in [`component`], [`health`], [`value`], and [`filesystem`].
-//! Use [`check_components`] and [`evaluate_health`] with in-memory declarations,
-//! or load file contributions with [`RuntimeDirectories`].
+//! Specification models live in [`types`]. Use [`compatibility::check_components`]
+//! and [`evaluation::evaluate_health`] with in-memory declarations, or load file
+//! contributions with [`discovery::RuntimeDirectories`].
 
-mod clock;
-mod compatibility;
-mod discovery;
-mod evaluation;
-pub mod generated;
+pub mod clock;
+pub mod compatibility;
+pub mod discovery;
+pub mod evaluation;
 mod node_id;
-mod snapshot;
+pub mod snapshot;
 mod threshold;
-
-#[cfg(target_os = "linux")]
-pub use clock::current_clock_sample;
-pub use clock::status_timestamp;
-pub use compatibility::check_components;
-pub use discovery::RuntimeDirectories;
-#[cfg(target_os = "linux")]
-pub use evaluation::current_context;
-pub use evaluation::{evaluate_health, evaluate_health_with_values};
-pub use generated::{component, filesystem, health, value};
-pub use snapshot::without_origin;
+/// Specification models generated from the shared Sidex schemas.
+pub mod types;
 
 /// Failure to validate a specification or read a file contribution.
 #[derive(Debug, thiserror::Error)]

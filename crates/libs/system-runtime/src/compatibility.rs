@@ -5,7 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use anyver::{Version, VersionReq};
 
 use crate::Error;
-use crate::component::*;
+use crate::types::component::*;
 
 /// Validate declarations and report every violated composition constraint.
 ///
