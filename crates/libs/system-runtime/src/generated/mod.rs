@@ -3541,7 +3541,7 @@ pub mod value {
                         .json_name("count"),
                     ::sidex::shape::CaseShape::new("BytesPerSecond", ::std::option::Option::None)
                         .with_docs("Bytes per second.\n")
-                        .json_name("bytesPerSecond"),
+                        .json_name("bytes-per-second"),
                     ::sidex::shape::CaseShape::new("Hertz", ::std::option::Option::None)
                         .with_docs("Cycles per second.\n")
                         .json_name("hertz"),
@@ -3559,7 +3559,7 @@ pub mod value {
                         ::std::option::Option::None,
                     )
                     .with_docs("Revolutions per minute.\n")
-                    .json_name("revolutionsPerMinute"),
+                    .json_name("revolutions-per-minute"),
                 ])
                 .json_tagging(::sidex::formats::json::Tagging::External),
             ),
@@ -3577,7 +3577,7 @@ pub mod value {
                     },
                     ::sidex::shape::Attr::Assign {
                         path: "rename_all",
-                        value: ::sidex::shape::AttrValue::String("camelCase"),
+                        value: ::sidex::shape::AttrValue::String("kebab-case"),
                     },
                 ],
             },

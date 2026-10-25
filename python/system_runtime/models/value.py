@@ -77,7 +77,7 @@ class ValueUnit_Count(pydantic.RootModel[Literal["count"]]):
     pass
 
 
-class ValueUnit_BytesPerSecond(pydantic.RootModel[Literal["bytesPerSecond"]]):
+class ValueUnit_BytesPerSecond(pydantic.RootModel[Literal["bytes-per-second"]]):
     pass
 
 
@@ -97,7 +97,7 @@ class ValueUnit_Watts(pydantic.RootModel[Literal["watts"]]):
     pass
 
 
-class ValueUnit_RevolutionsPerMinute(pydantic.RootModel[Literal["revolutionsPerMinute"]]):
+class ValueUnit_RevolutionsPerMinute(pydantic.RootModel[Literal["revolutions-per-minute"]]):
     pass
 
 
