@@ -4,60 +4,61 @@ The Rust crate, Python distribution, and npm package share the name
 `system-runtime-spec` and one release version. Rust and Python users import
 `system_runtime`; TypeScript users import `system-runtime-spec`.
 
+Pushing a stable version tag, such as `v0.1.0`, runs the Release workflow. It checks
+that all package versions and the tag agree, runs the full CI checks, verifies the
+Cargo package, and builds the Python and npm distributions. All checks must pass
+before any registry receives a package. Python and npm publish the built artifacts;
+Cargo packages and publishes the same tagged source.
+
 ## Prepare a Release
 
-Update the version in these files together:
+Only stable `X.Y.Z` versions are supported. Update these files together:
 
 - `Cargo.toml`, under `workspace.package`.
 - `python/pyproject.toml`, under `project`.
 - `typescript/package.json`.
 - `sidex.toml`, under `bundle`.
 
-Refresh the lockfiles after changing package versions or dependencies:
+Refresh the lockfiles and check the release:
 
 ```sh
 mise install
 mise exec -- cargo update --workspace
 mise exec -- uv lock --project python
 mise exec -- npm install --package-lock-only --ignore-scripts --prefix typescript
+mise exec -- python scripts/check_release.py
 mise run check
 ```
 
-The checks verify generated models, test all three implementations, and
-build the Python and npm distributions. Check the Rust distribution separately:
+Merge the release changes. From GitHub Actions, run the Release workflow on that
+commit's branch with `publish` left false. This dry run checks and builds all
+packages without accessing publishing environments or uploading to registries.
+Download its Python and npm artifacts and verify that they install and expose the
+documented imports. To verify the Rust package locally from a clean release commit:
 
 ```sh
 mise exec -- cargo publish --dry-run --locked
 ```
 
-Run that dry run from a clean commit containing the release changes. Cargo
-verifies the packaged crate against registry dependencies, without uploading it.
-Confirm that the resulting packages install and expose their documented imports
-before publishing.
-
 ## Publish a Release
 
-Merge the release changes and check out that commit with a clean working tree.
-Run the checks and Rust dry run above, then tag the commit. For example, for the
-first release:
+Check out the merged release commit with a clean working tree, then push its
+matching tag. For example, to release version 0.1.0:
 
 ```sh
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Authenticate with accounts authorized to publish `system-runtime-spec` on each
-registry. For a first publication, those accounts create the package entries.
-Publish all three distributions from the same commit:
+Watch the Release workflow until all three publishing jobs succeed. Verify each
+registry entry and install the published version in a fresh consumer project
+before announcing the release.
 
-```sh
-mise exec -- cargo publish --locked
-mise exec -- uv publish python/dist/system_runtime_spec-0.1.0.tar.gz python/dist/system_runtime_spec-0.1.0-py3-none-any.whl
-mise exec -- npm publish ./typescript/system-runtime-spec-0.1.0.tgz --access public
-```
-
-Use the release version's filenames for subsequent releases. The repository's CI
-validates releases; pushing a tag does not publish packages automatically.
-
-Verify each registry entry and install the published version in a fresh consumer
-project before announcing the release.
+Registry uploads are independent and published versions cannot be overwritten.
+If only some registries succeed, keep the tag unchanged and rerun only failed jobs.
+To target a remaining registry explicitly, run the Release workflow manually,
+select the same release tag, set `publish` to true, and choose that registry.
+PyPI retries skip files already uploaded, so an interrupted wheel or source archive
+upload can finish. For npm and crates.io, check whether the version reached the
+registry even if the job failed; an existing version cannot be uploaded again.
+Do not retry a successful registry. Fix released package defects in a new version.
