@@ -3,7 +3,8 @@ use system_runtime::component::{
     CapabilitySelectorDeclaration, CompatibilityReport, ComponentDeclaration,
 };
 use system_runtime::health::{HealthContext, HealthNode, HealthReport, HealthStatus};
-use system_runtime::{check_components, evaluate_health};
+use system_runtime::value::{ValueDefinition, ValueObservation};
+use system_runtime::{check_components, evaluate_health_with_values};
 
 #[derive(Deserialize)]
 struct Fixtures {
@@ -31,11 +32,16 @@ struct ComponentCase {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct HealthCase {
     name: String,
     nodes: Vec<HealthNode>,
     statuses: Vec<HealthStatus>,
     context: HealthContext,
+    #[serde(default)]
+    values: Vec<ValueDefinition>,
+    #[serde(default)]
+    value_observations: Vec<ValueObservation>,
     report: Option<HealthReport>,
     #[serde(default)]
     error: bool,
@@ -108,7 +114,13 @@ fn component_conformance() {
 #[test]
 fn health_conformance() {
     for case in fixtures().health {
-        let report = evaluate_health(&case.nodes, &case.statuses, &case.context);
+        let report = evaluate_health_with_values(
+            &case.nodes,
+            &case.statuses,
+            &case.values,
+            &case.value_observations,
+            &case.context,
+        );
         if case.error {
             assert!(report.is_err(), "{}", case.name);
         } else {

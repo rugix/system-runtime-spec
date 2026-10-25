@@ -21,6 +21,18 @@
       "items": {
         "type": "string"
       }
+    },
+    "values": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "valueObservations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [],

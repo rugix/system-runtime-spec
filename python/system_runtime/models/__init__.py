@@ -5,8 +5,9 @@ import pydantic
 from . import component  # noqa: F401
 from . import filesystem  # noqa: F401
 from . import health  # noqa: F401
+from . import value  # noqa: F401
 
-_schemas = {"component": component, "filesystem": filesystem, "health": health}
+_schemas = {"component": component, "filesystem": filesystem, "health": health, "value": value}
 for _m in _schemas.values():
     for _name, _other in _schemas.items():
         _alias = f"_schema_{_name}"

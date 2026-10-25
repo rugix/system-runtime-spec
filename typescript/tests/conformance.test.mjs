@@ -34,7 +34,7 @@ for (const example of cases.health) {
   test(`health: ${example.name}`, () => {
     for (const node of example.nodes) assert(health.HealthNode.is(node));
     for (const status of example.statuses) assert(health.HealthStatus.is(status));
-    const evaluate = () => evaluateHealth(example.nodes, example.statuses, example.context);
+    const evaluate = () => evaluateHealth(example.nodes, example.statuses, example.context, example.values, example.valueObservations);
     if (example.error) assert.throws(evaluate);
     else {
       const report = evaluate();

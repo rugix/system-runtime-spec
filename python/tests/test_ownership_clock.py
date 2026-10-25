@@ -54,9 +54,14 @@ def test_health_transport():
     source = RuntimeSnapshot.model_validate(CASES["origins"][0]["snapshot"])
     clock = HealthClockSample.model_validate(CASES["timestamps"][0]["clock"])
     snapshot = HealthSnapshot(
-        clock=clock, nodes=source.health_nodes, statuses=source.health_statuses
+        clock=clock,
+        nodes=source.health_nodes,
+        statuses=source.health_statuses,
+        values=source.values,
+        value_observations=source.value_observations,
     )
     received = HealthSnapshot.model_validate_json(snapshot.model_dump_json())
+    assert received == snapshot
     report = evaluate_health(received.nodes, received.statuses, received.clock.context)
     assert report.nodes[1].origin == "rugix.apps.example"
     assert report.nodes[1].state.root == "healthy"

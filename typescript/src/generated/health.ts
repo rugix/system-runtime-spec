@@ -5,6 +5,7 @@ import * as __sidex_types from "@sidex/types";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
+import * as __schema_value from "./value.js";
 /**
  * Identifier of a health graph node, serialized as a string.
  */
@@ -37,12 +38,12 @@ export const HealthNode = {
     ...__sidex_types.checker<HealthNode>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["origin", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["rule", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthRule), false]], [])),
 };
 /**
- * Definition of an observed or aggregate node.
+ * Definition of an observed, threshold, or aggregate node.
  */
- export type HealthRule = (({ "rule": "observed" } & ObservationRule) | ({ "rule": "aggregate" } & AggregationRule));
+ export type HealthRule = (({ "rule": "observed" } & ObservationRule) | ({ "rule": "threshold" } & ThresholdRule) | ({ "rule": "aggregate" } & AggregationRule));
 
 export const HealthRule = {
-    ...__sidex_types.checker<HealthRule>((): __sidex_types.Check => __sidex_types.variant("internal", "rule", [["observed", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ObservationRule), null], ["aggregate", __sidex_types.lazy((): __sidex_types.Checker<unknown> => AggregationRule), null]])),
+    ...__sidex_types.checker<HealthRule>((): __sidex_types.Check => __sidex_types.variant("internal", "rule", [["observed", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ObservationRule), null], ["threshold", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ThresholdRule), null], ["aggregate", __sidex_types.lazy((): __sidex_types.Checker<unknown> => AggregationRule), null]])),
 };
 /**
  * Constraints on externally supplied observations.
@@ -57,6 +58,26 @@ export const HealthRule = {
 
 export const ObservationRule = {
     ...__sidex_types.checker<ObservationRule>((): __sidex_types.Check => __sidex_types.record([["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
+};
+/**
+ * Desired and minimum ranges for one runtime value.
+ */
+ export type ThresholdRule = { /**
+                                            * Value definition supplying the unit, identity, and freshness constraints.
+                                            */
+                                                        "value": __schema_value.ValueId, /**
+                                            * Desired range; must be a subset of the usable range.
+                                            */
+                                                        "healthy": __schema_value.ValueRange, /**
+                                            * Minimum range for usability.
+                                            */
+                                                        "usable": __schema_value.ValueRange, /**
+                                            * Optional consumer limit on observation age, in milliseconds; must be positive.
+                                            */
+                                                        "maxAgeMs"?: __sidex_types.builtins.U32 };
+
+export const ThresholdRule = {
+    ...__sidex_types.checker<ThresholdRule>((): __sidex_types.Check => __sidex_types.record([["value", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueId), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueRange), false], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueRange), false], ["maxAgeMs", __sidex_types.builtin("u32"), true]], [])),
 };
 /**
  * Minimum and desired health targets.
@@ -155,10 +176,16 @@ export const HealthClockSample = {
                                                         "nodes": HealthNode[], /**
                                             * Original status records; observation times and validity are preserved.
                                             */
-                                                        "statuses": HealthStatus[] };
+                                                        "statuses": HealthStatus[], /**
+                                            * Value definitions used by threshold nodes or displayed independently.
+                                            */
+                                                        "values"?: __schema_value.ValueDefinition[], /**
+                                            * Original measurements; observation times and validity are preserved.
+                                            */
+                                                        "valueObservations"?: __schema_value.ValueObservation[] };
 
 export const HealthSnapshot = {
-    ...__sidex_types.checker<HealthSnapshot>((): __sidex_types.Check => __sidex_types.record([["clock", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthClockSample), false], ["nodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNode)), false], ["statuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthStatus)), false]], [])),
+    ...__sidex_types.checker<HealthSnapshot>((): __sidex_types.Check => __sidex_types.record([["clock", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthClockSample), false], ["nodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNode)), false], ["statuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthStatus)), false], ["values", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueDefinition)), true], ["valueObservations", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueObservation)), true]], [])),
 };
 /**
  * Evaluated graph, in declaration order.

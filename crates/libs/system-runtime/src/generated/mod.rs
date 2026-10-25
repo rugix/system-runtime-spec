@@ -1193,10 +1193,14 @@ pub mod filesystem {
         pub health_nodes: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
         #[doc = "Additional health status directories.\n"]
         pub health_statuses: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        #[doc = "Additional value definition directories.\n"]
+        pub values: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        #[doc = "Additional value observation directories.\n"]
+        pub value_observations: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for DirectoryConfig {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::filesystem::DirectoryConfig" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional component declaration directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("health_nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health definition directories.\n") . optional () . json_name ("healthNodes") , :: sidex :: shape :: FieldShape :: new ("health_statuses" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health status directories.\n") . optional () . json_name ("healthStatuses")]))) . with_docs ("Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::filesystem::DirectoryConfig" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional component declaration directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("health_nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health definition directories.\n") . optional () . json_name ("healthNodes") , :: sidex :: shape :: FieldShape :: new ("health_statuses" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health status directories.\n") . optional () . json_name ("healthStatuses") , :: sidex :: shape :: FieldShape :: new ("values" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional value definition directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("value_observations" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional value observation directories.\n") . optional () . json_name ("valueObservations")]))) . with_docs ("Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for DirectoryConfig {
@@ -1224,6 +1228,14 @@ pub mod filesystem {
                     .health_statuses
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
+                3usize => self
+                    .values
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                4usize => self
+                    .value_observations
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -1239,6 +1251,10 @@ pub mod filesystem {
             let mut __field_1 =
                 ::std::option::Option::<::std::vec::Vec<::std::string::String>>::None;
             let mut __field_2 =
+                ::std::option::Option::<::std::vec::Vec<::std::string::String>>::None;
+            let mut __field_3 =
+                ::std::option::Option::<::std::vec::Vec<::std::string::String>>::None;
+            let mut __field_4 =
                 ::std::option::Option::<::std::vec::Vec<::std::string::String>>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
@@ -1263,6 +1279,20 @@ pub mod filesystem {
                             decoder
                         )?)
                     }
+                    3usize => {
+                        __field_3 = ::std::option::Option::Some(<::std::vec::Vec<
+                            ::std::string::String,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
+                    4usize => {
+                        __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
+                            ::std::string::String,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -1271,6 +1301,8 @@ pub mod filesystem {
                 components: __field_0,
                 health_nodes: __field_1,
                 health_statuses: __field_2,
+                values: __field_3,
+                value_observations: __field_4,
             })
         }
     }
@@ -1300,6 +1332,11 @@ pub mod filesystem {
         pub health_nodes: ::std::vec::Vec<super::health::HealthNode>,
         #[doc = "Published health status records.\n"]
         pub health_statuses: ::std::vec::Vec<super::health::HealthStatus>,
+        #[doc = "Numeric value definitions.\n"]
+        pub values: ::std::option::Option<::std::vec::Vec<super::value::ValueDefinition>>,
+        #[doc = "Published value observations.\n"]
+        pub value_observations:
+            ::std::option::Option<::std::vec::Vec<super::value::ValueObservation>>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for RuntimeSnapshot {
@@ -1325,6 +1362,19 @@ pub mod filesystem {
                 )
                 .with_docs("Published health status records.\n")
                 .json_name("healthStatuses"),
+                ::sidex::shape::FieldShape::new(
+                    "values",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueDefinition>>,
+                )
+                .with_docs("Numeric value definitions.\n")
+                .optional(),
+                ::sidex::shape::FieldShape::new(
+                    "value_observations",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueObservation>>,
+                )
+                .with_docs("Published value observations.\n")
+                .optional()
+                .json_name("valueObservations"),
             ])),
         )
         .with_docs("Complete collection loaded from a filesystem or supplied directly.\n");
@@ -1348,6 +1398,14 @@ pub mod filesystem {
                 2usize => {
                     ::std::option::Option::Some(::sidex::Encode::encode(&self.health_statuses))
                 }
+                3usize => self
+                    .values
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                4usize => self
+                    .value_observations
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -1365,6 +1423,10 @@ pub mod filesystem {
                 ::std::option::Option::<::std::vec::Vec<super::health::HealthNode>>::None;
             let mut __field_2 =
                 ::std::option::Option::<::std::vec::Vec<super::health::HealthStatus>>::None;
+            let mut __field_3 =
+                ::std::option::Option::<::std::vec::Vec<super::value::ValueDefinition>>::None;
+            let mut __field_4 =
+                ::std::option::Option::<::std::vec::Vec<super::value::ValueObservation>>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -1388,6 +1450,20 @@ pub mod filesystem {
                             decoder
                         )?)
                     }
+                    3usize => {
+                        __field_3 = ::std::option::Option::Some(<::std::vec::Vec<
+                            super::value::ValueDefinition,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
+                    4usize => {
+                        __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
+                            super::value::ValueObservation,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -1399,6 +1475,8 @@ pub mod filesystem {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthNodes`"))?,
                 health_statuses: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthStatuses`"))?,
+                values: __field_3,
+                value_observations: __field_4,
             })
         }
     }
@@ -1421,7 +1499,7 @@ pub mod filesystem {
     }
 }
 pub mod health {
-    #![doc = "Named health observations and aggregation rules.\n"]
+    #![doc = "Named health observations, numeric thresholds, and aggregation rules.\n"]
     #![allow(
         clippy::all,
         clippy::pedantic,
@@ -1640,11 +1718,13 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "Definition of an observed or aggregate node.\n"]
+    #[doc = "Definition of an observed, threshold, or aggregate node.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub enum HealthRule {
         #[doc = "Health is supplied by an external status record.\n"]
         Observed(ObservationRule),
+        #[doc = "Health is derived from a fresh numeric observation.\n"]
+        Threshold(ThresholdRule),
         #[doc = "Health is evaluated from other nodes.\n"]
         Aggregate(AggregationRule),
     }
@@ -1661,6 +1741,12 @@ pub mod health {
                     .with_docs("Health is supplied by an external status record.\n")
                     .json_name("observed"),
                     ::sidex::shape::CaseShape::new(
+                        "Threshold",
+                        ::std::option::Option::Some(::sidex::shape::shape_of::<ThresholdRule>),
+                    )
+                    .with_docs("Health is derived from a fresh numeric observation.\n")
+                    .json_name("threshold"),
+                    ::sidex::shape::CaseShape::new(
                         "Aggregate",
                         ::std::option::Option::Some(::sidex::shape::shape_of::<AggregationRule>),
                     )
@@ -1673,7 +1759,7 @@ pub mod health {
                 }),
             ),
         )
-        .with_docs("Definition of an observed or aggregate node.\n")
+        .with_docs("Definition of an observed, threshold, or aggregate node.\n")
         .with_attrs(&[::sidex::shape::Attr::List {
             path: "json",
             args: &[
@@ -1703,12 +1789,16 @@ pub mod health {
         fn case(&self) -> usize {
             match *self {
                 Self::Observed(_) => 0usize,
-                Self::Aggregate(_) => 1usize,
+                Self::Threshold(_) => 1usize,
+                Self::Aggregate(_) => 2usize,
             }
         }
         fn payload(&self) -> ::std::option::Option<::sidex::View<'_>> {
             match self {
                 Self::Observed(value) => {
+                    ::std::option::Option::Some(::sidex::Encode::encode(value))
+                }
+                Self::Threshold(value) => {
                     ::std::option::Option::Some(::sidex::Encode::encode(value))
                 }
                 Self::Aggregate(value) => {
@@ -1729,7 +1819,8 @@ pub mod health {
                     0usize => {
                         Self::Observed(<ObservationRule as ::sidex::Decode>::decode(decoder)?)
                     }
-                    1usize => {
+                    1usize => Self::Threshold(<ThresholdRule as ::sidex::Decode>::decode(decoder)?),
+                    2usize => {
                         Self::Aggregate(<AggregationRule as ::sidex::Decode>::decode(decoder)?)
                     }
                     _ => {
@@ -1854,6 +1945,110 @@ pub mod health {
     }
     #[automatically_derived]
     impl<'de> ::serde::Deserialize<'de> for ObservationRule {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "Desired and minimum ranges for one runtime value.\n"]
+    #[derive(Clone, Debug, PartialEq)]
+    pub struct ThresholdRule {
+        #[doc = "Value definition supplying the unit, identity, and freshness constraints.\n"]
+        pub value: super::value::ValueId,
+        #[doc = "Desired range; must be a subset of the usable range.\n"]
+        pub healthy: super::value::ValueRange,
+        #[doc = "Minimum range for usability.\n"]
+        pub usable: super::value::ValueRange,
+        #[doc = "Optional consumer limit on observation age, in milliseconds; must be positive.\n"]
+        pub max_age_ms: ::std::option::Option<u32>,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ThresholdRule {
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::ThresholdRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("value" , :: sidex :: shape :: shape_of :: < super :: value :: ValueId > ,) . with_docs ("Value definition supplying the unit, identity, and freshness constraints.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < super :: value :: ValueRange > ,) . with_docs ("Desired range; must be a subset of the usable range.\n") , :: sidex :: shape :: FieldShape :: new ("usable" , :: sidex :: shape :: shape_of :: < super :: value :: ValueRange > ,) . with_docs ("Minimum range for usability.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on observation age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs")]))) . with_docs ("Desired and minimum ranges for one runtime value.\n") ;
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ThresholdRule {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Record(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::RecordView for ThresholdRule {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
+            match index {
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.value)),
+                1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.healthy)),
+                2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.usable)),
+                3usize => self
+                    .max_age_ms
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                _ => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for ThresholdRule {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut __field_0 = ::std::option::Option::<super::value::ValueId>::None;
+            let mut __field_1 = ::std::option::Option::<super::value::ValueRange>::None;
+            let mut __field_2 = ::std::option::Option::<super::value::ValueRange>::None;
+            let mut __field_3 = ::std::option::Option::<u32>::None;
+            decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
+                match index {
+                    0usize => {
+                        __field_0 = ::std::option::Option::Some(
+                            <super::value::ValueId as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    1usize => {
+                        __field_1 = ::std::option::Option::Some(
+                            <super::value::ValueRange as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    2usize => {
+                        __field_2 = ::std::option::Option::Some(
+                            <super::value::ValueRange as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    3usize => {
+                        __field_3 =
+                            ::std::option::Option::Some(<u32 as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    _ => {}
+                }
+                ::std::result::Result::Ok(())
+            })?;
+            ::std::result::Result::Ok(Self {
+                value: __field_0
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `value`"))?,
+                healthy: __field_1
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthy`"))?,
+                usable: __field_2
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `usable`"))?,
+                max_age_ms: __field_3,
+            })
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ThresholdRule {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ThresholdRule {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -2493,6 +2688,11 @@ pub mod health {
         pub nodes: ::std::vec::Vec<HealthNode>,
         #[doc = "Original status records; observation times and validity are preserved.\n"]
         pub statuses: ::std::vec::Vec<HealthStatus>,
+        #[doc = "Value definitions used by threshold nodes or displayed independently.\n"]
+        pub values: ::std::option::Option<::std::vec::Vec<super::value::ValueDefinition>>,
+        #[doc = "Original measurements; observation times and validity are preserved.\n"]
+        pub value_observations:
+            ::std::option::Option<::std::vec::Vec<super::value::ValueObservation>>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthSnapshot {
@@ -2516,6 +2716,21 @@ pub mod health {
                 .with_docs(
                     "Original status records; observation times and validity are preserved.\n",
                 ),
+                ::sidex::shape::FieldShape::new(
+                    "values",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueDefinition>>,
+                )
+                .with_docs(
+                    "Value definitions used by threshold nodes or displayed independently.\n",
+                )
+                .optional(),
+                ::sidex::shape::FieldShape::new(
+                    "value_observations",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueObservation>>,
+                )
+                .with_docs("Original measurements; observation times and validity are preserved.\n")
+                .optional()
+                .json_name("valueObservations"),
             ])),
         )
         .with_docs("Transport view of a health graph and the evidence used to evaluate it.\n");
@@ -2537,6 +2752,14 @@ pub mod health {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.clock)),
                 1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.nodes)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.statuses)),
+                3usize => self
+                    .values
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                4usize => self
+                    .value_observations
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -2550,6 +2773,10 @@ pub mod health {
             let mut __field_0 = ::std::option::Option::<HealthClockSample>::None;
             let mut __field_1 = ::std::option::Option::<::std::vec::Vec<HealthNode>>::None;
             let mut __field_2 = ::std::option::Option::<::std::vec::Vec<HealthStatus>>::None;
+            let mut __field_3 =
+                ::std::option::Option::<::std::vec::Vec<super::value::ValueDefinition>>::None;
+            let mut __field_4 =
+                ::std::option::Option::<::std::vec::Vec<super::value::ValueObservation>>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -2567,6 +2794,20 @@ pub mod health {
                             <::std::vec::Vec<HealthStatus> as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
+                    3usize => {
+                        __field_3 = ::std::option::Option::Some(<::std::vec::Vec<
+                            super::value::ValueDefinition,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
+                    4usize => {
+                        __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
+                            super::value::ValueObservation,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -2578,6 +2819,8 @@ pub mod health {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `nodes`"))?,
                 statuses: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `statuses`"))?,
+                values: __field_3,
+                value_observations: __field_4,
             })
         }
     }
@@ -2834,6 +3077,791 @@ pub mod health {
     }
     #[automatically_derived]
     impl<'de> ::serde::Deserialize<'de> for HealthNodeResult {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+}
+pub mod value {
+    #![doc = "Numeric runtime values, their units, and threshold ranges.\n"]
+    #![allow(
+        clippy::all,
+        clippy::pedantic,
+        clippy::nursery,
+        clippy::cargo,
+        dead_code
+    )]
+    #[doc = "Identifier of a runtime value, unique independently of health node IDs.\n"]
+    #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub struct ValueId(pub(crate) ::std::string::String);
+    impl ::std::convert::From<ValueId> for ::std::string::String {
+        fn from(wrapped: ValueId) -> Self {
+            wrapped.0
+        }
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ValueId {
+        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
+            "::system_runtime::value::ValueId",
+            ::sidex::shape::ShapeKind::Wrapper(::sidex::shape::shape_of::<::std::string::String>),
+        )
+        .with_docs("Identifier of a runtime value, unique independently of health node IDs.\n")
+        .with_attrs(&[::sidex::shape::Attr::List {
+            path: "rust",
+            args: &[::sidex::shape::Attr::List {
+                path: "derive",
+                args: &[
+                    ::sidex::shape::Attr::Path("Eq"),
+                    ::sidex::shape::Attr::Path("PartialOrd"),
+                    ::sidex::shape::Attr::Path("Ord"),
+                    ::sidex::shape::Attr::Path("Hash"),
+                ],
+            }],
+        }]);
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ValueId {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::Encode::encode(&self.0)
+        }
+    }
+    #[automatically_derived]
+    impl ::sidex::Decode for ValueId {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            ::std::result::Result::Ok(Self(<::std::string::String as ::sidex::Decode>::decode(
+                decoder,
+            )?))
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ValueId {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ValueId {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "A named measurement, independent of any health policy.\n"]
+    #[derive(Clone, Debug, PartialEq)]
+    pub struct ValueDefinition {
+        #[doc = "Unique value ID.\n"]
+        pub id: ValueId,
+        #[doc = "Ownership group for replacement or removal, matched exactly.\n"]
+        pub origin: ::std::option::Option<::std::string::String>,
+        #[doc = "Human-readable label.\n"]
+        pub label: ::std::option::Option<::std::string::String>,
+        #[doc = "Related component IDs; these associations do not imply health dependencies.\n"]
+        pub components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        #[doc = "Unit shared by observations and all thresholds referencing this value.\n"]
+        pub unit: ValueUnit,
+        #[doc = "Optional consumer limit on observation age, in milliseconds; must be positive.\n"]
+        pub max_age_ms: ::std::option::Option<u32>,
+        #[doc = "Optional tag that observations must match exactly.\n"]
+        pub expected_tag: ::std::option::Option<::std::string::String>,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ValueDefinition {
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::value::ValueDefinition" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < ValueId > ,) . with_docs ("Unique value ID.\n") , :: sidex :: shape :: FieldShape :: new ("origin" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Ownership group for replacement or removal, matched exactly.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable label.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Related component IDs; these associations do not imply health dependencies.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("unit" , :: sidex :: shape :: shape_of :: < ValueUnit > ,) . with_docs ("Unit shared by observations and all thresholds referencing this value.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on observation age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("expected_tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Optional tag that observations must match exactly.\n") . optional () . json_name ("expectedTag")]))) . with_docs ("A named measurement, independent of any health policy.\n") ;
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ValueDefinition {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Record(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::RecordView for ValueDefinition {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
+            match index {
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
+                1usize => self
+                    .origin
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                2usize => self
+                    .label
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                3usize => self
+                    .components
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                4usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.unit)),
+                5usize => self
+                    .max_age_ms
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                6usize => self
+                    .expected_tag
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                _ => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for ValueDefinition {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut __field_0 = ::std::option::Option::<ValueId>::None;
+            let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_2 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_3 =
+                ::std::option::Option::<::std::vec::Vec<::std::string::String>>::None;
+            let mut __field_4 = ::std::option::Option::<ValueUnit>::None;
+            let mut __field_5 = ::std::option::Option::<u32>::None;
+            let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
+            decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
+                match index {
+                    0usize => {
+                        __field_0 = ::std::option::Option::Some(
+                            <ValueId as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    1usize => {
+                        __field_1 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    2usize => {
+                        __field_2 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    3usize => {
+                        __field_3 = ::std::option::Option::Some(<::std::vec::Vec<
+                            ::std::string::String,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
+                    4usize => {
+                        __field_4 = ::std::option::Option::Some(
+                            <ValueUnit as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    5usize => {
+                        __field_5 =
+                            ::std::option::Option::Some(<u32 as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    6usize => {
+                        __field_6 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    _ => {}
+                }
+                ::std::result::Result::Ok(())
+            })?;
+            ::std::result::Result::Ok(Self {
+                id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
+                origin: __field_1,
+                label: __field_2,
+                components: __field_3,
+                unit: __field_4.ok_or_else(|| ::sidex::DecodeError::new("missing field `unit`"))?,
+                max_age_ms: __field_5,
+                expected_tag: __field_6,
+            })
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ValueDefinition {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ValueDefinition {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "One measurement within a boot; publishing it does not assert health.\n"]
+    #[derive(Clone, Debug, PartialEq)]
+    pub struct ValueObservation {
+        #[doc = "Observed value ID.\n"]
+        pub id: ValueId,
+        #[doc = "Ownership group; must match the definition's origin when specified.\n"]
+        pub origin: ::std::option::Option<::std::string::String>,
+        #[doc = "Finite measurement in the definition's unit.\n"]
+        pub value: f64,
+        #[doc = "Boot identifier defining the observation clock domain.\n"]
+        pub boot_id: ::std::string::String,
+        #[doc = "Milliseconds on the boot-time clock when the measurement was taken.\n"]
+        pub observed_at_ms: u64,
+        #[doc = "Positive validity duration in milliseconds.\n"]
+        pub max_age_ms: u32,
+        #[doc = "Opaque label identifying the measurement configuration or instance.\n"]
+        pub tag: ::std::option::Option<::std::string::String>,
+        #[doc = "Explanation supplied by the observer.\n"]
+        pub message: ::std::option::Option<::std::string::String>,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ValueObservation {
+        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
+            "::system_runtime::value::ValueObservation",
+            ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
+                ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<ValueId>)
+                    .with_docs("Observed value ID.\n"),
+                ::sidex::shape::FieldShape::new(
+                    "origin",
+                    ::sidex::shape::shape_of::<::std::string::String>,
+                )
+                .with_docs("Ownership group; must match the definition's origin when specified.\n")
+                .optional(),
+                ::sidex::shape::FieldShape::new("value", ::sidex::shape::shape_of::<f64>)
+                    .with_docs("Finite measurement in the definition's unit.\n"),
+                ::sidex::shape::FieldShape::new(
+                    "boot_id",
+                    ::sidex::shape::shape_of::<::std::string::String>,
+                )
+                .with_docs("Boot identifier defining the observation clock domain.\n")
+                .json_name("bootId"),
+                ::sidex::shape::FieldShape::new("observed_at_ms", ::sidex::shape::shape_of::<u64>)
+                    .with_docs(
+                        "Milliseconds on the boot-time clock when the measurement was taken.\n",
+                    )
+                    .json_name("observedAtMs"),
+                ::sidex::shape::FieldShape::new("max_age_ms", ::sidex::shape::shape_of::<u32>)
+                    .with_docs("Positive validity duration in milliseconds.\n")
+                    .json_name("maxAgeMs"),
+                ::sidex::shape::FieldShape::new(
+                    "tag",
+                    ::sidex::shape::shape_of::<::std::string::String>,
+                )
+                .with_docs("Opaque label identifying the measurement configuration or instance.\n")
+                .optional(),
+                ::sidex::shape::FieldShape::new(
+                    "message",
+                    ::sidex::shape::shape_of::<::std::string::String>,
+                )
+                .with_docs("Explanation supplied by the observer.\n")
+                .optional(),
+            ])),
+        )
+        .with_docs("One measurement within a boot; publishing it does not assert health.\n");
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ValueObservation {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Record(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::RecordView for ValueObservation {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
+            match index {
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
+                1usize => self
+                    .origin
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.value)),
+                3usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.boot_id)),
+                4usize => {
+                    ::std::option::Option::Some(::sidex::Encode::encode(&self.observed_at_ms))
+                }
+                5usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.max_age_ms)),
+                6usize => self
+                    .tag
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                7usize => self
+                    .message
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                _ => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for ValueObservation {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut __field_0 = ::std::option::Option::<ValueId>::None;
+            let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_2 = ::std::option::Option::<f64>::None;
+            let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_4 = ::std::option::Option::<u64>::None;
+            let mut __field_5 = ::std::option::Option::<u32>::None;
+            let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_7 = ::std::option::Option::<::std::string::String>::None;
+            decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
+                match index {
+                    0usize => {
+                        __field_0 = ::std::option::Option::Some(
+                            <ValueId as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    1usize => {
+                        __field_1 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    2usize => {
+                        __field_2 =
+                            ::std::option::Option::Some(<f64 as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    3usize => {
+                        __field_3 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    4usize => {
+                        __field_4 =
+                            ::std::option::Option::Some(<u64 as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    5usize => {
+                        __field_5 =
+                            ::std::option::Option::Some(<u32 as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    6usize => {
+                        __field_6 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    7usize => {
+                        __field_7 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    _ => {}
+                }
+                ::std::result::Result::Ok(())
+            })?;
+            ::std::result::Result::Ok(Self {
+                id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
+                origin: __field_1,
+                value: __field_2
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `value`"))?,
+                boot_id: __field_3
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `bootId`"))?,
+                observed_at_ms: __field_4
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `observedAtMs`"))?,
+                max_age_ms: __field_5
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `maxAgeMs`"))?,
+                tag: __field_6,
+                message: __field_7,
+            })
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ValueObservation {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ValueObservation {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "Semantic unit; display prefixes, precision, and conversions are consumer choices.\n"]
+    #[derive(Clone, Debug, PartialEq, Copy, Eq)]
+    pub enum ValueUnit {
+        #[doc = "Degrees Celsius; consumers may convert for display.\n"]
+        Celsius,
+        #[doc = "Bytes; consumers may display decimal or binary prefixes.\n"]
+        Bytes,
+        #[doc = "Seconds; consumers may display subsecond units.\n"]
+        Seconds,
+        #[doc = "Dimensionless fraction, with 1 corresponding to 100 percent.\n"]
+        Ratio,
+        #[doc = "Number of items or events.\n"]
+        Count,
+        #[doc = "Bytes per second.\n"]
+        BytesPerSecond,
+        #[doc = "Cycles per second.\n"]
+        Hertz,
+        #[doc = "Electric potential in volts.\n"]
+        Volts,
+        #[doc = "Electric current in amperes.\n"]
+        Amperes,
+        #[doc = "Power in watts.\n"]
+        Watts,
+        #[doc = "Revolutions per minute.\n"]
+        RevolutionsPerMinute,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ValueUnit {
+        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
+            "::system_runtime::value::ValueUnit",
+            ::sidex::shape::ShapeKind::Variant(
+                ::sidex::shape::VariantShape::new(&[
+                    ::sidex::shape::CaseShape::new("Celsius", ::std::option::Option::None)
+                        .with_docs("Degrees Celsius; consumers may convert for display.\n")
+                        .json_name("celsius"),
+                    ::sidex::shape::CaseShape::new("Bytes", ::std::option::Option::None)
+                        .with_docs("Bytes; consumers may display decimal or binary prefixes.\n")
+                        .json_name("bytes"),
+                    ::sidex::shape::CaseShape::new("Seconds", ::std::option::Option::None)
+                        .with_docs("Seconds; consumers may display subsecond units.\n")
+                        .json_name("seconds"),
+                    ::sidex::shape::CaseShape::new("Ratio", ::std::option::Option::None)
+                        .with_docs("Dimensionless fraction, with 1 corresponding to 100 percent.\n")
+                        .json_name("ratio"),
+                    ::sidex::shape::CaseShape::new("Count", ::std::option::Option::None)
+                        .with_docs("Number of items or events.\n")
+                        .json_name("count"),
+                    ::sidex::shape::CaseShape::new("BytesPerSecond", ::std::option::Option::None)
+                        .with_docs("Bytes per second.\n")
+                        .json_name("bytesPerSecond"),
+                    ::sidex::shape::CaseShape::new("Hertz", ::std::option::Option::None)
+                        .with_docs("Cycles per second.\n")
+                        .json_name("hertz"),
+                    ::sidex::shape::CaseShape::new("Volts", ::std::option::Option::None)
+                        .with_docs("Electric potential in volts.\n")
+                        .json_name("volts"),
+                    ::sidex::shape::CaseShape::new("Amperes", ::std::option::Option::None)
+                        .with_docs("Electric current in amperes.\n")
+                        .json_name("amperes"),
+                    ::sidex::shape::CaseShape::new("Watts", ::std::option::Option::None)
+                        .with_docs("Power in watts.\n")
+                        .json_name("watts"),
+                    ::sidex::shape::CaseShape::new(
+                        "RevolutionsPerMinute",
+                        ::std::option::Option::None,
+                    )
+                    .with_docs("Revolutions per minute.\n")
+                    .json_name("revolutionsPerMinute"),
+                ])
+                .json_tagging(::sidex::formats::json::Tagging::External),
+            ),
+        )
+        .with_docs(
+            "Semantic unit; display prefixes, precision, and conversions are consumer choices.\n",
+        )
+        .with_attrs(&[
+            ::sidex::shape::Attr::List {
+                path: "json",
+                args: &[
+                    ::sidex::shape::Attr::Assign {
+                        path: "tagged",
+                        value: ::sidex::shape::AttrValue::Path("externally"),
+                    },
+                    ::sidex::shape::Attr::Assign {
+                        path: "rename_all",
+                        value: ::sidex::shape::AttrValue::String("camelCase"),
+                    },
+                ],
+            },
+            ::sidex::shape::Attr::List {
+                path: "rust",
+                args: &[::sidex::shape::Attr::List {
+                    path: "derive",
+                    args: &[
+                        ::sidex::shape::Attr::Path("Copy"),
+                        ::sidex::shape::Attr::Path("Eq"),
+                    ],
+                }],
+            },
+        ]);
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ValueUnit {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Variant(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::VariantView for ValueUnit {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn case(&self) -> usize {
+            match *self {
+                Self::Celsius => 0usize,
+                Self::Bytes => 1usize,
+                Self::Seconds => 2usize,
+                Self::Ratio => 3usize,
+                Self::Count => 4usize,
+                Self::BytesPerSecond => 5usize,
+                Self::Hertz => 6usize,
+                Self::Volts => 7usize,
+                Self::Amperes => 8usize,
+                Self::Watts => 9usize,
+                Self::RevolutionsPerMinute => 10usize,
+            }
+        }
+        fn payload(&self) -> ::std::option::Option<::sidex::View<'_>> {
+            match self {
+                Self::Celsius => ::std::option::Option::None,
+                Self::Bytes => ::std::option::Option::None,
+                Self::Seconds => ::std::option::Option::None,
+                Self::Ratio => ::std::option::Option::None,
+                Self::Count => ::std::option::Option::None,
+                Self::BytesPerSecond => ::std::option::Option::None,
+                Self::Hertz => ::std::option::Option::None,
+                Self::Volts => ::std::option::Option::None,
+                Self::Amperes => ::std::option::Option::None,
+                Self::Watts => ::std::option::Option::None,
+                Self::RevolutionsPerMinute => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for ValueUnit {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut out = ::std::option::Option::<Self>::None;
+            decoder.variant(<Self as ::sidex::Shaped>::SHAPE, &mut |case, decoder| {
+                out = ::std::option::Option::Some(match case {
+                    0usize => Self::Celsius,
+                    1usize => Self::Bytes,
+                    2usize => Self::Seconds,
+                    3usize => Self::Ratio,
+                    4usize => Self::Count,
+                    5usize => Self::BytesPerSecond,
+                    6usize => Self::Hertz,
+                    7usize => Self::Volts,
+                    8usize => Self::Amperes,
+                    9usize => Self::Watts,
+                    10usize => Self::RevolutionsPerMinute,
+                    _ => {
+                        return ::std::result::Result::Err(::sidex::DecodeError::new(
+                            "unknown case",
+                        ));
+                    }
+                });
+                ::std::result::Result::Ok(())
+            })?;
+            out.ok_or_else(|| ::sidex::DecodeError::new("missing case"))
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ValueUnit {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ValueUnit {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "One endpoint of a numeric range, in the referenced value's unit.\n"]
+    #[derive(Clone, Debug, PartialEq)]
+    pub struct ValueBound {
+        #[doc = "Finite endpoint in the referenced value's unit.\n"]
+        pub value: f64,
+        #[doc = "Whether equality with this endpoint is inside the range.\n"]
+        pub inclusive: bool,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ValueBound {
+        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
+            "::system_runtime::value::ValueBound",
+            ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
+                ::sidex::shape::FieldShape::new("value", ::sidex::shape::shape_of::<f64>)
+                    .with_docs("Finite endpoint in the referenced value's unit.\n"),
+                ::sidex::shape::FieldShape::new("inclusive", ::sidex::shape::shape_of::<bool>)
+                    .with_docs("Whether equality with this endpoint is inside the range.\n"),
+            ])),
+        )
+        .with_docs("One endpoint of a numeric range, in the referenced value's unit.\n");
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ValueBound {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Record(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::RecordView for ValueBound {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
+            match index {
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.value)),
+                1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.inclusive)),
+                _ => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for ValueBound {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut __field_0 = ::std::option::Option::<f64>::None;
+            let mut __field_1 = ::std::option::Option::<bool>::None;
+            decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
+                match index {
+                    0usize => {
+                        __field_0 =
+                            ::std::option::Option::Some(<f64 as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    1usize => {
+                        __field_1 =
+                            ::std::option::Option::Some(<bool as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    _ => {}
+                }
+                ::std::result::Result::Ok(())
+            })?;
+            ::std::result::Result::Ok(Self {
+                value: __field_0
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `value`"))?,
+                inclusive: __field_1
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `inclusive`"))?,
+            })
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ValueBound {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ValueBound {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "A nonempty interval; omitted endpoints are unbounded.\n"]
+    #[derive(Clone, Debug, PartialEq)]
+    pub struct ValueRange {
+        #[doc = "Optional lower endpoint.\n"]
+        pub lower: ::std::option::Option<ValueBound>,
+        #[doc = "Optional upper endpoint.\n"]
+        pub upper: ::std::option::Option<ValueBound>,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for ValueRange {
+        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
+            "::system_runtime::value::ValueRange",
+            ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
+                ::sidex::shape::FieldShape::new("lower", ::sidex::shape::shape_of::<ValueBound>)
+                    .with_docs("Optional lower endpoint.\n")
+                    .optional(),
+                ::sidex::shape::FieldShape::new("upper", ::sidex::shape::shape_of::<ValueBound>)
+                    .with_docs("Optional upper endpoint.\n")
+                    .optional(),
+            ])),
+        )
+        .with_docs("A nonempty interval; omitted endpoints are unbounded.\n");
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for ValueRange {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Record(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::RecordView for ValueRange {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
+            match index {
+                0usize => self
+                    .lower
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                1usize => self
+                    .upper
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                _ => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for ValueRange {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut __field_0 = ::std::option::Option::<ValueBound>::None;
+            let mut __field_1 = ::std::option::Option::<ValueBound>::None;
+            decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
+                match index {
+                    0usize => {
+                        __field_0 = ::std::option::Option::Some(
+                            <ValueBound as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    1usize => {
+                        __field_1 = ::std::option::Option::Some(
+                            <ValueBound as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    _ => {}
+                }
+                ::std::result::Result::Ok(())
+            })?;
+            ::std::result::Result::Ok(Self {
+                lower: __field_0,
+                upper: __field_1,
+            })
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for ValueRange {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for ValueRange {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {

@@ -23,6 +23,10 @@ pub struct RuntimeDirectories {
     pub health_nodes: Vec<PathBuf>,
     /// Runtime health status directories.
     pub health_statuses: Vec<PathBuf>,
+    /// Value definition directories.
+    pub values: Vec<PathBuf>,
+    /// Runtime value observation directories.
+    pub value_observations: Vec<PathBuf>,
     /// Directories containing extension configuration files.
     pub configuration: Vec<PathBuf>,
 }
@@ -35,6 +39,8 @@ impl RuntimeDirectories {
             components: Vec::new(),
             health_nodes: Vec::new(),
             health_statuses: Vec::new(),
+            values: Vec::new(),
+            value_observations: Vec::new(),
             configuration: Vec::new(),
         }
     }
@@ -50,6 +56,10 @@ impl RuntimeDirectories {
                 .map(|prefix| PathBuf::from(format!("{prefix}/health/nodes")))
                 .into(),
             health_statuses: vec!["/run/system-runtime/health/status".into()],
+            values: PREFIXES
+                .map(|prefix| PathBuf::from(format!("{prefix}/values/definitions")))
+                .into(),
+            value_observations: vec!["/run/system-runtime/values/observations".into()],
             configuration: PREFIXES
                 .map(|prefix| PathBuf::from(format!("{prefix}/directories")))
                 .into(),
@@ -64,6 +74,15 @@ impl RuntimeDirectories {
             .extend(config.health_nodes.iter().flatten().map(PathBuf::from));
         self.health_statuses
             .extend(config.health_statuses.iter().flatten().map(PathBuf::from));
+        self.values
+            .extend(config.values.iter().flatten().map(PathBuf::from));
+        self.value_observations.extend(
+            config
+                .value_observations
+                .iter()
+                .flatten()
+                .map(PathBuf::from),
+        );
     }
 
     /// Reload extension configurations and collect regular JSON files.
@@ -77,7 +96,19 @@ impl RuntimeDirectories {
         for path in self.files(&self.configuration)? {
             effective.extend(&read::<DirectoryConfig>(&path)?);
         }
+        let values = effective
+            .files(&effective.values)?
+            .iter()
+            .map(|p| read(p))
+            .collect::<Result<Vec<_>, _>>()?;
+        let observations = effective
+            .files(&effective.value_observations)?
+            .iter()
+            .map(|p| read(p))
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(RuntimeSnapshot {
+            values: (!values.is_empty()).then_some(values),
+            value_observations: (!observations.is_empty()).then_some(observations),
             components: effective
                 .files(&effective.components)?
                 .iter()

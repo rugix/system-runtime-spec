@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from .models.component import ComponentDeclaration
 from .models.filesystem import DirectoryConfig, RuntimeSnapshot
 from .models.health import HealthNode, HealthStatus
+from .models.value import ValueDefinition, ValueObservation
 
 _PREFIXES = ("/usr/lib/system-runtime", "/etc/system-runtime", "/run/system-runtime")
 Model = TypeVar("Model", bound=BaseModel)
@@ -24,6 +25,8 @@ class RuntimeDirectories:
     components: list[str] = field(default_factory=list)
     health_nodes: list[str] = field(default_factory=list)
     health_statuses: list[str] = field(default_factory=list)
+    values: list[str] = field(default_factory=list)
+    value_observations: list[str] = field(default_factory=list)
     configuration: list[str] = field(default_factory=list)
 
     @classmethod
@@ -33,6 +36,8 @@ class RuntimeDirectories:
             components=[f"{prefix}/components" for prefix in _PREFIXES],
             health_nodes=[f"{prefix}/health/nodes" for prefix in _PREFIXES],
             health_statuses=["/run/system-runtime/health/status"],
+            values=[f"{prefix}/values/definitions" for prefix in _PREFIXES],
+            value_observations=["/run/system-runtime/values/observations"],
             configuration=[f"{prefix}/directories" for prefix in _PREFIXES],
         )
 
@@ -41,6 +46,8 @@ class RuntimeDirectories:
         self.components.extend(config.components or [])
         self.health_nodes.extend(config.health_nodes or [])
         self.health_statuses.extend(config.health_statuses or [])
+        self.values.extend(config.values or [])
+        self.value_observations.extend(config.value_observations or [])
 
     def load(self) -> RuntimeSnapshot:
         """Reload extension configurations and collect regular JSON files.
@@ -54,10 +61,21 @@ class RuntimeDirectories:
             components=self.components.copy(),
             health_nodes=self.health_nodes.copy(),
             health_statuses=self.health_statuses.copy(),
+            values=self.values.copy(),
+            value_observations=self.value_observations.copy(),
         )
         for path in self._files(self.configuration):
             effective.extend(_read(path, DirectoryConfig))
+        values = [
+            _read(path, ValueDefinition) for path in effective._files(effective.values)
+        ]
+        observations = [
+            _read(path, ValueObservation)
+            for path in effective._files(effective.value_observations)
+        ]
         return RuntimeSnapshot(
+            values=values or None,
+            value_observations=observations or None,
             components=[
                 _read(path, ComponentDeclaration)
                 for path in effective._files(effective.components)

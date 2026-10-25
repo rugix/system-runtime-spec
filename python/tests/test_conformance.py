@@ -10,6 +10,7 @@ from system_runtime import RuntimeDirectories, check_components, evaluate_health
 from system_runtime.models.component import ComponentDeclaration
 from system_runtime.models.filesystem import DirectoryConfig
 from system_runtime.models.health import HealthContext, HealthNode, HealthStatus
+from system_runtime.models.value import ValueDefinition, ValueObservation
 
 FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures"
 CASES = json.loads((FIXTURES / "conformance.json").read_text())
@@ -55,12 +56,22 @@ def test_health(case):
     nodes = [HealthNode.model_validate(value) for value in case["nodes"]]
     statuses = [HealthStatus.model_validate(value) for value in case["statuses"]]
     context = HealthContext.model_validate(case["context"])
+    values = [ValueDefinition.model_validate(v) for v in case.get("values", [])]
+    samples = [
+        ValueObservation.model_validate(v) for v in case.get("valueObservations", [])
+    ]
     if case.get("error"):
         with pytest.raises(ValueError):
-            evaluate_health(nodes, statuses, context)
+            evaluate_health(
+                nodes, statuses, context, values=values, value_observations=samples
+            )
     else:
         assert (
-            json.loads(evaluate_health(nodes, statuses, context).model_dump_json())
+            json.loads(
+                evaluate_health(
+                    nodes, statuses, context, values=values, value_observations=samples
+                ).model_dump_json()
+            )
             == case["report"]
         )
 
@@ -82,7 +93,40 @@ def test_directory_integration(tmp_path):
         .state.root
         == "healthy"
     )
+    node = HealthNode.model_validate(
+        {
+            "id": "storage",
+            "rule": {
+                "rule": "threshold",
+                "value": "storage.free",
+                "healthy": {
+                    "lower": {
+                        "value": 104857600,
+                        "inclusive": True,
+                    }
+                },
+                "usable": {},
+            },
+        }
+    )
+    assert len(snapshot.values) == len(snapshot.value_observations) == 1
+
+    def measured_state():
+        return (
+            evaluate_health(
+                [node],
+                [],
+                context,
+                values=snapshot.values,
+                value_observations=snapshot.value_observations,
+            )
+            .nodes[0]
+            .state.root
+        )
+
+    assert measured_state() == "healthy"
     context.now_ms = 110
+    assert measured_state() == "unknown"
     assert (
         evaluate_health(snapshot.health_nodes, snapshot.health_statuses, context)
         .nodes[0]

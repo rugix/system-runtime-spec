@@ -1,4 +1,9 @@
-//! Named health observations and aggregation rules.
+//! Named health observations, numeric thresholds, and aggregation rules.
+
+import value::ValueDefinition
+import value::ValueId
+import value::ValueObservation
+import value::ValueRange
 
 /// Identifier of a health graph node, serialized as a string.
 #[rust(derive(Eq, PartialOrd, Ord, Hash))]
@@ -18,11 +23,13 @@ record HealthNode {
     rule: HealthRule,
 }
 
-/// Definition of an observed or aggregate node.
+/// Definition of an observed, threshold, or aggregate node.
 #[json(tag = "rule", rename_all = "lowercase")]
 variant HealthRule {
     /// Health is supplied by an external status record.
     Observed: ObservationRule,
+    /// Health is derived from a fresh numeric observation.
+    Threshold: ThresholdRule,
     /// Health is evaluated from other nodes.
     Aggregate: AggregationRule,
 }
@@ -33,6 +40,18 @@ record ObservationRule {
     max_age_ms?: u32,
     /// Optional tag that published status records must match exactly.
     expected_tag?: string,
+}
+
+/// Desired and minimum ranges for one runtime value.
+record ThresholdRule {
+    /// Value definition supplying the unit, identity, and freshness constraints.
+    value: ValueId,
+    /// Desired range; must be a subset of the usable range.
+    healthy: ValueRange,
+    /// Minimum range for usability.
+    usable: ValueRange,
+    /// Optional consumer limit on observation age, in milliseconds; must be positive.
+    max_age_ms?: u32,
 }
 
 /// Minimum and desired health targets.
@@ -103,6 +122,10 @@ record HealthSnapshot {
     nodes: [HealthNode],
     /// Original status records; observation times and validity are preserved.
     statuses: [HealthStatus],
+    /// Value definitions used by threshold nodes or displayed independently.
+    values?: [ValueDefinition],
+    /// Original measurements; observation times and validity are preserved.
+    value_observations?: [ValueObservation],
 }
 
 /// Evaluated graph, in declaration order.

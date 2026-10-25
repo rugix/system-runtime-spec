@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.value.ValueRange",
+  "type": "object",
+  "description": "A nonempty interval; omitted endpoints are unbounded.",
+  "properties": {
+    "lower": {
+      "$ref": "#/$defs/system_runtime.value.ValueBound"
+    },
+    "upper": {
+      "$ref": "#/$defs/system_runtime.value.ValueBound"
+    }
+  },
+  "required": [],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.value.ValueBound": {
+      "type": "object",
+      "description": "One endpoint of a numeric range, in the referenced value's unit.",
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "pattern": "^(NaN|[+-]?Infinity)$"
+        },
+        "inclusive": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "value",
+        "inclusive"
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}
