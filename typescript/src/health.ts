@@ -49,11 +49,11 @@ export function evaluateHealth(
       if (!(1 <= rule.required && rule.required <= rule.healthy && rule.healthy <= rule.inputs.length)) {
         throw new Error(`Invalid thresholds for ${node.id}`);
       }
-      if (new Set(rule.inputs).size !== rule.inputs.length) throw new Error(`Duplicate input for ${node.id}`);
+      if (new Set(rule.inputs.map((input) => input.node)).size !== rule.inputs.length) throw new Error(`Duplicate input for ${node.id}`);
       remaining.set(node.id, rule.inputs.length);
       for (const input of rule.inputs) {
-        if (!byId.has(input)) throw new Error(`Missing health node ${input}`);
-        dependents.get(input)!.push(node.id);
+        if (!byId.has(input.node)) throw new Error(`Missing health node ${input.node}`);
+        dependents.get(input.node)!.push(node.id);
       }
     }
   }
@@ -68,7 +68,7 @@ export function evaluateHealth(
     } else if (node.rule.rule === "threshold") {
       result = evidence.evaluate(node, node.rule, context);
     } else {
-      result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input)!));
+      result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input.node)!));
     }
     if (node.origin !== undefined) result.origin = node.origin;
     results.set(id, result);
@@ -104,14 +104,17 @@ function observe(
   };
 }
 
-/** Evaluate desired and minimum counts from input health states. */
+/** Apply mandatory dependency gates and desired and minimum input counts. */
 function aggregate(id: HealthNodeId, rule: AggregationRule, inputs: HealthNodeResult[]): HealthNodeResult {
   const healthy = inputs.filter((input) => input.state === "healthy").length;
   const minimumMet = inputs.filter((input) => input.state === "healthy" || input.state === "degraded").length;
   const possibleMinimum = inputs.filter((input) => input.state !== "unhealthy").length;
-  const state: HealthState = healthy >= rule.healthy ? "healthy"
-    : minimumMet >= rule.required ? "degraded"
-    : possibleMinimum < rule.required ? "unhealthy"
-    : "unknown";
-  return { id, state, inputs: rule.inputs };
+  const mandatory = inputs.filter((_, index) => rule.inputs[index].required === true);
+  const state: HealthState = possibleMinimum < rule.required || mandatory.some((input) => input.state === "unhealthy")
+    ? "unhealthy"
+    : minimumMet < rule.required || mandatory.some((input) => input.state === "unknown")
+      ? "unknown"
+      : healthy >= rule.healthy && mandatory.every((input) => input.state === "healthy")
+        ? "healthy" : "degraded";
+  return { id, state, inputs: rule.inputs.map((input) => input.node) };
 }

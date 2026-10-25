@@ -2058,32 +2058,16 @@ pub mod health {
     #[doc = "Minimum and desired health targets.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct AggregationRule {
-        #[doc = "Distinct input node IDs.\n"]
-        pub inputs: ::std::vec::Vec<HealthNodeId>,
-        #[doc = "Minimum healthy or degraded input count required.\n"]
+        #[doc = "Dependencies with distinct node IDs.\n"]
+        pub inputs: ::std::vec::Vec<AggregationInput>,
+        #[doc = "Minimum healthy or degraded input count, including mandatory inputs.\n"]
         pub required: u32,
-        #[doc = "Desired healthy input count; required <= healthy <= inputs length.\n"]
+        #[doc = "Desired healthy input count, including mandatory inputs; required <= healthy <= inputs length.\n"]
         pub healthy: u32,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for AggregationRule {
-        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::health::AggregationRule",
-            ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
-                ::sidex::shape::FieldShape::new(
-                    "inputs",
-                    ::sidex::shape::shape_of::<::std::vec::Vec<HealthNodeId>>,
-                )
-                .with_docs("Distinct input node IDs.\n"),
-                ::sidex::shape::FieldShape::new("required", ::sidex::shape::shape_of::<u32>)
-                    .with_docs("Minimum healthy or degraded input count required.\n"),
-                ::sidex::shape::FieldShape::new("healthy", ::sidex::shape::shape_of::<u32>)
-                    .with_docs(
-                        "Desired healthy input count; required <= healthy <= inputs length.\n",
-                    ),
-            ])),
-        )
-        .with_docs("Minimum and desired health targets.\n");
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("inputs" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < AggregationInput , > > ,) . with_docs ("Dependencies with distinct node IDs.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Minimum healthy or degraded input count, including mandatory inputs.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Desired healthy input count, including mandatory inputs; required <= healthy <= inputs length.\n")]))) . with_docs ("Minimum and desired health targets.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for AggregationRule {
@@ -2112,14 +2096,16 @@ pub mod health {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
-            let mut __field_0 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
+            let mut __field_0 = ::std::option::Option::<::std::vec::Vec<AggregationInput>>::None;
             let mut __field_1 = ::std::option::Option::<u32>::None;
             let mut __field_2 = ::std::option::Option::<u32>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
                         __field_0 = ::std::option::Option::Some(
-                            <::std::vec::Vec<HealthNodeId> as ::sidex::Decode>::decode(decoder)?,
+                            <::std::vec::Vec<AggregationInput> as ::sidex::Decode>::decode(
+                                decoder,
+                            )?,
                         )
                     }
                     1usize => {
@@ -2155,6 +2141,87 @@ pub mod health {
     }
     #[automatically_derived]
     impl<'de> ::serde::Deserialize<'de> for AggregationRule {
+        fn deserialize<__D: ::serde::Deserializer<'de>>(
+            deserializer: __D,
+        ) -> ::std::result::Result<Self, __D::Error> {
+            ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    #[doc = "One dependency of an aggregate health node.\n"]
+    #[derive(Clone, Debug, PartialEq)]
+    pub struct AggregationInput {
+        #[doc = "Referenced health node ID.\n"]
+        pub node: HealthNodeId,
+        #[doc = "Whether this dependency must meet minimum and desired criteria; omitted means false.\n"]
+        pub required: ::std::option::Option<bool>,
+    }
+    #[automatically_derived]
+    impl ::sidex::Shaped for AggregationInput {
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationInput" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("node" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("Referenced health node ID.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < bool > ,) . with_docs ("Whether this dependency must meet minimum and desired criteria; omitted means false.\n") . optional ()]))) . with_docs ("One dependency of an aggregate health node.\n") ;
+    }
+    #[automatically_derived]
+    impl ::sidex::Encode for AggregationInput {
+        fn encode(&self) -> ::sidex::View<'_> {
+            ::sidex::View::Record(self)
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::encode::RecordView for AggregationInput {
+        fn shape(&self) -> &'static ::sidex::Shape {
+            <Self as ::sidex::Shaped>::SHAPE
+        }
+        fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
+            match index {
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.node)),
+                1usize => self
+                    .required
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                _ => ::std::option::Option::None,
+            }
+        }
+    }
+    #[automatically_derived]
+    #[allow(deprecated)]
+    impl ::sidex::Decode for AggregationInput {
+        fn decode(
+            decoder: &mut dyn ::sidex::Decoder,
+        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
+            let mut __field_0 = ::std::option::Option::<HealthNodeId>::None;
+            let mut __field_1 = ::std::option::Option::<bool>::None;
+            decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
+                match index {
+                    0usize => {
+                        __field_0 = ::std::option::Option::Some(
+                            <HealthNodeId as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    1usize => {
+                        __field_1 =
+                            ::std::option::Option::Some(<bool as ::sidex::Decode>::decode(decoder)?)
+                    }
+                    _ => {}
+                }
+                ::std::result::Result::Ok(())
+            })?;
+            ::std::result::Result::Ok(Self {
+                node: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `node`"))?,
+                required: __field_1,
+            })
+        }
+    }
+    #[automatically_derived]
+    impl ::serde::Serialize for AggregationInput {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            serializer: __S,
+        ) -> ::std::result::Result<__S::Ok, __S::Error> {
+            ::sidex::serde::serialize(self, serializer)
+        }
+    }
+    #[automatically_derived]
+    impl<'de> ::serde::Deserialize<'de> for AggregationInput {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {

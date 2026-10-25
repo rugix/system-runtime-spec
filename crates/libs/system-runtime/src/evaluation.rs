@@ -93,12 +93,13 @@ pub fn evaluate_health_with_values(
                         node.id
                     )));
                 }
-                let unique: BTreeSet<_> = rule.inputs.iter().collect();
+                let unique: BTreeSet<_> = rule.inputs.iter().map(|input| &input.node).collect();
                 if unique.len() != rule.inputs.len() {
                     return Err(Error::Invalid(format!("duplicate input for {:?}", node.id)));
                 }
                 remaining[index] = rule.inputs.len();
-                for id in &rule.inputs {
+                for dependency in &rule.inputs {
+                    let id = &dependency.node;
                     let input = indices
                         .get(id)
                         .ok_or_else(|| Error::Invalid(format!("missing health node {id:?}")))?;
@@ -124,8 +125,8 @@ pub fn evaluate_health_with_values(
                 let inputs: Vec<_> = rule
                     .inputs
                     .iter()
-                    .map(|id| {
-                        results[indices[id]]
+                    .map(|input| {
+                        results[indices[&input.node]]
                             .as_ref()
                             .expect("topological inputs have been evaluated")
                     })
@@ -201,7 +202,7 @@ fn observe(
     }
 }
 
-/// Evaluate desired and minimum counts from input health states.
+/// Apply mandatory dependency gates and desired and minimum input counts.
 fn aggregate(
     node: &HealthNode,
     rule: &AggregationRule,
@@ -219,20 +220,39 @@ fn aggregate(
         .iter()
         .filter(|i| i.state != HealthState::Unhealthy)
         .count();
-    let state = if healthy >= rule.healthy as usize {
-        HealthState::Healthy
-    } else if minimum_met >= rule.required as usize {
-        HealthState::Degraded
-    } else if possible_minimum < rule.required as usize {
+    let mandatory: Vec<_> = rule
+        .inputs
+        .iter()
+        .zip(inputs)
+        .filter(|(input, _)| input.required == Some(true))
+        .map(|(_, result)| *result)
+        .collect();
+    let state = if possible_minimum < rule.required as usize
+        || mandatory
+            .iter()
+            .any(|input| input.state == HealthState::Unhealthy)
+    {
         HealthState::Unhealthy
-    } else {
+    } else if minimum_met < rule.required as usize
+        || mandatory
+            .iter()
+            .any(|input| input.state == HealthState::Unknown)
+    {
         HealthState::Unknown
+    } else if healthy >= rule.healthy as usize
+        && mandatory
+            .iter()
+            .all(|input| input.state == HealthState::Healthy)
+    {
+        HealthState::Healthy
+    } else {
+        HealthState::Degraded
     };
     HealthNodeResult {
         id: node.id.clone(),
         origin: node.origin.clone(),
         state,
-        inputs: rule.inputs.clone(),
+        inputs: rule.inputs.iter().map(|input| input.node.clone()).collect(),
         message: None,
     }
 }

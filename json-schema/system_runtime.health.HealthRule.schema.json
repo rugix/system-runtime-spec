@@ -61,7 +61,7 @@
         "inputs": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+            "$ref": "#/$defs/system_runtime.health.AggregationInput"
           }
         },
         "required": {
@@ -86,6 +86,22 @@
     }
   ],
   "$defs": {
+    "system_runtime.health.AggregationInput": {
+      "type": "object",
+      "description": "One dependency of an aggregate health node.",
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "node"
+      ],
+      "unevaluatedProperties": false
+    },
     "system_runtime.health.HealthNodeId": {
       "type": "string",
       "description": "Identifier of a health graph node, serialized as a string."

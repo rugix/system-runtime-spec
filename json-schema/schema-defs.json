@@ -356,6 +356,22 @@
     ],
     "unevaluatedProperties": false
   },
+  "system_runtime.health.AggregationInput": {
+    "type": "object",
+    "description": "One dependency of an aggregate health node.",
+    "properties": {
+      "node": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+      },
+      "required": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "node"
+    ],
+    "unevaluatedProperties": false
+  },
   "system_runtime.health.AggregationRule": {
     "type": "object",
     "description": "Minimum and desired health targets.",
@@ -363,7 +379,7 @@
       "inputs": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+          "$ref": "#/components/schemas/system_runtime.health.AggregationInput"
         }
       },
       "required": {
@@ -567,7 +583,7 @@
           "inputs": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+              "$ref": "#/components/schemas/system_runtime.health.AggregationInput"
             }
           },
           "required": {

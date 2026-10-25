@@ -76,10 +76,11 @@ def evaluate_health(
         else:
             if not 1 <= rule.required <= rule.healthy <= len(rule.inputs):
                 raise ValueError(f"Invalid thresholds for {node.id!r}")
-            if len(set(rule.inputs)) != len(rule.inputs):
+            if len({input.node for input in rule.inputs}) != len(rule.inputs):
                 raise ValueError(f"Duplicate input for {node.id!r}")
             remaining[node.id] = len(rule.inputs)
-            for input_id in rule.inputs:
+            for input in rule.inputs:
+                input_id = input.node
                 if input_id not in by_id:
                     raise ValueError(f"Missing health node {input_id!r}")
                 dependents[input_id].append(node.id)
@@ -93,7 +94,10 @@ def evaluate_health(
         elif isinstance(node.rule, HealthRule_Threshold):
             results[id] = evidence.evaluate(node, context)
         else:
-            inputs = [results[id] for id in node.rule.inputs]
+            inputs = [results[input.node] for input in node.rule.inputs]
+            mandatory = [
+                results[input.node] for input in node.rule.inputs if input.required
+            ]
             healthy = sum(result.state.root == "healthy" for result in inputs)
             minimum_met = sum(
                 result.state.root in ("healthy", "degraded") for result in inputs
@@ -102,19 +106,25 @@ def evaluate_health(
                 result.state.root != "unhealthy" for result in inputs
             )
             state: StateName
-            if healthy >= node.rule.healthy:
-                state = "healthy"
-            elif minimum_met >= node.rule.required:
-                state = "degraded"
-            elif possible_minimum < node.rule.required:
+            if possible_minimum < node.rule.required or any(
+                input.state.root == "unhealthy" for input in mandatory
+            ):
                 state = "unhealthy"
-            else:
+            elif minimum_met < node.rule.required or any(
+                input.state.root == "unknown" for input in mandatory
+            ):
                 state = "unknown"
+            elif healthy >= node.rule.healthy and all(
+                input.state.root == "healthy" for input in mandatory
+            ):
+                state = "healthy"
+            else:
+                state = "degraded"
             results[id] = HealthNodeResult(
                 id=id,
                 origin=node.origin,
                 state=_state(state),
-                inputs=node.rule.inputs,
+                inputs=[input.node for input in node.rule.inputs],
             )
         for dependent in dependents[id]:
             remaining[dependent] -= 1
