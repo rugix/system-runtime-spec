@@ -78,7 +78,7 @@ export class ValueEvidence {
     const state = contains(rule.healthy, value) ? "healthy"
       : contains(rule.usable, value) ? "degraded" : "unhealthy";
     return {
-      id: node.id, state, usable: state !== "unhealthy", inputs: [],
+      id: node.id, state, inputs: [],
       ...(sample!.message === undefined ? {} : { message: sample!.message }),
     };
   }

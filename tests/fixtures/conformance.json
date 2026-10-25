@@ -614,20 +614,17 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -688,20 +685,17 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -762,20 +756,17 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": false
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           }
         ]
       }
@@ -841,8 +832,7 @@
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
@@ -908,14 +898,12 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": false
+            ]
           },
           {
             "id": "a",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           },
           {
             "id": "b",
@@ -981,20 +969,17 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           }
         ]
       }
@@ -1051,18 +1036,16 @@
         "nodes": [
           {
             "id": "root",
-            "state": "unknown",
+            "state": "degraded",
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
@@ -1128,14 +1111,12 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
@@ -1197,18 +1178,16 @@
         "nodes": [
           {
             "id": "root",
-            "state": "unknown",
+            "state": "degraded",
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
@@ -1274,20 +1253,17 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           }
         ]
       }
@@ -1353,8 +1329,7 @@
           {
             "id": "a",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           },
           {
             "id": "b",
@@ -1420,20 +1395,17 @@
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": false
+            ]
           },
           {
             "id": "a",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           },
           {
             "id": "b",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           }
         ]
       }
@@ -1572,26 +1544,23 @@
         "nodes": [
           {
             "id": "parent",
-            "state": "unknown",
+            "state": "degraded",
             "inputs": [
               "root"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "root",
-            "state": "unknown",
+            "state": "degraded",
             "inputs": [
               "a",
               "b"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
@@ -1828,8 +1797,7 @@
           {
             "id": "a",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -1866,7 +1834,6 @@
             "id": "a",
             "state": "degraded",
             "inputs": [],
-            "usable": true,
             "message": "Concern"
           }
         ]
@@ -2208,8 +2175,7 @@
             "inputs": [
               "inner",
               "c"
-            ],
-            "usable": true
+            ]
           },
           {
             "id": "inner",
@@ -2222,8 +2188,7 @@
           {
             "id": "a",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "b",
@@ -2233,8 +2198,7 @@
           {
             "id": "c",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2270,8 +2234,7 @@
             "id": "app.health",
             "origin": "rugix.apps.example",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2392,7 +2355,6 @@
             "id": "root",
             "origin": "rugix.system",
             "state": "healthy",
-            "usable": true,
             "inputs": [
               "app.health"
             ]
@@ -2401,7 +2363,6 @@
             "id": "app.health",
             "origin": "rugix.apps.example",
             "state": "healthy",
-            "usable": true,
             "inputs": []
           }
         ]
@@ -2461,8 +2422,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2521,8 +2481,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2581,8 +2540,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2641,8 +2599,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2701,8 +2658,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           }
         ]
       }
@@ -2761,8 +2717,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -2823,7 +2778,6 @@
             "origin": "policy",
             "state": "healthy",
             "inputs": [],
-            "usable": true,
             "message": "CPU sensor"
           }
         ]
@@ -3355,8 +3309,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -3415,8 +3368,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "unhealthy",
-            "inputs": [],
-            "usable": false
+            "inputs": []
           }
         ]
       }
@@ -3475,8 +3427,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -3543,8 +3494,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -3593,8 +3543,7 @@
             "id": "thermal",
             "origin": "policy",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           }
         ]
       }
@@ -4275,13 +4224,11 @@
             "id": "thermal",
             "origin": "policy",
             "state": "degraded",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "system",
             "state": "degraded",
-            "usable": true,
             "inputs": [
               "thermal"
             ]
@@ -4363,14 +4310,12 @@
             "id": "thermal",
             "origin": "policy",
             "state": "healthy",
-            "inputs": [],
-            "usable": true
+            "inputs": []
           },
           {
             "id": "commit",
             "origin": "policy",
             "state": "degraded",
-            "usable": true,
             "inputs": []
           }
         ]
@@ -4675,6 +4620,205 @@
         "nowMs": 100
       },
       "error": true
+    },
+    {
+      "name": "expired replica preserves minimum and propagates warning",
+      "nodes": [
+        {
+          "id": "parent",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "replicas"
+            ],
+            "required": 1,
+            "healthy": 1
+          }
+        },
+        {
+          "id": "replicas",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "a",
+              "b",
+              "c"
+            ],
+            "required": 2,
+            "healthy": 3
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "c",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 0,
+          "maxAgeMs": 50
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "parent",
+            "state": "degraded",
+            "inputs": [
+              "replicas"
+            ]
+          },
+          {
+            "id": "replicas",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Status has expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing measurement does not hide confirmed minimum",
+      "nodes": [
+        {
+          "id": "system",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              "application",
+              "thermal"
+            ],
+            "required": 1,
+            "healthy": 2
+          }
+        },
+        {
+          "id": "application",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "thermal",
+          "origin": "policy",
+          "rule": {
+            "rule": "threshold",
+            "value": "cpu.temperature",
+            "healthy": {
+              "upper": {
+                "value": 75,
+                "inclusive": true
+              }
+            },
+            "usable": {
+              "upper": {
+                "value": 90,
+                "inclusive": true
+              }
+            }
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "application",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "values": [
+        {
+          "id": "cpu.temperature",
+          "origin": "sensor",
+          "unit": "celsius",
+          "expectedTag": "v1"
+        }
+      ],
+      "valueObservations": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "system",
+            "state": "degraded",
+            "inputs": [
+              "application",
+              "thermal"
+            ]
+          },
+          {
+            "id": "application",
+            "state": "degraded",
+            "inputs": []
+          },
+          {
+            "id": "thermal",
+            "origin": "policy",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing value observation"
+          }
+        ]
+      }
     }
   ]
 }

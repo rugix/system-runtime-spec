@@ -59,21 +59,16 @@ export function evaluateHealth(
   }
   const ready = [...remaining].filter(([, count]) => count === 0).map(([id]) => id);
   const results = new Map<HealthNodeId, HealthNodeResult>();
-  const canBeHealthy = new Map<HealthNodeId, boolean>();
   for (let position = 0; position < ready.length; position++) {
     const id = ready[position];
     const node = byId.get(id)!;
     let result: HealthNodeResult;
     if (node.rule.rule === "observed") {
       result = observe(id, node.rule, observations.get(id), context, node.origin);
-      canBeHealthy.set(id, result.state === "healthy" || result.state === "unknown");
     } else if (node.rule.rule === "threshold") {
       result = evidence.evaluate(node, node.rule, context);
-      canBeHealthy.set(id, result.state === "healthy" || result.state === "unknown");
     } else {
-      const possibleHealthy = node.rule.inputs.filter((input) => canBeHealthy.get(input)).length;
-      canBeHealthy.set(id, possibleHealthy >= node.rule.healthy);
-      result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input)!), possibleHealthy);
+      result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input)!));
     }
     if (node.origin !== undefined) result.origin = node.origin;
     results.set(id, result);
@@ -106,21 +101,17 @@ function observe(
   return {
     id, state: observation.state, inputs: [],
     ...(observation.message === undefined ? {} : { message: observation.message }),
-    ...(observation.state === "unknown" ? {} : { usable: observation.state !== "unhealthy" }),
   };
 }
 
-/** Evaluate thresholds from confirmed and possible evidence bounds. */
-function aggregate(id: HealthNodeId, rule: AggregationRule, inputs: HealthNodeResult[], possibleHealthy: number): HealthNodeResult {
+/** Evaluate desired and minimum counts from input health states. */
+function aggregate(id: HealthNodeId, rule: AggregationRule, inputs: HealthNodeResult[]): HealthNodeResult {
   const healthy = inputs.filter((input) => input.state === "healthy").length;
-  const usable = inputs.filter((input) => input.usable === true).length;
-  const possibleUsable = inputs.filter((input) => input.usable !== false).length;
+  const minimumMet = inputs.filter((input) => input.state === "healthy" || input.state === "degraded").length;
+  const possibleMinimum = inputs.filter((input) => input.state !== "unhealthy").length;
   const state: HealthState = healthy >= rule.healthy ? "healthy"
-    : possibleUsable < rule.required ? "unhealthy"
-    : usable < rule.required || possibleHealthy >= rule.healthy ? "unknown"
-    : "degraded";
-  return {
-    id, state, inputs: rule.inputs,
-    ...(usable >= rule.required ? { usable: true } : possibleUsable < rule.required ? { usable: false } : {}),
-  };
+    : minimumMet >= rule.required ? "degraded"
+    : possibleMinimum < rule.required ? "unhealthy"
+    : "unknown";
+  return { id, state, inputs: rule.inputs };
 }

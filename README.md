@@ -45,15 +45,15 @@ requirements.
 
 Health evaluation distinguishes minimum criteria for remaining usable from
 desired criteria for full health. A healthy result confirms the desired
-criteria; degraded confirms the minimum, with a known concern. Unhealthy means
-minimum criteria are unmet. Unknown means the evidence is insufficient to
-determine health, keeping missing evidence distinct from a known failure.
+criteria; degraded confirms the minimum while desired criteria remain
+unconfirmed or are unmet. Unhealthy means minimum criteria are unmet. Unknown
+means the evidence cannot settle whether minimum criteria are met.
 
 Aggregation can express redundancy. A service with three replicas might need
 two functioning replicas to remain usable, while full health requires all three
-to be healthy. If one fails and two remain healthy, the service is degraded.
-Operators can see that redundancy needs attention while the service remains
-available.
+to be healthy. If one fails or stops reporting and two remain healthy, the
+service is degraded. Operators can see that redundancy needs attention while
+the service remains available.
 
 Node definitions are separate from statuses, so a system image can declare a
 check and a runtime service can publish its status. If the service stops
@@ -348,17 +348,16 @@ stops publishing.
 | State | Meaning |
 | --- | --- |
 | `healthy` | Desired criteria are confirmed. |
-| `degraded` | Minimum criteria are confirmed, with a known concern. |
+| `degraded` | Minimum criteria are confirmed; desired criteria are unconfirmed or unmet. |
 | `unhealthy` | Minimum criteria are confirmed to be unmet. |
-| `unknown` | Evidence does not determine health. |
+| `unknown` | Evidence does not determine whether minimum criteria are met. |
 
 A `HealthReport` contains evaluated nodes in declaration order. Each result
-inherits its node's origin and includes its state and optional `usable` value.
-Usability indicates whether minimum criteria are met: healthy and degraded
-observations have `usable: true`, unhealthy observations have `usable: false`,
-and unknown observations omit `usable`. A result's `inputs` name its direct
-dependencies; observed and threshold nodes have no inputs. Its optional `message` carries the
-observer's explanation or the reason a status evaluated to unknown.
+inherits its node's origin and includes its state. Healthy and degraded states
+confirm minimum criteria, unhealthy confirms they are unmet, and unknown leaves
+them unresolved. A result's `inputs` name its direct dependencies; observed and
+threshold nodes have no inputs. Its optional `message` carries the observer's
+explanation or the reason a status evaluated to unknown.
 
 #### Observed Nodes and Status Records
 
@@ -409,8 +408,8 @@ not extend its lifetime, and wall-clock changes do not affect freshness.
 
 #### Aggregate Nodes
 
-An aggregate declares distinct `inputs`, a minimum `required` usable count, and
-a desired `healthy` count. Thresholds must satisfy
+An aggregate declares distinct `inputs`, a minimum `required` count of healthy
+or degraded inputs, and a desired `healthy` count. Thresholds must satisfy
 `1 <= required <= healthy <= inputs.length`.
 
 ```json
@@ -430,43 +429,36 @@ Both input nodes must exist in the graph. Setting both thresholds to the input
 count expresses all-of; setting both to one expresses any-of. Setting `required`
 below `healthy` expresses redundancy that can tolerate some failures.
 
-Evaluation counts four kinds of input evidence:
+Evaluation counts three kinds of input evidence:
 
 | Count | Inputs Included |
 | --- | --- |
 | `H` | State is `healthy`. |
-| `U` | `usable` is `true`. |
-| `P` | `usable` is `true` or absent, so minimum criteria may be met. |
-| `Q` | The input can still be healthy. |
-
-An observation can still be healthy when its state is `healthy` or `unknown`.
-An aggregate can still be healthy when its own `Q >= healthy`. Carry this bound
-through nested aggregates, including unknown aggregates that cannot reach their
-healthy target.
+| `M` | State is `healthy` or `degraded`, confirming minimum criteria. |
+| `P` | State is `healthy`, `degraded`, or `unknown`, so minimum criteria may be met. |
 
 Apply these rules in order to determine an aggregate's state:
 
 1. If `H >= healthy`, the state is `healthy`.
-2. If `P < required`, the state is `unhealthy`.
-3. If `U < required` or `Q >= healthy`, the state is `unknown`.
-4. Otherwise, the state is `degraded`.
+2. If `M >= required`, the state is `degraded`.
+3. If `P < required`, the state is `unhealthy`.
+4. Otherwise, the state is `unknown`.
 
-Its `usable` is `true` when `U >= required`, `false` when `P < required`, and
-absent otherwise.
+For two observed inputs with `required: 1, healthy: 2`, the results include:
 
-An unknown aggregate may still have `usable: true`. For two observed inputs with
-`required: 1, healthy: 2`, the results include:
+| Input States | Aggregate State |
+| --- | --- |
+| healthy, healthy | healthy |
+| healthy, unhealthy | degraded |
+| healthy, unknown | degraded |
+| degraded, unknown | degraded |
+| unhealthy, unknown | unknown |
+| unhealthy, unhealthy | unhealthy |
 
-| Input States | Aggregate State | `usable` |
-| --- | --- | --- |
-| healthy, healthy | healthy | `true` |
-| healthy, unhealthy | degraded | `true` |
-| healthy, unknown | unknown | `true` |
-| unhealthy, unknown | unknown | absent |
-| unhealthy, unhealthy | unhealthy | `false` |
-
-An aggregate used as an input contributes both its usability and its possible
-health; its state alone is not enough to evaluate its parent.
+A healthy input confirms the minimum and desired criteria; a degraded input
+confirms only the minimum. An unknown input contributes only to `P`. These same
+rules apply when an input is itself an aggregate. Its state contains all the
+information required by its parent.
 
 #### Graph Validation
 

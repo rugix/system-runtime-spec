@@ -125,7 +125,6 @@ class ValueEvidence:
             id=node.id,
             origin=node.origin,
             state=state,
-            usable=state.root != "unhealthy",
             inputs=[],
             message=sample.message,
         )

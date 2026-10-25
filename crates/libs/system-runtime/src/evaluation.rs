@@ -113,22 +113,13 @@ pub fn evaluate_health_with_values(
         .filter_map(|(i, count)| (*count == 0).then_some(i))
         .collect();
     let mut results: Vec<Option<HealthNodeResult>> = vec![None; nodes.len()];
-    let mut can_be_healthy = vec![false; nodes.len()];
     while let Some(index) = ready.pop_front() {
         let node = &nodes[index];
         results[index] = Some(match &node.rule {
             HealthRule::Observed(rule) => {
-                let result = observe(node, rule, observations.get(&node.id).copied(), context);
-                can_be_healthy[index] =
-                    matches!(result.state, HealthState::Healthy | HealthState::Unknown);
-                result
+                observe(node, rule, observations.get(&node.id).copied(), context)
             }
-            HealthRule::Threshold(rule) => {
-                let result = evidence.evaluate(node, rule, context);
-                can_be_healthy[index] =
-                    matches!(result.state, HealthState::Healthy | HealthState::Unknown);
-                result
-            }
+            HealthRule::Threshold(rule) => evidence.evaluate(node, rule, context),
             HealthRule::Aggregate(rule) => {
                 let inputs: Vec<_> = rule
                     .inputs
@@ -139,13 +130,7 @@ pub fn evaluate_health_with_values(
                             .expect("topological inputs have been evaluated")
                     })
                     .collect();
-                let possible_healthy = rule
-                    .inputs
-                    .iter()
-                    .filter(|id| can_be_healthy[indices[*id]])
-                    .count();
-                can_be_healthy[index] = possible_healthy >= rule.healthy as usize;
-                aggregate(node, rule, &inputs, possible_healthy)
+                aggregate(node, rule, &inputs)
             }
         });
         for &dependent in &dependents[index] {
@@ -202,7 +187,6 @@ fn observe(
             id: node.id.clone(),
             origin: node.origin.clone(),
             state: HealthState::Unknown,
-            usable: None,
             inputs: Vec::new(),
             message: Some(reason.into()),
         };
@@ -214,35 +198,35 @@ fn observe(
         state: status.state,
         inputs: Vec::new(),
         message: status.message.clone(),
-        usable: match status.state {
-            HealthState::Healthy | HealthState::Degraded => Some(true),
-            HealthState::Unhealthy => Some(false),
-            HealthState::Unknown => None,
-        },
     }
 }
 
-/// Evaluate thresholds from confirmed and possible evidence bounds.
+/// Evaluate desired and minimum counts from input health states.
 fn aggregate(
     node: &HealthNode,
     rule: &AggregationRule,
     inputs: &[&HealthNodeResult],
-    possible_healthy: usize,
 ) -> HealthNodeResult {
     let healthy = inputs
         .iter()
         .filter(|i| i.state == HealthState::Healthy)
         .count();
-    let usable = inputs.iter().filter(|i| i.usable == Some(true)).count();
-    let possible_usable = inputs.iter().filter(|i| i.usable != Some(false)).count();
+    let minimum_met = inputs
+        .iter()
+        .filter(|i| matches!(i.state, HealthState::Healthy | HealthState::Degraded))
+        .count();
+    let possible_minimum = inputs
+        .iter()
+        .filter(|i| i.state != HealthState::Unhealthy)
+        .count();
     let state = if healthy >= rule.healthy as usize {
         HealthState::Healthy
-    } else if possible_usable < rule.required as usize {
-        HealthState::Unhealthy
-    } else if usable < rule.required as usize || possible_healthy >= rule.healthy as usize {
-        HealthState::Unknown
-    } else {
+    } else if minimum_met >= rule.required as usize {
         HealthState::Degraded
+    } else if possible_minimum < rule.required as usize {
+        HealthState::Unhealthy
+    } else {
+        HealthState::Unknown
     };
     HealthNodeResult {
         id: node.id.clone(),
@@ -250,12 +234,5 @@ fn aggregate(
         state,
         inputs: rule.inputs.clone(),
         message: None,
-        usable: if usable >= rule.required as usize {
-            Some(true)
-        } else if possible_usable < rule.required as usize {
-            Some(false)
-        } else {
-            None
-        },
     }
 }

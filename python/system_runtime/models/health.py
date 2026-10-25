@@ -51,7 +51,7 @@ class AggregationRule(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     inputs: list[HealthNodeId] = pydantic.Field(description="Distinct input node IDs.")
-    required: _sidex.U32 = pydantic.Field(description="Minimum input count with confirmed usability required.")
+    required: _sidex.U32 = pydantic.Field(description="Minimum healthy or degraded input count required.")
     healthy: _sidex.U32 = pydantic.Field(description="Desired healthy input count; required <= healthy <= inputs length.")
 
 
@@ -110,7 +110,6 @@ class HealthNodeResult(_sidex.Model):
     id: HealthNodeId = pydantic.Field(description="Node ID.")
     origin: str | None = pydantic.Field(default=None, description="Origin of the evaluated node.")
     state: HealthState = pydantic.Field(description="Evaluated health.")
-    usable: _sidex.Bool | None = pydantic.Field(default=None, description="Whether minimum criteria are met; absent when usability is unknown.")
     inputs: list[HealthNodeId] = pydantic.Field(description="Direct dependencies explaining an aggregate result.")
     message: str | None = pydantic.Field(default=None, description="Observation message or freshness explanation.")
 
@@ -142,7 +141,7 @@ class HealthRule_Aggregate(_sidex.Model):
 
     rule: Literal["aggregate"] = "aggregate"
     inputs: list[HealthNodeId] = pydantic.Field(description="Distinct input node IDs.")
-    required: _sidex.U32 = pydantic.Field(description="Minimum input count with confirmed usability required.")
+    required: _sidex.U32 = pydantic.Field(description="Minimum healthy or degraded input count required.")
     healthy: _sidex.U32 = pydantic.Field(description="Desired healthy input count; required <= healthy <= inputs length.")
     def payload(self) -> "AggregationRule":
         return AggregationRule(inputs=self.inputs, required=self.required, healthy=self.healthy)

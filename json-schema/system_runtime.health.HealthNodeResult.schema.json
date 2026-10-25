@@ -13,9 +13,6 @@
     "state": {
       "$ref": "#/$defs/system_runtime.health.HealthState"
     },
-    "usable": {
-      "type": "boolean"
-    },
     "inputs": {
       "type": "array",
       "items": {
