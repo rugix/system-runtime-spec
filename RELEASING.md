@@ -10,45 +10,6 @@ Cargo package, and builds the Python and npm distributions. All checks must pass
 before any registry receives a package. Python and npm publish the built artifacts;
 Cargo packages and publishes the same tagged source.
 
-## Configure Publishing
-
-Create three GitHub environments in `rugix/system-runtime-spec`: `crates-io`,
-`pypi`, and `npm`. Restrict their deployment refs to release tags matching `v*`.
-Trusted publishing lets a registry verify a GitHub Actions job's identity and
-issue short-lived credentials. Configure each registry with these exact values:
-
-| Registry | GitHub Owner | Repository | Workflow Filename | Environment |
-| --- | --- | --- | --- | --- |
-| crates.io | `rugix` | `system-runtime-spec` | `release.yml` | `crates-io` |
-| PyPI | `rugix` | `system-runtime-spec` | `release.yml` | `pypi` |
-| npm | `rugix` | `system-runtime-spec` | `release.yml` | `npm` |
-
-For [PyPI](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/),
-add a pending trusted publisher for `system-runtime-spec` under your account's
-Publishing settings. This creates the project on its first successful publication.
-
-For a new crate, add a short-lived crates.io API token as the `CARGO_REGISTRY_TOKEN`
-secret in the `crates-io` GitHub environment. It must permit creating
-`system-runtime-spec`. After the first publication, configure
-[trusted publishing](https://crates.io/docs/trusted-publishing) in the crate's
-settings, then delete the secret and revoke the token. Subsequent releases use
-trusted publishing automatically.
-
-For a new npm package, add a short-lived granular token as the `NPM_TOKEN` secret
-in the `npm` GitHub environment. In [npm's token settings](https://docs.npmjs.com/creating-and-viewing-access-tokens/),
-select **Read and write (publish and stage)** and **Bypass two-factor authentication**
-for unattended publication. The token's package access must allow creating the new
-package. After the first publication, configure a
-[trusted publisher](https://docs.npmjs.com/trusted-publishers/) in the
-package's settings. Allow direct `npm publish` for this workflow; a publisher that
-only permits staged publication cannot run it. Then delete the secret and revoke
-the token. Complete the trusted publisher's first successful publication within
-npm's two-day configuration window, or recreate the configuration before releasing.
-
-The first releases require authorized registry accounts and available package
-names. A PyPI pending publisher does not reserve its project name. The workflow
-does not create registry accounts or configure trusted publishers.
-
 ## Prepare a Release
 
 Only stable `X.Y.Z` versions are supported. Update these files together:
