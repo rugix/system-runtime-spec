@@ -688,7 +688,9 @@ mise run generate
 mise run check
 ```
 
-CI runs the same checks. See [Releasing the Packages](RELEASING.md) for registry
+CI installs tools from the same mise declarations and invokes the corresponding
+`check:*` tasks. Registry authentication and trusted publishing remain in the
+release workflow. See [Releasing the Packages](RELEASING.md) for registry
 publication.
 
 ## License
