@@ -19,35 +19,29 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
         with:
-          toolchain: 1.99.0
-          components: rustfmt
-      - name: Install Sidex
-        run: cargo install --git https://github.com/silitics/sidex.git --tag v0.5.0 --locked --bin sidex
+          install: false
+      - name: Install Project Tools
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+        run: mise install rust python github:silitics/sidex
       - name: Check Schemas and Generated Sources
-        run: |
-          sidex fmt --check
-          python3 scripts/generate.py --check
-          python3 scripts/check_release.py
-          python3 -m unittest discover -s scripts -p 'test_*.py'
-
+        run: mise run --skip-tools check:generated
   rust:
     name: Rust
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
         with:
-          toolchain: 1.99.0
-          components: rustfmt, clippy
+          install: false
+      - name: Install Project Tools
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+        run: mise install rust
       - name: Check, Test, and Build
-        run: |
-          cargo fmt --all --check
-          cargo clippy --workspace --all-targets --locked -- -D warnings
-          cargo test --workspace --locked
-          cargo build --workspace --release --locked
-          RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --locked
+        run: mise run --skip-tools check:rust
       - name: Verify Crate Package
         if: inputs.release
         run: cargo publish --dry-run --locked
@@ -60,18 +54,15 @@ jobs:
         working-directory: python
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
         with:
-          python-version: "3.12"
-          version: "0.12.15"
+          install: false
+      - name: Install Project Tools
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+        run: mise install python uv
       - name: Check, Test, and Build
-        run: |
-          uv sync --locked
-          uv run ruff format --check .
-          uv run ruff check .
-          uv run mypy system_runtime
-          uv run pytest
-          uv build
+        run: mise run --skip-tools check:python
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: inputs.release
         with:
@@ -87,17 +78,15 @@ jobs:
         working-directory: typescript
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
         with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: typescript/package-lock.json
+          install: false
+      - name: Install Project Tools
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+        run: mise install node
       - name: Check, Test, and Build
-        run: |
-          npm ci
-          npm run check
-          npm test
-          npm pack
+        run: mise run --skip-tools check:typescript
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: inputs.release
         with:
