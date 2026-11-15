@@ -1,176 +1,101 @@
-# System Runtime for Rust
+# System Runtime Specification for Rust
 
-Use `system-runtime-spec` to load component and health files on Linux, check component
-compatibility, and evaluate health graphs. Its models implement the
-[System Runtime Specification](https://github.com/rugix/system-runtime-spec).
+`system-runtime-spec` implements the
+[System Runtime Specification](https://github.com/rugix/system-runtime-spec/blob/main/SPEC.md)
+in Rust: it discovers records on Linux, checks the compatibility of compositions and updates,
+evaluates health, and sends records to other systems as snapshots.
 
 ## Installation
 
-Add the crate from crates.io to your project's `Cargo.toml`:
-
 ```toml
 [dependencies]
-system-runtime-spec = "0.1"
+system-runtime-spec = "0.2"
 ```
 
-The package is named `system-runtime-spec`; import the crate as `system_runtime_spec`.
-Specification models live under `types`; helpers are accessed through their
-`compatibility`, `evaluation`, `discovery`, `clock`, and `snapshot` modules.
+Import the crate as `system_runtime_spec`. Records are
+[`sidex::types::JsonValue`](https://docs.rs/sidex) values, so that snapshots carry them unchanged
+and records of newer minor versions keep working. The generated models in `types` describe their
+structure, and `records::to_json` converts typed models to records.
 
 ## Read and Check a System
 
-`RuntimeDirectories::standard("/")` loads the specification's standard
-directories and extension configurations. The returned `RuntimeSnapshot`
-contains components, health nodes and statuses, and optional metric definitions
-and samples.
-
 ```rust
 use system_runtime_spec::{
     compatibility::check_components,
-    discovery::RuntimeDirectories,
-    evaluation::{current_context, evaluate_health_with_metrics},
+    discovery::read_records,
+    evaluation::{current_context, evaluate_health},
 };
 
 fn main() -> Result<(), system_runtime_spec::Error> {
-    let snapshot = RuntimeDirectories::standard("/").load()?;
-    let compatibility = check_components(&snapshot.components)?;
-    let health = evaluate_health_with_metrics(
-        &snapshot.health_nodes,
-        &snapshot.health_statuses,
-        snapshot.metrics.as_deref().unwrap_or_default(),
-        snapshot.metric_samples.as_deref().unwrap_or_default(),
-        &current_context()?,
-    )?;
-    println!("{compatibility:?}\n{health:?}");
-    Ok(())
-}
-```
-
-`current_context()` reads the Linux boot ID and `CLOCK_BOOTTIME` for freshness
-checks. This helper and `current_clock_sample()` are available only on Linux.
-For records from another system, supply that system's `HealthContext`.
-Invalid declarations and discovery failures return `Error`; a valid but
-incompatible composition returns a report with `consistent: false`.
-
-The `evaluate_health_with_metrics` function handles numeric threshold nodes as
-well as observed and aggregate nodes. Use `evaluate_health` for graphs without
-metrics. The [metric and threshold reference](https://github.com/rugix/system-runtime-spec#metrics-and-thresholds)
-describes units, ranges, and evidence freshness.
-
-## Add Directories
-
-Use extension files as described in the
-[file discovery specification](https://github.com/rugix/system-runtime-spec#file-discovery),
-or extend the sources in code:
-
-```rust
-use system_runtime_spec::{discovery::RuntimeDirectories, types::filesystem::DirectoryConfig};
-
-fn main() -> Result<(), system_runtime_spec::Error> {
-    let mut directories = RuntimeDirectories::standard("/");
-    directories.extend(&DirectoryConfig {
-        components: Some(vec!["/opt/example/components".into()]),
-        health_nodes: None,
-        health_statuses: None,
-        metrics: None,
-        metric_samples: None,
-    });
-    let snapshot = directories.load()?;
-    println!("{snapshot:?}");
-    Ok(())
-}
-```
-
-Use `RuntimeDirectories::new("/")` to start with empty source lists. A different
-root, such as `RuntimeDirectories::standard("/mnt/system")`, relocates absolute
-source paths for tests or alternate installations. Absolute symlink targets
-still resolve against the host's root, rather than the supplied root.
-
-## Check an Update Candidate
-
-An owner groups records owned by a system image, app, or other contributor.
-`without_owner` copies a snapshot without records owned by that exact owner.
-Other records retain their requirements and references.
-
-```rust
-use system_runtime_spec::{
-    compatibility::check_components,
-    discovery::RuntimeDirectories,
-    snapshot::without_owner,
-    types::component::ComponentDeclaration,
-};
-
-fn main() -> Result<(), system_runtime_spec::Error> {
-    let current = RuntimeDirectories::standard("/").load()?;
-    let mut candidate = without_owner(&current, "rugix.system");
-    candidate.components.push(ComponentDeclaration {
-        id: "example.system".into(),
-        owner: Some("rugix.system".into()),
-        version: Some("2.0".into()),
-        provides: None,
-        claims: None,
-        requires: None,
-        conflicts: None,
-    });
-    let report = check_components(&candidate.components)?;
-    println!("{}", report.consistent);
-    Ok(())
-}
-```
-
-The current records must already carry owners. Discovery does not infer
-ownership from paths; attribute imported records before assembling the snapshot.
-This operation changes only the in-memory candidate. After activation, evaluate
-health using fresh records from the running system.
-
-## Capture Health for Transport
-
-Add `serde_json = "1"` under `[dependencies]` for this JSON round trip. Collect
-records first, then sample the observed system's clock:
-
-```rust
-use system_runtime_spec::{
-    clock::{current_clock_sample, status_timestamp},
-    discovery::RuntimeDirectories,
-    types::health::HealthSnapshot,
-};
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let records = RuntimeDirectories::standard("/").load()?;
-    let snapshot = HealthSnapshot {
-        clock: current_clock_sample()?,
-        nodes: records.health_nodes,
-        statuses: records.health_statuses,
-        metrics: records.metrics,
-        metric_samples: records.metric_samples,
-    };
-    let payload = serde_json::to_string(&snapshot)?;
-    let received: HealthSnapshot = serde_json::from_str(&payload)?;
-    for status in &received.statuses {
-        println!("{:?}: {:?}", status.id, status_timestamp(status, &received.clock));
+    let records = read_records("/");
+    let compatibility = check_components(&records.components, &records.diagnostics);
+    let health = evaluate_health(&records, &current_context()?);
+    println!("{}", compatibility.consistent);
+    for node in &health.nodes {
+        println!("{}: {:?}/{:?}", node.id.as_str(), node.usable, node.healthy);
     }
     Ok(())
 }
 ```
 
-Models support Serde and Sidex encoding. `current_clock_sample()` samples UTC
-between two boot-time reads and pairs it with their midpoint.
-`status_timestamp` returns an estimated UTC observation time for display, or
-`None` for a wrong boot, future observation, or unsupported timestamp range.
-Sampling uncertainty and wall-clock corrections limit the estimate.
+`read_records` reads the standard directories and the directories that directory configurations
+add, and applies overrides. Files that cannot be read or do not contain a valid record are skipped
+and reported as diagnostics. Checks and evaluation take the diagnostics into account: an error
+makes a composition inconsistent, and a decision should not rely on a health report with errors
+about health nodes or directory configurations.
 
-Evaluating a received snapshot with `snapshot.clock.context` gives health at
-capture time. Obtain current evidence before making an update decision.
+## Check an Update
 
-## Models
+```rust
+use sidex::types::JsonValue;
+use system_runtime_spec::{
+    compatibility::{candidate_composition, check_components},
+    discovery::read_records,
+};
 
-Generated models live in `types::component`, `types::health`, `types::metric`, and
-`types::filesystem`. Health node IDs use the distinct
-`types::health::HealthNodeId` type: construct one with
-`HealthNodeId::from("database")` and read its string with `as_str()`.
+fn main() {
+    let records = read_records("/");
+    let update: JsonValue = sidex::formats::json::from_str(
+        r#"{"id": "os", "owner": "rugix.system", "version": "2"}"#,
+    )
+    .unwrap();
+    let (components, diagnostics) = candidate_composition(
+        &records.components,
+        &records.diagnostics,
+        &["rugix.system"],
+        &[update],
+    );
+    println!("{}", check_components(&components, &diagnostics).consistent);
+}
+```
 
-See the [specification](https://github.com/rugix/system-runtime-spec) for wire
-formats, version matching, and health semantics.
+## Send Records as a Snapshot
+
+`make_snapshot` creates a snapshot with the original records, and `read_snapshot` reads one on
+the receiving system. Take the clock sample after reading the records:
+
+```rust
+use system_runtime_spec::{
+    clock::current_clock_sample,
+    discovery::read_records,
+    evaluation::evaluate_health,
+    snapshot::{make_snapshot, read_snapshot},
+};
+
+fn main() -> Result<(), system_runtime_spec::Error> {
+    let records = read_records("/");
+    let snapshot = make_snapshot(&records, &current_clock_sample()?, true, true);
+    let received = read_snapshot(&snapshot)?;
+    let report = evaluate_health(&received.records, &received.clock.context);
+    println!("{:?}", report.nodes);
+    Ok(())
+}
+```
+
+Evaluating a snapshot gives health at the time of its clock sample. `clock::estimate_timestamp`
+places evidence in wall-clock time for display.
+
+`discovery`, `current_context`, and `current_clock_sample` are available on Linux only.
 
 ## License
 
