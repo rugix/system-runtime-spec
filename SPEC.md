@@ -23,7 +23,7 @@ This document is the normative definition of the specification. The
 7. [Links Between Components and Health](#7-links-between-components-and-health)
 8. [Discovery](#8-discovery)
 9. [Transport](#9-transport)
-10. [Limits](#10-limits)
+10. [Limitations](#10-limitations)
 11. [Security Considerations](#11-security-considerations)
 
 ## 1. Conventions
@@ -90,9 +90,12 @@ precision. Readers MUST accept both encodings for every value. Other forms, such
 `-1`, and values greater than 2⁶⁴ − 1, are invalid. An unsigned 32-bit integer is encoded as a
 JSON number without a fraction or an exponent.
 
-A record is _valid_ if it follows these rules, has the structure that the schemas define, and
-satisfies the conditions that this document states for its kind. Unknown fields and unknown
-enumeration values ([Section 3.6](#36-evolution)) do not make a record invalid.
+A record is _valid_ if it follows these rules, has the structure that the schemas define, and its
+fields satisfy the conditions that this document states for them, such as that a version is valid
+or that a `maxAgeMs` is positive. Unknown fields, unknown enumeration values
+([Section 3.6](#36-evolution)), and unit codes ([Section 6.5](#65-metrics)) do not make a record
+invalid. Conditions that concern several records, such as unique IDs, do not affect validity; the
+parts define their consequences.
 
 [rfc8259]: https://www.rfc-editor.org/rfc/rfc8259
 [rfc7493]: https://www.rfc-editor.org/rfc/rfc7493
@@ -110,8 +113,8 @@ records they cannot read, and MUST report a _diagnostic_ for each:
 | `path` | string, optional | Path of the file or directory concerned. |
 
 The components part and the health part define how diagnostics affect their results
-([Sections 5.4](#54-consistency) and [6.7](#67-evaluation-and-reports)). Messages are not
-specified and differ between implementations.
+([Sections 5.4](#54-consistency) and [6.7](#67-evaluation-and-reports)). The messages of
+diagnostics and their order are not specified and differ between implementations.
 
 ### 3.3 Identifiers
 
@@ -170,6 +173,9 @@ follows:
 | Compatibility problems ([Section 5.5](#55-compatibility-reports)) | The problem is reported without further detail. |
 | Reasons ([Section 6.7](#67-evaluation-and-reports)) | The result is treated as having no reason. |
 | Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic concerns both parts. |
+
+> **Note:** The fallbacks are conservative. For example, a node that attaches to `system` with an
+> input mode added in a later minor version makes `system` unknown for older health evaluators.
 
 A change that readers cannot safely ignore requires a new major version. A new major version MUST
 use new standard directories ([Section 8.1](#81-directories)), so that readers
@@ -357,11 +363,10 @@ provide capabilities.
 
 A compatibility checker evaluates a composition, which is a list of component declarations,
 together with the diagnostics about component declarations and directory configurations
-([Section 3.2](#32-diagnostics)). A declaration is invalid if it is not a valid record, for example,
-because it contains an invalid version or version requirement, or a capability or selector with
-both a version and a value. A compatibility checker skips invalid declarations and adds a
-diagnostic for each. It considers every explicit and implicit capability of every remaining
-component. The composition is _consistent_ if and only if:
+([Section 3.2](#32-diagnostics)). It skips declarations that are not valid records, for example,
+because they contain an invalid version or version requirement, or a capability or selector with
+both a version and a value, and adds a diagnostic for each. It considers every explicit and
+implicit capability of every remaining component. The composition is _consistent_ if and only if:
 
 - there are no diagnostics,
 - no two components have the same ID,
@@ -371,7 +376,7 @@ component. The composition is _consistent_ if and only if:
   component declaring the conflict.
 
 Several components MAY provide the same capability. Consistency covers only the declared
-constraints ([Section 10](#10-limits)).
+constraints ([Section 10](#10-limitations)).
 
 ### 5.5 Compatibility Reports
 
@@ -390,7 +395,7 @@ kind:
 The report is consistent if and only if it contains no problems. Problems MUST appear in this
 order:
 
-1. Invalid records, in the order of the diagnostics.
+1. Invalid records, in an order that this specification does not define.
 2. Duplicate components, sorted by ID.
 3. Duplicate claims, sorted by resource ID.
 4. Unsatisfied requirements and conflicts, in the order of the component declarations. Within a
@@ -398,33 +403,36 @@ order:
    several capabilities produces one problem per capability, in the order of the providing
    components, with each component's implicit capability before its explicit ones.
 
-Two problems are _equal_ if they have the same kind and equal fields.
+Two problems are _equal_ if they have the same kind and equal fields, apart from messages.
 
 ### 5.6 Candidate Compositions
 
 A _candidate composition_ is the composition that would result from an update. An update replaces
-the declarations of one or more owners: it names the owners it replaces and supplies new
-declarations, each of which MUST have one of these owners. The candidate composition is built from
-the current composition as follows:
+the declarations of one or more owners at one level ([Section 8.1](#81-directories)), usually the
+lowest: it names the owners it replaces and supplies new declarations, each of which MUST have one
+of these owners. A new declaration that does not have a replaced owner is invalid. An update that
+installs a new contributor replaces an owner that has no declarations yet, and an update that
+removes a contributor supplies no declarations for its owner.
 
-1. Remove all declarations with a replaced owner.
-2. Add the new declarations.
-3. Keep all other declarations unchanged.
+The candidate composition is built from the declarations that a reader read, before it applied
+overrides, each with its level ([Section 8.3](#83-reading)):
 
-An update that installs a new contributor replaces an owner that has no declarations yet, and an
-update that removes a contributor supplies no declarations for its owner. A new declaration that
-does not have a replaced owner is invalid.
+1. Remove the declarations at the update's level that have a replaced owner.
+2. Append the new declarations, at the update's level, in the order that the update supplies them.
+3. Apply the overrides of [Section 8.3](#83-reading).
+
+The diagnostics of the candidate composition are the current diagnostics and those about the new
+declarations.
 
 Checking the candidate composition finds broken requirements before the update takes place,
-because the remaining declarations keep their requirements.
+because the remaining declarations keep their requirements. Declarations at higher levels stay in
+effect, as they will after the update. Declarations without level information, such as those of a
+snapshot ([Section 9.1](#91-snapshots)), all count as being at the update's level; a candidate
+composition built from them does not reflect overrides that stay in effect after the update.
 
 > **Note:** Declarations without an owner are never removed. This suits facts about the device
 > itself, such as the revision of its board. A declaration that is meant to be replaced needs an
 > owner; otherwise, its replacement duplicates its ID.
-
-> **Note:** A declaration that overrides another ([Section 8.3](#83-reading)) stays in effect when
-> an update replaces the overridden declaration. A tool that builds candidate compositions from
-> files applies the same overrides to the new declarations.
 
 > **Note:** If the current composition is already inconsistent, every candidate composition that
 > keeps the existing problems is inconsistent too, including an update that fixes another problem.
@@ -522,6 +530,11 @@ for functions that an operator monitors, but that do not affect updates.
 > ```json
 > { "id": "system", "owner": "rugix.system", "rule": { "type": "aggregate" } }
 > ```
+>
+> Without attached inputs, this node is healthy. If an app's records are not discovered, for
+> example, because a directory configuration names a wrong path, the app is missing from `system`
+> without a diagnostic. A system image that knows which contributors to expect lists their nodes as
+> inputs or sets `minHealthy` ([Section 6.8](#68-aggregate-nodes)).
 
 ### 6.3 Evidence
 
@@ -612,9 +625,11 @@ are `unknown`/`unknown`, with the reason `unsupported`.
 > for example, because a dependency of the check itself is unavailable.
 
 > **Note:** A status record cannot express the answers `yes`/`unknown` and `unknown`/`no`, so it
-> cannot relay every result of an evaluation. A system that passes on the health of another
-> system, such as a gateway for attached devices, passes on its nodes and evidence, so that the
-> answers are evaluated from the original records.
+> cannot relay every result of an evaluation. A system that passes on the health of other
+> systems, such as a gateway for attached devices, passes on a separate snapshot for each system
+> ([Section 9](#9-transport)), so that their answers are evaluated from the original records in
+> their own health contexts. Combining the health of several systems is outside the scope of this
+> specification.
 
 ### 6.5 Metrics
 
@@ -649,8 +664,8 @@ finite.
 A metric ID names one measurement in one unit, because threshold nodes of other contributors
 compare its samples with fixed numbers. Writers MUST NOT change the meaning or the unit of a
 metric; a different measurement or unit needs a new ID. Writers MUST NOT publish two definitions
-or two samples for the same metric; the answers of threshold nodes over the metric are then
-unknown ([Section 6.6](#66-threshold-nodes)). Samples without a definition are ignored.
+or two samples for the same metric. If they do, the answers of threshold nodes over the metric
+are unknown ([Section 6.6](#66-threshold-nodes)). Samples without a definition are ignored.
 
 Units are codes of the [Unified Code for Units of Measure][ucum] (UCUM) in its case-sensitive
 form, which OpenTelemetry also uses. UCUM can express any unit, including derived units such as
@@ -678,8 +693,8 @@ that thresholds of different contributors compare without conversion. Dimensionl
 | Signal power level | `dB[mW]` | Decibels relative to one milliwatt (dBm). |
 
 Units describe what was measured. Health evaluation compares units only as strings
-([Section 6.6](#66-threshold-nodes)) and never converts values. Readers MUST NOT reject a metric
-because of a unit code they do not know.
+([Section 6.6](#66-threshold-nodes)) and never converts values. Readers MUST NOT check unit codes
+and MUST NOT reject a metric because of its unit code.
 
 > **Note:** Tools choose how to display values, including precision, prefixes, and conversions,
 > and display codes they do not know as written. A fraction with the unit `1` is not restricted to
@@ -748,16 +763,19 @@ answers are:
 
 A health evaluator evaluates the health nodes, status records, metric definitions, and metric
 samples in a health context, together with the diagnostics about these records and about directory
-configurations ([Section 3.2](#32-diagnostics)). A record is invalid if it is not a valid record,
-for example, because a range is empty or a `maxAgeMs` is zero. The evaluator skips invalid records
-and adds a diagnostic for each. It then determines the answers of each node:
+configurations ([Section 3.2](#32-diagnostics)). It proceeds as follows:
 
-1. If several nodes have the same ID, none of them is evaluated. The ID has one result, at the
-   position of the first of these nodes, with the answers `unknown`/`unknown` and the reason
-   `conflict`.
-2. A node on a cycle has the answers `unknown`/`unknown` and the reason `cycle`. A node is on a
-   cycle if it is an input of itself, directly or through other aggregate nodes.
-3. The rules of its type determine the answers of every other node.
+1. It skips invalid records, for example, nodes with an empty range or evidence with a `maxAgeMs`
+   of zero, and adds a diagnostic for each.
+2. If several nodes have the same ID, it evaluates none of them. The ID has one result, at the
+   position of the first of these nodes, with the answers `unknown`/`unknown`, the reason
+   `conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
+   to their ID are ignored.
+3. It adds the attached inputs of the remaining aggregate nodes
+   ([Section 6.8](#68-aggregate-nodes)).
+4. It gives every node on a cycle the answers `unknown`/`unknown` and the reason `cycle`. A node is
+   on a cycle if it is an input of itself, directly or through other aggregate nodes.
+5. It determines the answers of every other node by the rules of its type.
 
 The evaluator produces a `HealthReport` with a list `nodes`, which contains one `HealthNodeResult`
 per node ID, in the order of the node definitions, and a list `diagnostics`, which contains the
@@ -787,9 +805,11 @@ The reasons are:
 
 Other results of aggregate nodes have no reason; their inputs explain them.
 
-A skipped node can have been an input of other nodes, which then appear healthier than they are.
-A tool that makes a decision, such as whether to commit an update, SHOULD NOT base it on a report
-with diagnostics, unless it is configured to.
+A skipped node or directory configuration can have provided inputs of other nodes, which then
+appear healthier than they are. A tool that makes a decision, such as whether to commit an update,
+SHOULD NOT base it on a report with diagnostics of the kinds `healthNodes` or `directories`, unless
+it is configured to. Skipped evidence and metric definitions need no such care, because they make
+the answers of the nodes that use them unknown.
 
 ### 6.8 Aggregate Nodes
 
@@ -830,9 +850,12 @@ attachment. Attached inputs follow the inputs of the rule, in the order of the d
 attaching nodes. Attachments to nodes that do not exist or are no aggregate nodes are ignored, so
 that contributors can attach to nodes that are not always present.
 
-If an aggregate node has the same input more than once, listed or attached, its answers are
-`unknown`/`unknown`, with the reason `conflict`. An input of the rule that refers to no node has
-the answers `unknown`/`unknown`, and the evaluator adds a diagnostic for it.
+If an input or attachment has a mode unknown to the evaluator, the aggregate node's answers are
+`unknown`/`unknown`, with the reason `unsupported`. If a node is an input more than once, listed or
+attached, it counts as one input, at the position of its first occurrence, with the strongest of its
+modes: `mandatory` before `counted` before `optional`. An input of the rule that refers to no node
+has the answers `unknown`/`unknown`, and the evaluator adds a diagnostic for it; the input appears
+in the node's result, but has no result of its own.
 
 Inputs with the modes `counted` and `mandatory` are the _counted inputs_. If `minHealthy` is
 omitted, it equals the number of counted inputs. If `minUsable` is omitted, it equals
@@ -969,19 +992,28 @@ To read the records of one kind, a reader:
    skipped, even if another directory contains it. Different paths to the same file, such as hard
    links, count as different files.
 
+Each record has the level of the directory through which the reader read it. A file that the
+reader reaches through directories of several levels has the highest of these levels.
+
 A reader MUST skip directories that do not exist, and entries that disappear between listing a
 directory and reading them. If a directory path exists but is not a directory or is a broken
 symlink, or if a file cannot be read or does not contain a valid record, a reader MUST skip it and
 report a diagnostic ([Section 3.2](#32-diagnostics)).
 
 Component declarations, health nodes, and metric definitions override records of the same kind
-with the same ID from lower levels: a reader keeps only the record from the highest level, at its
-own position. Other records with the same ID, including evidence, are subject to the rules of their
-part.
+with the same ID from lower levels: of the records with one ID, a reader keeps only those from the
+highest level, at their own positions. Records with the same ID that remain, and evidence with the
+same ID, are subject to the rules of their part. A file of such a kind that does not contain a valid
+record, but contains a JSON object whose `id` field holds an ID that a valid record of a higher
+level overrides, is skipped without a diagnostic, so that an operator can replace a faulty record.
+Directory configurations have no IDs and cannot be overridden.
 
 > **Note:** To change a threshold, an operator copies its node to `/etc/system-runtime/health/nodes`
 > and changes the ranges. To disable a check, an operator overrides its node with an aggregate node
-> without inputs, which is healthy.
+> without inputs, such as `{"id": "telemetry.upload", "rule": {"type": "aggregate"}}`, which is
+> healthy as long as no other node attaches to it. An override replaces the whole record and does
+> not follow later updates of the record it overrides, so operators override as few records as
+> they need to.
 
 A directory MAY be a symlink. A reader MUST resolve each directory to its physical location before
 traversing it, so that changing the symlink during traversal cannot mix files of two
@@ -1079,7 +1111,7 @@ observation time after the clock sample, and evidence whose estimate lies outsid
 > `2026-10-14T11:59:57Z`. The estimate is only as accurate as the wall clock at the time of
 > sampling.
 
-## 10. Limits
+## 10. Limitations
 
 This section is informative. It states what the results of compatibility checking and health
 evaluation do not establish.
@@ -1109,20 +1141,21 @@ committed.
 **Trust.** Readers trust every writer that can create files in the directories they read, for every
 record such a writer publishes, including its ID and owner. Such a writer can attach nodes to any
 aggregate node and cause conflicts with the records of others, and a writer in a higher level can
-override the records of lower levels. Owners and tags detect mistakes, but anyone who can write a
-record can set them. A directory of its own separates the files of a service, but the service can
-still publish records with any ID. Standard directories and added directories SHOULD be writable
-only by privileged users and by the services that publish into them. Restricting which IDs a writer
-may publish needs a mechanism outside this specification, such as a collector that checks the
-records of each source.
+override the records of lower levels. Writers in `/run/system-runtime` can therefore override the
+records of the system image. Owners and tags detect mistakes, but anyone who can write a record can
+set them. A directory of its own separates the files of a service, but the service can still publish
+records with any ID. Standard directories and added directories SHOULD be writable only by
+privileged users and by the services that publish into them. Restricting which IDs a writer may
+publish needs a mechanism outside this specification, such as a collector that checks the records of
+each source.
 
 **Resource limits.** Readers SHOULD limit the size of files, the number of files, the depth of
 directories, and the nesting of JSON values, and SHOULD skip what exceeds a limit and report a
 diagnostic.
 
-**Concurrent changes.** A writer can replace a file with a symlink after a reader has listed the
-directory. Readers SHOULD open files without following symlinks, for example, with `O_NOFOLLOW` on
-Linux.
+**Concurrent changes.** A writer can replace a file or a directory with a symlink after a reader
+has checked it. Readers SHOULD traverse directories relative to open file descriptors and open
+entries without following symlinks, for example, with `openat` and `O_NOFOLLOW` on Linux.
 
 **Transport.** Snapshots reveal information about a device, such as its software and the messages
 and details of its checks. Writers SHOULD NOT put secrets into labels, messages, details, or
