@@ -460,13 +460,14 @@ before it applied overrides, each with its level ([Section 8.3](#83-reading)):
    that level whose `recordOwner` is a replaced owner.
 2. Append the new declarations to the end of the list, with the update's level, in the order that
    the update supplies them.
-3. Apply the overrides of [Section 8.3](#83-reading).
+3. Apply the overrides of [Section 8.3](#83-reading), which also remove the diagnostics of
+   identifiable invalid records that a valid record of a higher level overrides.
 
-The diagnostics of the candidate composition are the current diagnostics that step 1 keeps, and
-those about the new declarations. The kept diagnostics can concern files that the update replaces,
-for example, an invalid record without a readable owner. Diagnostic equality
-([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them
-as existing ones.
+The diagnostics of the candidate composition are the current diagnostics that steps 1 and 3 keep,
+and those about the new declarations. The kept diagnostics can concern files that the update
+replaces, for example, an invalid record without a readable owner. Diagnostic equality ([Section
+5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them as existing
+ones.
 
 Checking the candidate composition finds broken requirements before the update takes place, because
 the remaining declarations keep their requirements. Declarations at higher levels stay in effect, as
