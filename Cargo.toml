@@ -15,5 +15,5 @@ sidex = { version = "0.5.0", features = ["serde-1"] }
 thiserror = "2"
 tracing = "0.1"
 rustix = { version = "1", features = ["fs", "time"] }
-serde = { version = "1", features = ["derive"] }
+serde = "1"
 tempfile = "3"

@@ -1,7 +1,7 @@
 /** Decode and validate records, applying the fallbacks for unknown values. */
 
 import type { Checker } from "@sidex/types";
-import { Diagnostic, RecordKind, Severity } from "./generated/common.js";
+import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
 import { ComponentDeclaration } from "./generated/component.js";
 import { DirectoryConfig } from "./generated/filesystem.js";
 import { HealthNode, HealthStatus } from "./generated/health.js";
