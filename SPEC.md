@@ -574,6 +574,11 @@ ignored, but MUST still be valid.
 > disk check that sees little free space. It reports `unknown` when it cannot reach a conclusion,
 > for example, because a dependency of the check itself is unavailable.
 
+> **Note:** A status record cannot express the answers `yes`/`unknown` and `unknown`/`no`, so it
+> cannot relay every result of an evaluation. A system that passes on the health of another
+> system, such as a gateway for attached devices, passes on its nodes and evidence, so that the
+> answers are evaluated from the original records.
+
 ### 6.5 Metrics
 
 A _metric_ is a named numeric measurement, such as a CPU temperature or the free space on a
