@@ -183,8 +183,8 @@ ASCII letters, digits, or hyphens. Leading zeroes are accepted.
 
 Trailing zero release components and build metadata do not affect comparison.
 Prereleases precede releases; numeric prerelease identifiers precede text
-identifiers, which compare by ASCII order. A shorter prerelease prefix precedes
-a longer one.
+identifiers, which compare lexicographically by ASCII code. A shorter prerelease
+prefix precedes a longer one.
 
 Requirements are comma-separated conjunctions of `=`, `==`, `!=`, `>`, `>=`,
 `<`, or `<=` comparators. A bare version means equality; a sole `*` matches all
