@@ -4,7 +4,7 @@ import type { Diagnostic } from "./generated/common.js";
 import type {
   CapabilityDeclaration, CapabilitySelectorDeclaration, CompatibilityProblem, CompatibilityReport,
 } from "./generated/component.js";
-import { type JsonObject, decodeAll, diagnostic } from "./records.js";
+import { type JsonObject, decodeAll, diagnostic, isObject } from "./records.js";
 import { type Requirement, type Version, matchesRequirement, parseRequirement, parseVersion } from "./version.js";
 
 function bytes(text: string): string {
@@ -103,8 +103,7 @@ export function candidateComposition(
   owners: readonly string[],
   declarations: readonly unknown[],
 ): [unknown[], Diagnostic[]] {
-  const replaced = (value: unknown) =>
-    typeof value === "object" && value !== null && owners.includes((value as JsonObject).owner as string);
+  const replaced = (value: unknown) => isObject(value) && owners.includes(value.owner as string);
   const result = components.filter((component) => !replaced(component));
   const resultDiagnostics = [...diagnostics];
   for (const declaration of declarations) {
