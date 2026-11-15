@@ -608,8 +608,7 @@ for evidence that is not fresh, and `unsupported` for a rule type, state, or uni
 evaluator ([Section 3.4](#34-evolution)). Results of aggregate nodes have no reason; their inputs
 explain them.
 
-A graph is invalid if any of the following holds. For an invalid graph, a health evaluator MUST
-report an error and MUST NOT produce a health report.
+A graph is invalid if any of the following holds:
 
 - two nodes have the same ID,
 - an aggregate node refers to a node that does not exist, refers to a node more than once, marks an
@@ -623,6 +622,9 @@ report an error and MUST NOT produce a health report.
 - two metric definitions or two metric samples have the same ID,
 - a value or range bound is not finite, or
 - a `maxAgeMs` is zero.
+
+For an invalid graph, a health evaluator MUST report an error and MUST NOT produce a health
+report.
 
 > **Note:** An aggregate node that refers to a node of an app that may be absent makes the whole
 > graph invalid while the app is absent. A node that combines nodes of several contributors
