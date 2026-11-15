@@ -175,7 +175,7 @@ order, with each provider's implicit capability preceding its explicit ones.
 
 #### Versions and Requirements
 
-Versions follow Rugix's version format (`anyver` 0.2): one or more numeric, dot-separated
+Versions follow Rugix's version format (`anyver` 0.3): one or more numeric, dot-separated
 release components, an optional `-` prerelease, and optional `+` build metadata.
 Release components and numeric prerelease identifiers must fit in an unsigned
 64-bit integer. Prerelease and build identifiers are nonempty, dot-separated
