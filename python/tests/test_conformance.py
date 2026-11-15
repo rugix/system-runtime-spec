@@ -10,7 +10,7 @@ from system_runtime_spec import RuntimeDirectories, check_components, evaluate_h
 from system_runtime_spec.models.component import ComponentDeclaration
 from system_runtime_spec.models.filesystem import DirectoryConfig
 from system_runtime_spec.models.health import HealthContext, HealthNode, HealthStatus
-from system_runtime_spec.models.value import ValueDefinition, ValueObservation
+from system_runtime_spec.models.metric import MetricDefinition, MetricSample
 
 FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures"
 CASES = json.loads((FIXTURES / "conformance.json").read_text())
@@ -56,20 +56,18 @@ def test_health(case):
     nodes = [HealthNode.model_validate(value) for value in case["nodes"]]
     statuses = [HealthStatus.model_validate(value) for value in case["statuses"]]
     context = HealthContext.model_validate(case["context"])
-    values = [ValueDefinition.model_validate(v) for v in case.get("values", [])]
-    samples = [
-        ValueObservation.model_validate(v) for v in case.get("valueObservations", [])
-    ]
+    metrics = [MetricDefinition.model_validate(v) for v in case.get("metrics", [])]
+    samples = [MetricSample.model_validate(v) for v in case.get("metricSamples", [])]
     if case.get("error"):
         with pytest.raises(ValueError):
             evaluate_health(
-                nodes, statuses, context, values=values, value_observations=samples
+                nodes, statuses, context, metrics=metrics, metric_samples=samples
             )
     else:
         assert (
             json.loads(
                 evaluate_health(
-                    nodes, statuses, context, values=values, value_observations=samples
+                    nodes, statuses, context, metrics=metrics, metric_samples=samples
                 ).model_dump_json()
             )
             == case["report"]
@@ -98,7 +96,7 @@ def test_directory_integration(tmp_path):
             "id": "storage",
             "rule": {
                 "type": "threshold",
-                "value": "storage.free",
+                "metric": "storage.free",
                 "healthy": {
                     "lower": {
                         "value": 104857600,
@@ -109,7 +107,7 @@ def test_directory_integration(tmp_path):
             },
         }
     )
-    assert len(snapshot.values) == len(snapshot.value_observations) == 1
+    assert len(snapshot.metrics) == len(snapshot.metric_samples) == 1
 
     def measured_state():
         return (
@@ -117,8 +115,8 @@ def test_directory_integration(tmp_path):
                 [node],
                 [],
                 context,
-                values=snapshot.values,
-                value_observations=snapshot.value_observations,
+                metrics=snapshot.metrics,
+                metric_samples=snapshot.metric_samples,
             )
             .nodes[0]
             .state.root

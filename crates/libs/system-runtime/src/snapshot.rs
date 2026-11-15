@@ -9,14 +9,14 @@ use crate::types::filesystem::RuntimeSnapshot;
 #[tracing::instrument(level = "debug", skip_all)]
 pub fn without_owner(snapshot: &RuntimeSnapshot, owner: &str) -> RuntimeSnapshot {
     RuntimeSnapshot {
-        values: snapshot.values.as_ref().map(|records| {
+        metrics: snapshot.metrics.as_ref().map(|records| {
             records
                 .iter()
                 .filter(|r| r.owner.as_deref() != Some(owner))
                 .cloned()
                 .collect()
         }),
-        value_observations: snapshot.value_observations.as_ref().map(|records| {
+        metric_samples: snapshot.metric_samples.as_ref().map(|records| {
             records
                 .iter()
                 .filter(|r| r.owner.as_deref() != Some(owner))

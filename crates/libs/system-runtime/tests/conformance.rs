@@ -1,11 +1,11 @@
 use serde::Deserialize;
 use system_runtime_spec::compatibility::check_components;
-use system_runtime_spec::evaluation::evaluate_health_with_values;
+use system_runtime_spec::evaluation::evaluate_health_with_metrics;
 use system_runtime_spec::types::component::{
     CapabilitySelectorDeclaration, CompatibilityReport, ComponentDeclaration,
 };
 use system_runtime_spec::types::health::{HealthContext, HealthNode, HealthReport, HealthStatus};
-use system_runtime_spec::types::value::{ValueDefinition, ValueObservation};
+use system_runtime_spec::types::metric::{MetricDefinition, MetricSample};
 
 #[derive(Deserialize)]
 struct Fixtures {
@@ -40,9 +40,9 @@ struct HealthCase {
     statuses: Vec<HealthStatus>,
     context: HealthContext,
     #[serde(default)]
-    values: Vec<ValueDefinition>,
+    metrics: Vec<MetricDefinition>,
     #[serde(default)]
-    value_observations: Vec<ValueObservation>,
+    metric_samples: Vec<MetricSample>,
     report: Option<HealthReport>,
     #[serde(default)]
     error: bool,
@@ -115,11 +115,11 @@ fn component_conformance() {
 #[test]
 fn health_conformance() {
     for case in fixtures().health {
-        let report = evaluate_health_with_values(
+        let report = evaluate_health_with_metrics(
             &case.nodes,
             &case.statuses,
-            &case.values,
-            &case.value_observations,
+            &case.metrics,
+            &case.metric_samples,
             &case.context,
         );
         if case.error {

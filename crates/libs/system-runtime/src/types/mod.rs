@@ -1193,14 +1193,14 @@ pub mod filesystem {
         pub health_nodes: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
         #[doc = "Additional health status directories.\n"]
         pub health_statuses: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
-        #[doc = "Additional value definition directories.\n"]
-        pub values: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
-        #[doc = "Additional value observation directories.\n"]
-        pub value_observations: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        #[doc = "Additional metric definition directories.\n"]
+        pub metrics: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        #[doc = "Additional metric sample directories.\n"]
+        pub metric_samples: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for DirectoryConfig {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::filesystem::DirectoryConfig" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional component declaration directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("health_nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health definition directories.\n") . optional () . json_name ("healthNodes") , :: sidex :: shape :: FieldShape :: new ("health_statuses" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health status directories.\n") . optional () . json_name ("healthStatuses") , :: sidex :: shape :: FieldShape :: new ("values" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional value definition directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("value_observations" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional value observation directories.\n") . optional () . json_name ("valueObservations")]))) . with_docs ("Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::filesystem::DirectoryConfig" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional component declaration directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("health_nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health definition directories.\n") . optional () . json_name ("healthNodes") , :: sidex :: shape :: FieldShape :: new ("health_statuses" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional health status directories.\n") . optional () . json_name ("healthStatuses") , :: sidex :: shape :: FieldShape :: new ("metrics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional metric definition directories.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("metric_samples" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Additional metric sample directories.\n") . optional () . json_name ("metricSamples")]))) . with_docs ("Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for DirectoryConfig {
@@ -1229,11 +1229,11 @@ pub mod filesystem {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 3usize => self
-                    .values
+                    .metrics
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 4usize => self
-                    .value_observations
+                    .metric_samples
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
@@ -1301,8 +1301,8 @@ pub mod filesystem {
                 components: __field_0,
                 health_nodes: __field_1,
                 health_statuses: __field_2,
-                values: __field_3,
-                value_observations: __field_4,
+                metrics: __field_3,
+                metric_samples: __field_4,
             })
         }
     }
@@ -1332,11 +1332,10 @@ pub mod filesystem {
         pub health_nodes: ::std::vec::Vec<super::health::HealthNode>,
         #[doc = "Published health status records.\n"]
         pub health_statuses: ::std::vec::Vec<super::health::HealthStatus>,
-        #[doc = "Numeric value definitions.\n"]
-        pub values: ::std::option::Option<::std::vec::Vec<super::value::ValueDefinition>>,
-        #[doc = "Published value observations.\n"]
-        pub value_observations:
-            ::std::option::Option<::std::vec::Vec<super::value::ValueObservation>>,
+        #[doc = "Numeric metric definitions.\n"]
+        pub metrics: ::std::option::Option<::std::vec::Vec<super::metric::MetricDefinition>>,
+        #[doc = "Published metric samples.\n"]
+        pub metric_samples: ::std::option::Option<::std::vec::Vec<super::metric::MetricSample>>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for RuntimeSnapshot {
@@ -1363,18 +1362,18 @@ pub mod filesystem {
                 .with_docs("Published health status records.\n")
                 .json_name("healthStatuses"),
                 ::sidex::shape::FieldShape::new(
-                    "values",
-                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueDefinition>>,
+                    "metrics",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::metric::MetricDefinition>>,
                 )
-                .with_docs("Numeric value definitions.\n")
+                .with_docs("Numeric metric definitions.\n")
                 .optional(),
                 ::sidex::shape::FieldShape::new(
-                    "value_observations",
-                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueObservation>>,
+                    "metric_samples",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::metric::MetricSample>>,
                 )
-                .with_docs("Published value observations.\n")
+                .with_docs("Published metric samples.\n")
                 .optional()
-                .json_name("valueObservations"),
+                .json_name("metricSamples"),
             ])),
         )
         .with_docs("Complete collection loaded from a filesystem or supplied directly.\n");
@@ -1399,11 +1398,11 @@ pub mod filesystem {
                     ::std::option::Option::Some(::sidex::Encode::encode(&self.health_statuses))
                 }
                 3usize => self
-                    .values
+                    .metrics
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 4usize => self
-                    .value_observations
+                    .metric_samples
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
@@ -1424,9 +1423,9 @@ pub mod filesystem {
             let mut __field_2 =
                 ::std::option::Option::<::std::vec::Vec<super::health::HealthStatus>>::None;
             let mut __field_3 =
-                ::std::option::Option::<::std::vec::Vec<super::value::ValueDefinition>>::None;
+                ::std::option::Option::<::std::vec::Vec<super::metric::MetricDefinition>>::None;
             let mut __field_4 =
-                ::std::option::Option::<::std::vec::Vec<super::value::ValueObservation>>::None;
+                ::std::option::Option::<::std::vec::Vec<super::metric::MetricSample>>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -1452,14 +1451,14 @@ pub mod filesystem {
                     }
                     3usize => {
                         __field_3 = ::std::option::Option::Some(<::std::vec::Vec<
-                            super::value::ValueDefinition,
+                            super::metric::MetricDefinition,
                         > as ::sidex::Decode>::decode(
                             decoder
                         )?)
                     }
                     4usize => {
                         __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
-                            super::value::ValueObservation,
+                            super::metric::MetricSample,
                         > as ::sidex::Decode>::decode(
                             decoder
                         )?)
@@ -1475,8 +1474,8 @@ pub mod filesystem {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthNodes`"))?,
                 health_statuses: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthStatuses`"))?,
-                values: __field_3,
-                value_observations: __field_4,
+                metrics: __field_3,
+                metric_samples: __field_4,
             })
         }
     }
@@ -1697,7 +1696,7 @@ pub mod health {
     pub enum HealthRule {
         #[doc = "Health is supplied by an external status record.\n"]
         Observed(ObservationRule),
-        #[doc = "Health is derived from a fresh numeric observation.\n"]
+        #[doc = "Health is derived from a fresh metric sample.\n"]
         Threshold(ThresholdRule),
         #[doc = "Health is evaluated from other nodes.\n"]
         Aggregate(AggregationRule),
@@ -1718,7 +1717,7 @@ pub mod health {
                         "Threshold",
                         ::std::option::Option::Some(::sidex::shape::shape_of::<ThresholdRule>),
                     )
-                    .with_docs("Health is derived from a fresh numeric observation.\n")
+                    .with_docs("Health is derived from a fresh metric sample.\n")
                     .json_name("threshold"),
                     ::sidex::shape::CaseShape::new(
                         "Aggregate",
@@ -1925,21 +1924,21 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "Desired and minimum ranges for one runtime value.\n"]
+    #[doc = "Desired and minimum ranges for one metric.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct ThresholdRule {
-        #[doc = "Value definition supplying the unit, identity, and freshness constraints.\n"]
-        pub value: super::value::ValueId,
+        #[doc = "Metric definition supplying the unit, identity, and freshness constraints.\n"]
+        pub metric: super::metric::MetricId,
         #[doc = "Desired range; must be a subset of the usable range.\n"]
-        pub healthy: super::value::ValueRange,
+        pub healthy: super::metric::MetricRange,
         #[doc = "Minimum range for usability.\n"]
-        pub usable: super::value::ValueRange,
-        #[doc = "Optional consumer limit on observation age, in milliseconds; must be positive.\n"]
+        pub usable: super::metric::MetricRange,
+        #[doc = "Optional consumer limit on sample age, in milliseconds; must be positive.\n"]
         pub max_age_ms: ::std::option::Option<u32>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for ThresholdRule {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::ThresholdRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("value" , :: sidex :: shape :: shape_of :: < super :: value :: ValueId > ,) . with_docs ("Value definition supplying the unit, identity, and freshness constraints.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < super :: value :: ValueRange > ,) . with_docs ("Desired range; must be a subset of the usable range.\n") , :: sidex :: shape :: FieldShape :: new ("usable" , :: sidex :: shape :: shape_of :: < super :: value :: ValueRange > ,) . with_docs ("Minimum range for usability.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on observation age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs")]))) . with_docs ("Desired and minimum ranges for one runtime value.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::ThresholdRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("metric" , :: sidex :: shape :: shape_of :: < super :: metric :: MetricId > ,) . with_docs ("Metric definition supplying the unit, identity, and freshness constraints.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < super :: metric :: MetricRange > ,) . with_docs ("Desired range; must be a subset of the usable range.\n") , :: sidex :: shape :: FieldShape :: new ("usable" , :: sidex :: shape :: shape_of :: < super :: metric :: MetricRange > ,) . with_docs ("Minimum range for usability.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on sample age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs")]))) . with_docs ("Desired and minimum ranges for one metric.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for ThresholdRule {
@@ -1955,7 +1954,7 @@ pub mod health {
         }
         fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
             match index {
-                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.value)),
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.metric)),
                 1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.healthy)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.usable)),
                 3usize => self
@@ -1972,25 +1971,25 @@ pub mod health {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
-            let mut __field_0 = ::std::option::Option::<super::value::ValueId>::None;
-            let mut __field_1 = ::std::option::Option::<super::value::ValueRange>::None;
-            let mut __field_2 = ::std::option::Option::<super::value::ValueRange>::None;
+            let mut __field_0 = ::std::option::Option::<super::metric::MetricId>::None;
+            let mut __field_1 = ::std::option::Option::<super::metric::MetricRange>::None;
+            let mut __field_2 = ::std::option::Option::<super::metric::MetricRange>::None;
             let mut __field_3 = ::std::option::Option::<u32>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
                         __field_0 = ::std::option::Option::Some(
-                            <super::value::ValueId as ::sidex::Decode>::decode(decoder)?,
+                            <super::metric::MetricId as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     1usize => {
                         __field_1 = ::std::option::Option::Some(
-                            <super::value::ValueRange as ::sidex::Decode>::decode(decoder)?,
+                            <super::metric::MetricRange as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     2usize => {
                         __field_2 = ::std::option::Option::Some(
-                            <super::value::ValueRange as ::sidex::Decode>::decode(decoder)?,
+                            <super::metric::MetricRange as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     3usize => {
@@ -2002,8 +2001,8 @@ pub mod health {
                 ::std::result::Result::Ok(())
             })?;
             ::std::result::Result::Ok(Self {
-                value: __field_0
-                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `value`"))?,
+                metric: __field_0
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `metric`"))?,
                 healthy: __field_1
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthy`"))?,
                 usable: __field_2
@@ -2696,11 +2695,10 @@ pub mod health {
         pub nodes: ::std::vec::Vec<HealthNode>,
         #[doc = "Original status records; observation times and validity are preserved.\n"]
         pub statuses: ::std::vec::Vec<HealthStatus>,
-        #[doc = "Value definitions used by threshold nodes or displayed independently.\n"]
-        pub values: ::std::option::Option<::std::vec::Vec<super::value::ValueDefinition>>,
-        #[doc = "Original measurements; observation times and validity are preserved.\n"]
-        pub value_observations:
-            ::std::option::Option<::std::vec::Vec<super::value::ValueObservation>>,
+        #[doc = "Metric definitions used by threshold nodes or displayed independently.\n"]
+        pub metrics: ::std::option::Option<::std::vec::Vec<super::metric::MetricDefinition>>,
+        #[doc = "Original metric samples; sample times and validity are preserved.\n"]
+        pub metric_samples: ::std::option::Option<::std::vec::Vec<super::metric::MetricSample>>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthSnapshot {
@@ -2725,20 +2723,20 @@ pub mod health {
                     "Original status records; observation times and validity are preserved.\n",
                 ),
                 ::sidex::shape::FieldShape::new(
-                    "values",
-                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueDefinition>>,
+                    "metrics",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::metric::MetricDefinition>>,
                 )
                 .with_docs(
-                    "Value definitions used by threshold nodes or displayed independently.\n",
+                    "Metric definitions used by threshold nodes or displayed independently.\n",
                 )
                 .optional(),
                 ::sidex::shape::FieldShape::new(
-                    "value_observations",
-                    ::sidex::shape::shape_of::<::std::vec::Vec<super::value::ValueObservation>>,
+                    "metric_samples",
+                    ::sidex::shape::shape_of::<::std::vec::Vec<super::metric::MetricSample>>,
                 )
-                .with_docs("Original measurements; observation times and validity are preserved.\n")
+                .with_docs("Original metric samples; sample times and validity are preserved.\n")
                 .optional()
-                .json_name("valueObservations"),
+                .json_name("metricSamples"),
             ])),
         )
         .with_docs("Transport view of a health graph and the evidence used to evaluate it.\n");
@@ -2761,11 +2759,11 @@ pub mod health {
                 1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.nodes)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.statuses)),
                 3usize => self
-                    .values
+                    .metrics
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 4usize => self
-                    .value_observations
+                    .metric_samples
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
@@ -2782,9 +2780,9 @@ pub mod health {
             let mut __field_1 = ::std::option::Option::<::std::vec::Vec<HealthNode>>::None;
             let mut __field_2 = ::std::option::Option::<::std::vec::Vec<HealthStatus>>::None;
             let mut __field_3 =
-                ::std::option::Option::<::std::vec::Vec<super::value::ValueDefinition>>::None;
+                ::std::option::Option::<::std::vec::Vec<super::metric::MetricDefinition>>::None;
             let mut __field_4 =
-                ::std::option::Option::<::std::vec::Vec<super::value::ValueObservation>>::None;
+                ::std::option::Option::<::std::vec::Vec<super::metric::MetricSample>>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -2804,14 +2802,14 @@ pub mod health {
                     }
                     3usize => {
                         __field_3 = ::std::option::Option::Some(<::std::vec::Vec<
-                            super::value::ValueDefinition,
+                            super::metric::MetricDefinition,
                         > as ::sidex::Decode>::decode(
                             decoder
                         )?)
                     }
                     4usize => {
                         __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
-                            super::value::ValueObservation,
+                            super::metric::MetricSample,
                         > as ::sidex::Decode>::decode(
                             decoder
                         )?)
@@ -2827,8 +2825,8 @@ pub mod health {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `nodes`"))?,
                 statuses: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `statuses`"))?,
-                values: __field_3,
-                value_observations: __field_4,
+                metrics: __field_3,
+                metric_samples: __field_4,
             })
         }
     }
@@ -3075,8 +3073,8 @@ pub mod health {
         }
     }
 }
-pub mod value {
-    #![doc = "Numeric runtime values, their units, and threshold ranges.\n"]
+pub mod metric {
+    #![doc = "Metrics, their samples, units, and threshold ranges.\n"]
     #![allow(
         clippy::all,
         clippy::pedantic,
@@ -3084,21 +3082,21 @@ pub mod value {
         clippy::cargo,
         dead_code
     )]
-    #[doc = "Identifier of a runtime value, unique independently of health node IDs.\n"]
+    #[doc = "Identifier of a metric, unique independently of health node IDs.\n"]
     #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    pub struct ValueId(pub(crate) ::std::string::String);
-    impl ::std::convert::From<ValueId> for ::std::string::String {
-        fn from(wrapped: ValueId) -> Self {
+    pub struct MetricId(pub(crate) ::std::string::String);
+    impl ::std::convert::From<MetricId> for ::std::string::String {
+        fn from(wrapped: MetricId) -> Self {
             wrapped.0
         }
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for ValueId {
+    impl ::sidex::Shaped for MetricId {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::value::ValueId",
+            "::system_runtime::metric::MetricId",
             ::sidex::shape::ShapeKind::Wrapper(::sidex::shape::shape_of::<::std::string::String>),
         )
-        .with_docs("Identifier of a runtime value, unique independently of health node IDs.\n")
+        .with_docs("Identifier of a metric, unique independently of health node IDs.\n")
         .with_attrs(&[::sidex::shape::Attr::List {
             path: "rust",
             args: &[::sidex::shape::Attr::List {
@@ -3113,13 +3111,13 @@ pub mod value {
         }]);
     }
     #[automatically_derived]
-    impl ::sidex::Encode for ValueId {
+    impl ::sidex::Encode for MetricId {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::Encode::encode(&self.0)
         }
     }
     #[automatically_derived]
-    impl ::sidex::Decode for ValueId {
+    impl ::sidex::Decode for MetricId {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -3129,7 +3127,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for ValueId {
+    impl ::serde::Serialize for MetricId {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -3138,44 +3136,44 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for ValueId {
+    impl<'de> ::serde::Deserialize<'de> for MetricId {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "A named measurement, independent of any health policy.\n"]
+    #[doc = "A named numeric measurement, independent of any health policy; samples carry no history.\n"]
     #[derive(Clone, Debug, PartialEq)]
-    pub struct ValueDefinition {
-        #[doc = "Unique value ID.\n"]
-        pub id: ValueId,
+    pub struct MetricDefinition {
+        #[doc = "Unique metric ID.\n"]
+        pub id: MetricId,
         #[doc = "Ownership group for replacement or removal, matched exactly.\n"]
         pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Human-readable label.\n"]
         pub label: ::std::option::Option<::std::string::String>,
         #[doc = "Related component IDs; these associations do not imply health dependencies.\n"]
         pub components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
-        #[doc = "Unit shared by observations and all thresholds referencing this value.\n"]
-        pub unit: ValueUnit,
-        #[doc = "Optional consumer limit on observation age, in milliseconds; must be positive.\n"]
+        #[doc = "Unit shared by samples and all thresholds referencing this metric.\n"]
+        pub unit: MetricUnit,
+        #[doc = "Optional consumer limit on sample age, in milliseconds; must be positive.\n"]
         pub max_age_ms: ::std::option::Option<u32>,
-        #[doc = "Optional tag that observations must match exactly.\n"]
+        #[doc = "Optional tag that samples must match exactly.\n"]
         pub expected_tag: ::std::option::Option<::std::string::String>,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for ValueDefinition {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::value::ValueDefinition" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < ValueId > ,) . with_docs ("Unique value ID.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Ownership group for replacement or removal, matched exactly.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable label.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Related component IDs; these associations do not imply health dependencies.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("unit" , :: sidex :: shape :: shape_of :: < ValueUnit > ,) . with_docs ("Unit shared by observations and all thresholds referencing this value.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on observation age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("expected_tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Optional tag that observations must match exactly.\n") . optional () . json_name ("expectedTag")]))) . with_docs ("A named measurement, independent of any health policy.\n") ;
+    impl ::sidex::Shaped for MetricDefinition {
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::metric::MetricDefinition" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < MetricId > ,) . with_docs ("Unique metric ID.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Ownership group for replacement or removal, matched exactly.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable label.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Related component IDs; these associations do not imply health dependencies.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("unit" , :: sidex :: shape :: shape_of :: < MetricUnit > ,) . with_docs ("Unit shared by samples and all thresholds referencing this metric.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on sample age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("expected_tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Optional tag that samples must match exactly.\n") . optional () . json_name ("expectedTag")]))) . with_docs ("A named numeric measurement, independent of any health policy; samples carry no history.\n") ;
     }
     #[automatically_derived]
-    impl ::sidex::Encode for ValueDefinition {
+    impl ::sidex::Encode for MetricDefinition {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Record(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::RecordView for ValueDefinition {
+    impl ::sidex::encode::RecordView for MetricDefinition {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -3209,23 +3207,23 @@ pub mod value {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for ValueDefinition {
+    impl ::sidex::Decode for MetricDefinition {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
-            let mut __field_0 = ::std::option::Option::<ValueId>::None;
+            let mut __field_0 = ::std::option::Option::<MetricId>::None;
             let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_2 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_3 =
                 ::std::option::Option::<::std::vec::Vec<::std::string::String>>::None;
-            let mut __field_4 = ::std::option::Option::<ValueUnit>::None;
+            let mut __field_4 = ::std::option::Option::<MetricUnit>::None;
             let mut __field_5 = ::std::option::Option::<u32>::None;
             let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
                         __field_0 = ::std::option::Option::Some(
-                            <ValueId as ::sidex::Decode>::decode(decoder)?,
+                            <MetricId as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     1usize => {
@@ -3247,7 +3245,7 @@ pub mod value {
                     }
                     4usize => {
                         __field_4 = ::std::option::Option::Some(
-                            <ValueUnit as ::sidex::Decode>::decode(decoder)?,
+                            <MetricUnit as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     5usize => {
@@ -3275,7 +3273,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for ValueDefinition {
+    impl ::serde::Serialize for MetricDefinition {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -3284,7 +3282,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for ValueDefinition {
+    impl<'de> ::serde::Deserialize<'de> for MetricDefinition {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -3293,14 +3291,14 @@ pub mod value {
     }
     #[doc = "One measurement within a boot; publishing it does not assert health.\n"]
     #[derive(Clone, Debug, PartialEq)]
-    pub struct ValueObservation {
-        #[doc = "Observed value ID.\n"]
-        pub id: ValueId,
+    pub struct MetricSample {
+        #[doc = "Measured metric ID.\n"]
+        pub id: MetricId,
         #[doc = "Ownership group; must match the definition's owner when specified.\n"]
         pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Finite measurement in the definition's unit.\n"]
         pub value: f64,
-        #[doc = "Boot identifier defining the observation clock domain.\n"]
+        #[doc = "Boot identifier defining the sample clock domain.\n"]
         pub boot_id: ::std::string::String,
         #[doc = "Milliseconds on the boot-time clock when the measurement was taken.\n"]
         pub observed_at_ms: u64,
@@ -3312,12 +3310,12 @@ pub mod value {
         pub message: ::std::option::Option<::std::string::String>,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for ValueObservation {
+    impl ::sidex::Shaped for MetricSample {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::value::ValueObservation",
+            "::system_runtime::metric::MetricSample",
             ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
-                ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<ValueId>)
-                    .with_docs("Observed value ID.\n"),
+                ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<MetricId>)
+                    .with_docs("Measured metric ID.\n"),
                 ::sidex::shape::FieldShape::new(
                     "owner",
                     ::sidex::shape::shape_of::<::std::string::String>,
@@ -3330,7 +3328,7 @@ pub mod value {
                     "boot_id",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
-                .with_docs("Boot identifier defining the observation clock domain.\n")
+                .with_docs("Boot identifier defining the sample clock domain.\n")
                 .json_name("bootId"),
                 ::sidex::shape::FieldShape::new("observed_at_ms", ::sidex::shape::shape_of::<u64>)
                     .with_docs(
@@ -3357,14 +3355,14 @@ pub mod value {
         .with_docs("One measurement within a boot; publishing it does not assert health.\n");
     }
     #[automatically_derived]
-    impl ::sidex::Encode for ValueObservation {
+    impl ::sidex::Encode for MetricSample {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Record(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::RecordView for ValueObservation {
+    impl ::sidex::encode::RecordView for MetricSample {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -3395,11 +3393,11 @@ pub mod value {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for ValueObservation {
+    impl ::sidex::Decode for MetricSample {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
-            let mut __field_0 = ::std::option::Option::<ValueId>::None;
+            let mut __field_0 = ::std::option::Option::<MetricId>::None;
             let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_2 = ::std::option::Option::<f64>::None;
             let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
@@ -3411,7 +3409,7 @@ pub mod value {
                 match index {
                     0usize => {
                         __field_0 = ::std::option::Option::Some(
-                            <ValueId as ::sidex::Decode>::decode(decoder)?,
+                            <MetricId as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     1usize => {
@@ -3467,7 +3465,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for ValueObservation {
+    impl ::serde::Serialize for MetricSample {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -3476,7 +3474,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for ValueObservation {
+    impl<'de> ::serde::Deserialize<'de> for MetricSample {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -3485,7 +3483,7 @@ pub mod value {
     }
     #[doc = "Semantic unit; display prefixes, precision, and conversions are consumer choices.\n"]
     #[derive(Clone, Debug, PartialEq, Copy, Eq)]
-    pub enum ValueUnit {
+    pub enum MetricUnit {
         #[doc = "Degrees Celsius; consumers may convert for display.\n"]
         Celsius,
         #[doc = "Bytes; consumers may display decimal or binary prefixes.\n"]
@@ -3510,9 +3508,9 @@ pub mod value {
         RevolutionsPerMinute,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for ValueUnit {
+    impl ::sidex::Shaped for MetricUnit {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::value::ValueUnit",
+            "::system_runtime::metric::MetricUnit",
             ::sidex::shape::ShapeKind::Variant(
                 ::sidex::shape::VariantShape::new(&[
                     ::sidex::shape::CaseShape::new("Celsius", ::std::option::Option::None)
@@ -3585,14 +3583,14 @@ pub mod value {
         ]);
     }
     #[automatically_derived]
-    impl ::sidex::Encode for ValueUnit {
+    impl ::sidex::Encode for MetricUnit {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Variant(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::VariantView for ValueUnit {
+    impl ::sidex::encode::VariantView for MetricUnit {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -3629,7 +3627,7 @@ pub mod value {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for ValueUnit {
+    impl ::sidex::Decode for MetricUnit {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -3659,7 +3657,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for ValueUnit {
+    impl ::serde::Serialize for MetricUnit {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -3668,43 +3666,43 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for ValueUnit {
+    impl<'de> ::serde::Deserialize<'de> for MetricUnit {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "One endpoint of a numeric range, in the referenced value's unit.\n"]
+    #[doc = "One endpoint of a numeric range, in the referenced metric's unit.\n"]
     #[derive(Clone, Debug, PartialEq)]
-    pub struct ValueBound {
-        #[doc = "Finite endpoint in the referenced value's unit.\n"]
+    pub struct MetricBound {
+        #[doc = "Finite endpoint in the referenced metric's unit.\n"]
         pub value: f64,
         #[doc = "Whether equality with this endpoint is inside the range.\n"]
         pub inclusive: bool,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for ValueBound {
+    impl ::sidex::Shaped for MetricBound {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::value::ValueBound",
+            "::system_runtime::metric::MetricBound",
             ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
                 ::sidex::shape::FieldShape::new("value", ::sidex::shape::shape_of::<f64>)
-                    .with_docs("Finite endpoint in the referenced value's unit.\n"),
+                    .with_docs("Finite endpoint in the referenced metric's unit.\n"),
                 ::sidex::shape::FieldShape::new("inclusive", ::sidex::shape::shape_of::<bool>)
                     .with_docs("Whether equality with this endpoint is inside the range.\n"),
             ])),
         )
-        .with_docs("One endpoint of a numeric range, in the referenced value's unit.\n");
+        .with_docs("One endpoint of a numeric range, in the referenced metric's unit.\n");
     }
     #[automatically_derived]
-    impl ::sidex::Encode for ValueBound {
+    impl ::sidex::Encode for MetricBound {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Record(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::RecordView for ValueBound {
+    impl ::sidex::encode::RecordView for MetricBound {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -3718,7 +3716,7 @@ pub mod value {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for ValueBound {
+    impl ::sidex::Decode for MetricBound {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -3747,7 +3745,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for ValueBound {
+    impl ::serde::Serialize for MetricBound {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -3756,7 +3754,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for ValueBound {
+    impl<'de> ::serde::Deserialize<'de> for MetricBound {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -3765,21 +3763,21 @@ pub mod value {
     }
     #[doc = "A nonempty interval; omitted endpoints are unbounded.\n"]
     #[derive(Clone, Debug, PartialEq)]
-    pub struct ValueRange {
+    pub struct MetricRange {
         #[doc = "Optional lower endpoint.\n"]
-        pub lower: ::std::option::Option<ValueBound>,
+        pub lower: ::std::option::Option<MetricBound>,
         #[doc = "Optional upper endpoint.\n"]
-        pub upper: ::std::option::Option<ValueBound>,
+        pub upper: ::std::option::Option<MetricBound>,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for ValueRange {
+    impl ::sidex::Shaped for MetricRange {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::value::ValueRange",
+            "::system_runtime::metric::MetricRange",
             ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
-                ::sidex::shape::FieldShape::new("lower", ::sidex::shape::shape_of::<ValueBound>)
+                ::sidex::shape::FieldShape::new("lower", ::sidex::shape::shape_of::<MetricBound>)
                     .with_docs("Optional lower endpoint.\n")
                     .optional(),
-                ::sidex::shape::FieldShape::new("upper", ::sidex::shape::shape_of::<ValueBound>)
+                ::sidex::shape::FieldShape::new("upper", ::sidex::shape::shape_of::<MetricBound>)
                     .with_docs("Optional upper endpoint.\n")
                     .optional(),
             ])),
@@ -3787,14 +3785,14 @@ pub mod value {
         .with_docs("A nonempty interval; omitted endpoints are unbounded.\n");
     }
     #[automatically_derived]
-    impl ::sidex::Encode for ValueRange {
+    impl ::sidex::Encode for MetricRange {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Record(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::RecordView for ValueRange {
+    impl ::sidex::encode::RecordView for MetricRange {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -3814,22 +3812,22 @@ pub mod value {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for ValueRange {
+    impl ::sidex::Decode for MetricRange {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
-            let mut __field_0 = ::std::option::Option::<ValueBound>::None;
-            let mut __field_1 = ::std::option::Option::<ValueBound>::None;
+            let mut __field_0 = ::std::option::Option::<MetricBound>::None;
+            let mut __field_1 = ::std::option::Option::<MetricBound>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
                         __field_0 = ::std::option::Option::Some(
-                            <ValueBound as ::sidex::Decode>::decode(decoder)?,
+                            <MetricBound as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     1usize => {
                         __field_1 = ::std::option::Option::Some(
-                            <ValueBound as ::sidex::Decode>::decode(decoder)?,
+                            <MetricBound as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     _ => {}
@@ -3843,7 +3841,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for ValueRange {
+    impl ::serde::Serialize for MetricRange {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -3852,7 +3850,7 @@ pub mod value {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for ValueRange {
+    impl<'de> ::serde::Deserialize<'de> for MetricRange {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {

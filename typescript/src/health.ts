@@ -1,7 +1,7 @@
 /** Evaluate health graphs using caller-supplied boot-time evidence. */
 
-import { ValueEvidence } from "./threshold.js";
-import type { ValueDefinition, ValueObservation } from "./generated/value.js";
+import { MetricEvidence } from "./threshold.js";
+import type { MetricDefinition, MetricSample } from "./generated/metric.js";
 
 import { HealthStatus, HealthContext, HealthNode } from "./generated/health.js";
 import type {
@@ -19,9 +19,9 @@ function nodeRule(node: HealthNode): HealthRule {
 /** Validate the graph, then evaluate every node in declaration order. */
 export function evaluateHealth(
   nodes: readonly HealthNode[], statuses: readonly HealthStatus[], context: HealthContext,
-  values: readonly ValueDefinition[] = [], valueObservations: readonly ValueObservation[] = [],
+  metrics: readonly MetricDefinition[] = [], metricSamples: readonly MetricSample[] = [],
 ): HealthReport {
-  const evidence = new ValueEvidence(values, valueObservations);
+  const evidence = new MetricEvidence(metrics, metricSamples);
   const clockCheck = HealthContext.check(context);
   if (clockCheck.isErr()) throw new Error(clockCheck.toString());
   const byId = new Map<HealthNodeId, HealthNode>();

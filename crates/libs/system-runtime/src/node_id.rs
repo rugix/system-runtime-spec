@@ -21,20 +21,20 @@ impl From<&str> for HealthNodeId {
     }
 }
 
-impl crate::types::value::ValueId {
+impl crate::types::metric::MetricId {
     /// Borrow the identifier's string representation.
     pub fn as_str(&self) -> &str {
         &self.0
     }
 }
 
-impl From<&str> for crate::types::value::ValueId {
+impl From<&str> for crate::types::metric::MetricId {
     fn from(id: &str) -> Self {
         Self(id.into())
     }
 }
 
-impl From<String> for crate::types::value::ValueId {
+impl From<String> for crate::types::metric::MetricId {
     fn from(id: String) -> Self {
         Self(id)
     }

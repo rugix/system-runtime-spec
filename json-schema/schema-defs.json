@@ -298,13 +298,13 @@
           "type": "string"
         }
       },
-      "values": {
+      "metrics": {
         "type": "array",
         "items": {
           "type": "string"
         }
       },
-      "valueObservations": {
+      "metricSamples": {
         "type": "array",
         "items": {
           "type": "string"
@@ -336,16 +336,16 @@
           "$ref": "#/components/schemas/system_runtime.health.HealthStatus"
         }
       },
-      "values": {
+      "metrics": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/system_runtime.value.ValueDefinition"
+          "$ref": "#/components/schemas/system_runtime.metric.MetricDefinition"
         }
       },
-      "valueObservations": {
+      "metricSamples": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/system_runtime.value.ValueObservation"
+          "$ref": "#/components/schemas/system_runtime.metric.MetricSample"
         }
       }
     },
@@ -551,14 +551,14 @@
           "type": {
             "const": "threshold"
           },
-          "value": {
-            "$ref": "#/components/schemas/system_runtime.value.ValueId"
+          "metric": {
+            "$ref": "#/components/schemas/system_runtime.metric.MetricId"
           },
           "healthy": {
-            "$ref": "#/components/schemas/system_runtime.value.ValueRange"
+            "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
           },
           "usable": {
-            "$ref": "#/components/schemas/system_runtime.value.ValueRange"
+            "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
           },
           "maxAgeMs": {
             "type": "integer",
@@ -569,7 +569,7 @@
         },
         "required": [
           "type",
-          "value",
+          "metric",
           "healthy",
           "usable"
         ]
@@ -625,16 +625,16 @@
           "$ref": "#/components/schemas/system_runtime.health.HealthStatus"
         }
       },
-      "values": {
+      "metrics": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/system_runtime.value.ValueDefinition"
+          "$ref": "#/components/schemas/system_runtime.metric.MetricDefinition"
         }
       },
-      "valueObservations": {
+      "metricSamples": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/system_runtime.value.ValueObservation"
+          "$ref": "#/components/schemas/system_runtime.metric.MetricSample"
         }
       }
     },
@@ -720,16 +720,16 @@
   },
   "system_runtime.health.ThresholdRule": {
     "type": "object",
-    "description": "Desired and minimum ranges for one runtime value.",
+    "description": "Desired and minimum ranges for one metric.",
     "properties": {
-      "value": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueId"
+      "metric": {
+        "$ref": "#/components/schemas/system_runtime.metric.MetricId"
       },
       "healthy": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueRange"
+        "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
       },
       "usable": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueRange"
+        "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
       },
       "maxAgeMs": {
         "type": "integer",
@@ -739,15 +739,15 @@
       }
     },
     "required": [
-      "value",
+      "metric",
       "healthy",
       "usable"
     ],
     "unevaluatedProperties": false
   },
-  "system_runtime.value.ValueBound": {
+  "system_runtime.metric.MetricBound": {
     "type": "object",
-    "description": "One endpoint of a numeric range, in the referenced value's unit.",
+    "description": "One endpoint of a numeric range, in the referenced metric's unit.",
     "properties": {
       "value": {
         "type": [
@@ -766,12 +766,12 @@
     ],
     "unevaluatedProperties": false
   },
-  "system_runtime.value.ValueDefinition": {
+  "system_runtime.metric.MetricDefinition": {
     "type": "object",
-    "description": "A named measurement, independent of any health policy.",
+    "description": "A named numeric measurement, independent of any health policy; samples carry no history.",
     "properties": {
       "id": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueId"
+        "$ref": "#/components/schemas/system_runtime.metric.MetricId"
       },
       "owner": {
         "type": "string"
@@ -786,7 +786,7 @@
         }
       },
       "unit": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueUnit"
+        "$ref": "#/components/schemas/system_runtime.metric.MetricUnit"
       },
       "maxAgeMs": {
         "type": "integer",
@@ -804,16 +804,30 @@
     ],
     "unevaluatedProperties": false
   },
-  "system_runtime.value.ValueId": {
+  "system_runtime.metric.MetricId": {
     "type": "string",
-    "description": "Identifier of a runtime value, unique independently of health node IDs."
+    "description": "Identifier of a metric, unique independently of health node IDs."
   },
-  "system_runtime.value.ValueObservation": {
+  "system_runtime.metric.MetricRange": {
+    "type": "object",
+    "description": "A nonempty interval; omitted endpoints are unbounded.",
+    "properties": {
+      "lower": {
+        "$ref": "#/components/schemas/system_runtime.metric.MetricBound"
+      },
+      "upper": {
+        "$ref": "#/components/schemas/system_runtime.metric.MetricBound"
+      }
+    },
+    "required": [],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.metric.MetricSample": {
     "type": "object",
     "description": "One measurement within a boot; publishing it does not assert health.",
     "properties": {
       "id": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueId"
+        "$ref": "#/components/schemas/system_runtime.metric.MetricId"
       },
       "owner": {
         "type": "string"
@@ -859,21 +873,7 @@
     ],
     "unevaluatedProperties": false
   },
-  "system_runtime.value.ValueRange": {
-    "type": "object",
-    "description": "A nonempty interval; omitted endpoints are unbounded.",
-    "properties": {
-      "lower": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueBound"
-      },
-      "upper": {
-        "$ref": "#/components/schemas/system_runtime.value.ValueBound"
-      }
-    },
-    "required": [],
-    "unevaluatedProperties": false
-  },
-  "system_runtime.value.ValueUnit": {
+  "system_runtime.metric.MetricUnit": {
     "enum": [
       "celsius",
       "bytes",

@@ -2,7 +2,7 @@
 
 This repository contains the *System Runtime Specification*, developed by the
 Rugix Project. It defines a common format for describing a system's components,
-their compatibility requirements, numeric runtime values, and their health.
+their compatibility requirements, their metrics, and their health.
 
 A system image and its applications may be maintained and updated independently.
 An image update can remove a runtime that an installed application still needs.
@@ -69,11 +69,12 @@ instance from confirming the replacement's health.
 A graph can expose several top-level results, called roots. Separate roots can
 describe availability and update readiness using the same underlying checks.
 
-### Runtime Values
+### Metrics
 
-Numeric values expose measurements with units, independently of health checks.
-Threshold nodes derive health by comparing a measurement with declared healthy
-and usable ranges. A temperature sensor can publish a reading once, while separate threshold nodes
+Metrics expose numeric measurements with units, independently of health checks.
+A metric carries no history; only its current sample counts. Threshold nodes
+derive health by comparing a metric's sample with declared healthy and usable
+ranges. A temperature sensor can publish a reading once, while separate threshold nodes
 use it to determine thermal health and update readiness. Consumers can display
 the reading, its age, and the ranges behind its health without parsing messages.
 
@@ -190,15 +191,15 @@ Requirements are comma-separated conjunctions of `=`, `==`, `!=`, `>`, `>=`,
 versions. Outer whitespace is ignored. Prereleases use the same comparisons
 without implicit exclusion. SemVer shorthand such as `^` and `~` is not accepted.
 
-### Runtime Values and Thresholds
+### Metrics and Thresholds
 
-A runtime value is a named numeric measurement, such as CPU temperature, free
-disk space, or battery charge. A `ValueDefinition` declares its ID, unit, optional
+A metric is a named numeric measurement, such as CPU temperature, free
+disk space, or battery charge. A `MetricDefinition` declares its ID, unit, optional
 label, associated components, owner, and evidence constraints. A separate
-`ValueObservation` supplies the measurement. Values can be displayed without a
-health policy, and several threshold nodes can reference the same value.
+`MetricSample` supplies the measurement. Metrics can be displayed without a
+health policy, and several threshold nodes can reference the same metric.
 
-Value IDs are opaque, case-sensitive strings, unique within the value collection.
+Metric IDs are opaque, case-sensitive strings, unique within the metric collection.
 They are independent of component and health node IDs. For example, a CPU sensor
 can declare:
 
@@ -213,7 +214,7 @@ can declare:
 }
 ```
 
-Its service publishes a separate observation:
+Its service publishes a separate sample:
 
 ```json
 {
@@ -227,13 +228,13 @@ Its service publishes a separate observation:
 }
 ```
 
-Observation identity and freshness follow the health status rules: the boot must
-match, the observation cannot be in the future, and its age must be strictly less
+Sample identity and freshness follow the health status rules: the boot must
+match, the sample cannot be in the future, and its age must be strictly less
 than its positive validity duration. A definition's `maxAgeMs` and a threshold
-rule's `maxAgeMs` can each shorten that duration. An observation must match the
+rule's `maxAgeMs` can each shorten that duration. A sample must match the
 definition's owner and expected tag when specified. The health node may have a
 different owner, allowing another contributor to define a policy for the sensor.
-Observation messages are optional and are preserved in fresh threshold results.
+Sample messages are optional and are preserved in fresh threshold results.
 
 #### Numbers and Units
 
@@ -242,7 +243,7 @@ numbers, serialized as JSON numbers. Negative and fractional values are
 supported. NaN and infinities are invalid. Large byte counts are approximate:
 above 2⁵³ bytes, not every individual byte can be represented.
 
-Unit names use kebab-case. Every observation and threshold endpoint uses the
+Unit names use kebab-case. Every sample and threshold endpoint uses the
 referenced definition's unit:
 
 | Unit | Meaning | Example Display |
@@ -266,7 +267,7 @@ thresholds.
 
 #### Threshold Rules
 
-A threshold health node references one value and declares a desired `healthy`
+A threshold health node references one metric and declares a desired `healthy`
 range and a minimum `usable` range. For example:
 
 ```json
@@ -275,7 +276,7 @@ range and a minimum `usable` range. For example:
   "owner": "platform.policy",
   "rule": {
     "type": "threshold",
-    "value": "cpu.temperature",
+    "metric": "cpu.temperature",
     "healthy": {
       "upper": {"value": 75, "inclusive": true}
     },
@@ -291,34 +292,34 @@ whether equality is included. An omitted bound is unbounded; `{}` accepts every
 finite value. Ranges must be nonempty, and the healthy range must be a subset of
 the usable range, including endpoint inclusion.
 
-A fresh observation inside the healthy range produces `healthy`. Otherwise, an
-observation inside the usable range produces `degraded`, and one outside it
+A fresh sample inside the healthy range produces `healthy`. Otherwise, a
+sample inside the usable range produces `degraded`, and one outside it
 produces `unhealthy`. In the example, 75 °C is healthy, 90 °C is degraded, and
 anything above 90 °C is unhealthy. Lower bounds can express minimum free space,
 and two bounds can express acceptable voltage ranges.
 
-Missing, expired, future, wrong-boot, wrong-owner, or wrong-tag measurements
-produce `unknown`. A threshold result has no health-node inputs; its source value
+Missing, expired, future, wrong-boot, wrong-owner, or wrong-tag samples
+produce `unknown`. A threshold result has no health-node inputs; its source metric
 is identified by its rule. It contributes to aggregate health like an observed
 node. Writers must not supply a `HealthStatus` for a threshold node.
 
-Duplicate value definitions or observations, missing referenced definitions,
+Duplicate metric definitions or samples, missing referenced definitions,
 non-finite numbers, zero validity durations, empty or reversed ranges, and
-healthy ranges outside usable ranges are evaluation errors. Observations without
-a current definition are ignored after validation. Unreferenced values remain
-valid for display. Callers supply one current observation per ID; evaluators do
+healthy ranges outside usable ranges are evaluation errors. Samples without
+a current definition are ignored after validation. Unreferenced metrics remain
+valid for display. Callers supply one current sample per metric; evaluators do
 not select from a history.
 
 Threshold evaluation is stateless. Debouncing, hysteresis, and historical
 aggregation remain the observer's responsibility. A UI may retain a last known
 measurement, but it must show its stale state separately from current health.
 
-#### Value Transport
+#### Metric Transport
 
-`HealthSnapshot` and `RuntimeSnapshot` optionally carry `values` and
-`valueObservations`. Omitted collections mean empty collections. A health
+`HealthSnapshot` and `RuntimeSnapshot` optionally carry `metrics` and
+`metricSamples`. Omitted collections mean empty collections. A health
 snapshot must include every definition referenced by its threshold nodes.
-The clock sample also correlates value observation times with wall time, using
+The clock sample also correlates metric sample times with wall time, using
 the same arithmetic as health status timestamps. Transport preserves evidence
 age and does not renew validity.
 
@@ -577,7 +578,7 @@ transport delays and subsequent changes can make that evidence stale.
 ### Owners and Update Candidates
 
 The `owner` field names the system image, app, or other contributor that owns a
-component, health node, status, value definition, or observation. Evaluated
+component, health node, status, metric definition, or metric sample. Evaluated
 health results inherit their node's owner. Owner names are opaque, case-sensitive strings matched by exact
 equality. For Rugix integration, use `rugix.system` for a system image and
 `rugix.apps.<name>` for an app. These are naming conventions; readers do not
@@ -597,7 +598,7 @@ status records from the running system.
 ### File Discovery
 
 Each regular `.json` file contains one component declaration, health node, status
-record, value definition, value observation, or directory configuration, according
+record, metric definition, metric sample, or directory configuration, according
 to its directory. Writers must
 omit optional fields when they are unset. Readers must ignore unknown record
 fields for forward compatibility.
@@ -607,8 +608,8 @@ fields for forward compatibility.
 | Components | `/usr/lib/system-runtime/components`, `/etc/system-runtime/components`, `/run/system-runtime/components` |
 | Health nodes | `/usr/lib/system-runtime/health/nodes`, `/etc/system-runtime/health/nodes`, `/run/system-runtime/health/nodes` |
 | Health statuses | `/run/system-runtime/health/status` |
-| Value definitions | `/usr/lib/system-runtime/values/definitions`, `/etc/system-runtime/values/definitions`, `/run/system-runtime/values/definitions` |
-| Value observations | `/run/system-runtime/values/observations` |
+| Metric definitions | `/usr/lib/system-runtime/metrics/definitions`, `/etc/system-runtime/metrics/definitions`, `/run/system-runtime/metrics/definitions` |
+| Metric samples | `/run/system-runtime/metrics/samples` |
 | Directory configurations | `/usr/lib/system-runtime/directories`, `/etc/system-runtime/directories`, `/run/system-runtime/directories` |
 
 Readers combine contributions without filename overrides. They process sources
@@ -624,7 +625,7 @@ so changing an activation symlink cannot redirect files already discovered.
 Nested symlinks and files with other extensions are skipped.
 
 A `DirectoryConfig` appends absolute paths through `components`, `healthNodes`,
-`healthStatuses`, `values`, and `valueObservations`.
+`healthStatuses`, `metrics`, and `metricSamples`.
 
 A whole `*` path segment matches real directories at that level. Matched directory
 symlinks are skipped; explicit segments such as `current` may follow symlinks.
