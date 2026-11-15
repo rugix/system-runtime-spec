@@ -84,17 +84,16 @@ Writers MUST produce [I-JSON][rfc7493] messages: they are encoded in UTF-8, no o
 members with the same name, and no string contains an unpaired surrogate or a noncharacter. Writers
 MUST omit optional fields that are not set and MUST NOT encode them as `null`.
 
-Writers MUST encode an unsigned 64-bit integer, such as a boot-time clock value, as a JSON number
-without a fraction or an exponent if it is at most 2⁵³ − 1, and otherwise as a string of decimal
-digits without leading zeros, so that JavaScript implementations can process it without losing
-precision. Unsigned 32-bit integers are encoded as JSON numbers without a fraction or an exponent.
-Readers MUST accept both encodings for every value, and a JSON number with an integral value, such
-as `1.0`, is that integer. Negative values, values with a fraction, and values greater than the
-maximum of their type are invalid.
+All integers in records are unsigned 64-bit integers, such as boot-time clock values. Writers MUST
+encode an integer as a JSON number without a fraction or an exponent if it is at most 2⁵³ − 1, and
+otherwise as a string of decimal digits without leading zeros, so that JavaScript implementations
+can process it without losing precision. Readers MUST accept both encodings for every integer, and
+a JSON number with an integral value, such as `1.0`, is that integer. Negative values, values with
+a fraction, and values greater than 2⁶⁴ − 1 are invalid.
 
-Readers MAY reject records that violate the rules for writers in this section, but need not detect
-such violations; standard JSON parsers do not. Writers that follow these rules produce records that
-all readers interpret alike.
+Readers MAY reject records that violate the other rules for writers in this section, but need not
+detect such violations; standard JSON parsers do not. Writers that follow these rules produce
+records that all readers interpret alike.
 
 A record is _valid_ if it has the structure that this document defines and its fields satisfy the
 conditions that this document states for them, such as that a version is valid or that a
@@ -108,10 +107,9 @@ such as unique IDs, do not affect validity; the parts define their consequences.
 
 ### 3.2 Diagnostics
 
-Records come from many contributors, and one faulty record should not prevent the evaluation of
-the others. Readers, compatibility checkers, and health evaluators MUST skip invalid records,
-records they cannot read, and directories they cannot list, and MUST report a _diagnostic_ for
-each. A diagnostic has the following fields:
+Records come from many contributors, and one faulty record should not prevent the evaluation of the
+others. Readers, compatibility checkers, and health evaluators MUST skip invalid records and records
+that cannot be read, and MUST report a _diagnostic_ for each. A diagnostic has the following fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -149,9 +147,11 @@ image or an app, and that replaces or removes the record as a whole.
 Owners do not scope IDs: records with different owners MUST have distinct IDs within their
 namespace. Records without an owner are valid.
 
-An update of a contributor replaces all records of its owner, in all directories, including
-overrides in `/etc` ([Section 8.3](#83-reading)). A writer that performs such an update and leaves a
-directory in place MUST remove the records of the replaced owner from it.
+An update of a contributor replaces all component declarations, health nodes, and metric
+definitions of its owner, including overrides in `/etc` ([Section 8.3](#83-reading)). A writer that
+performs an update MUST ensure that, once the updated records take effect, no such records of the
+replaced owner from before the update remain in the directories that readers read. A rollback
+restores the records of the system it returns to.
 [Section 5.6](#56-candidate-compositions) defines how compatibility checkers predict the result of
 an update, and [Section 6.3](#63-evidence) how owners constrain evidence.
 
@@ -178,11 +178,10 @@ changes that readers of earlier minor versions of the same major version can saf
 - adding values to the enumerations that this section lists, with the fallback defined here.
 
 Every record, in addition to the fields that this document lists for it, has an optional field
-`specVersion`, which holds the version of this specification that the record follows, such as
-`1.0`. A record without it follows version 1.0. Writers SHOULD set it to the lowest version whose
-features the record uses. Specification versions,
-here and in snapshots ([Section 9.1](#91-snapshots)), have the following form, where both numbers
-fit into an unsigned 32-bit integer and compare numerically:
+`specVersion`, which holds the version of this specification that the record follows, such as `1.0`.
+A record without it follows version 1.0. Writers SHOULD set it to the lowest version whose features
+the record uses. Specification versions, here and in snapshots ([Section 9.1](#91-snapshots)), have
+the following form, where both numbers fit into an unsigned 64-bit integer and compare numerically:
 
 ```text
 spec-version = number "." number
@@ -214,8 +213,8 @@ follows:
 
 A change that readers cannot safely ignore requires a new major version. If records of a new major
 version appeared next to records of an earlier one, readers of the earlier major version would
-report them as invalid and count them in conflicts. A new major version therefore MUST use new
-standard directories ([Section 8.1](#81-directories)).
+report them as invalid, which would make compositions inconsistent and block health decisions. A new
+major version therefore MUST use new standard directories ([Section 8.1](#81-directories)).
 
 ## 4. Versions and Version Requirements
 
@@ -467,11 +466,12 @@ the current composition, so a fleet-management server can check an update before
 > owner; otherwise, its replacement duplicates its ID.
 
 > **Note:** If the current composition is already inconsistent, every candidate composition that
-> keeps the existing problems is inconsistent too, including an update that fixes another problem.
-> A consumer can accept a candidate composition whose problems and error diagnostics each equal one
-> of the current composition, so that existing problems do not block updates that do not make them
-> worse. Current diagnostics about files that the update replaces stay in the candidate composition
-> and therefore count as existing.
+> keeps the existing problems is inconsistent too, including an update that fixes another problem. A
+> consumer can accept a candidate composition whose problems and error diagnostics each equal one of
+> the current composition, provided that the update adds no diagnostics about its own declarations,
+> so that existing problems do not block updates that do not make them worse. Current diagnostics
+> about files that the update replaces stay in the candidate composition and therefore count as
+> existing.
 
 ## 6. Health
 
@@ -605,8 +605,8 @@ the time the record was written.
 > writer in such a namespace needs to correct its observation times by the offset.
 
 A health evaluator evaluates evidence in a _health context_, which consists of the current boot ID,
-`bootId`, and the current boot-time clock value in milliseconds, `nowMs`. Evidence is _fresh_ if
-all of the following hold, checked in this order:
+`bootId`, a string, and the current boot-time clock value in milliseconds, `nowMs`, an integer.
+Evidence is _fresh_ if all of the following hold, checked in this order:
 
 1. It exists. Otherwise, the reason is `missing`.
 2. Its `bootId` equals the context's `bootId`. Otherwise, the reason is `otherBoot`.
@@ -809,8 +809,8 @@ fields:
 | Field | Type | Description |
 | --- | --- | --- |
 | `inputs` | list of inputs, optional | The node's inputs. |
-| `minUsable` | unsigned 32-bit integer, optional | Number of counted inputs that need to be usable. |
-| `minHealthy` | unsigned 32-bit integer, optional | Number of counted inputs that need to be healthy. |
+| `minUsable` | unsigned 64-bit integer, optional | Number of counted inputs that need to be usable. |
+| `minHealthy` | unsigned 64-bit integer, optional | Number of counted inputs that need to be healthy. |
 
 Each input has the following fields:
 
@@ -957,11 +957,10 @@ The reasons are:
 
 Other results of aggregate nodes have no reason; their inputs explain them.
 
-A skipped node or directory configuration can have provided inputs of other nodes, which then
-appear healthier than they are. A consumer that makes a decision, such as whether to commit an
-update, SHOULD NOT base it on a report with diagnostics of the severity `error` and the kinds
-`healthNodes` or `directories`, unless it is configured to. Skipped evidence and metric definitions
-need no such care, because a node whose evidence or metric is missing is unknown.
+A skipped record can make nodes appear healthier than they are, for example, a skipped node that
+was an input of others. A consumer that makes a decision, such as whether to commit an update,
+SHOULD NOT base it on a report with diagnostics of the severity `error`, unless it is configured
+to.
 
 ## 7. Links Between Components and Health
 
@@ -1039,24 +1038,25 @@ A reader MUST skip directories that do not exist, and entries that disappear bet
 directory and reading them. If a directory path exists but is not a directory or is a broken
 symlink, if a directory cannot be listed, or if a file cannot be read or does not contain a valid
 record, a reader MUST skip it and report a diagnostic with the severity `error`
-([Section 3.2](#32-diagnostics)). A path whose existence cannot be determined does not count as
-nonexistent.
+([Section 3.2](#32-diagnostics)). A path whose existence cannot be determined is reported in the
+same way.
 
-Each record has the level of the directory through which the reader read it. A file that the
-reader reaches through directories of several levels has the highest of these levels. Component
+Each record has the level of the directory through which the reader read it. A file that the reader
+reaches through directories of several levels has the highest of these levels. Component
 declarations, health nodes, and metric definitions override records of the same kind with the same
 ID and the same owner from lower levels: of these records, a reader keeps only those from the
-highest level, at their own positions. Records with the same ID and different owners do not
-override each other; like evidence with the same ID, they are subject to the rules of their part.
-Invalid records do not override other records. Directory configurations have no IDs and cannot be
-overridden.
+highest level, at their own positions. Two records have the same owner if both have none or both
+have equal owners. Records with the same ID and different owners do not override each other; like
+evidence with the same ID, they are subject to the rules of their part. Invalid records do not
+override other records. Directory configurations have no IDs and cannot be overridden.
 
 > **Note:** An override carries the owner of the record it overrides, so the next update of that
-> owner removes it ([Section 3.4](#34-owners)) and it cannot outlive the record it changes. To
-> change a threshold, an operator copies its node to `/etc/system-runtime/health/nodes` and changes
-> the ranges. To disable a check, an operator overrides its node with an aggregate node without
-> inputs, such as `{"id": "telemetry.upload", "owner": "rugix.apps.telemetry", "rule": {"type":
-> "aggregate"}}`, which is healthy as long as no other node attaches to it.
+> owner removes it ([Section 3.4](#34-owners)) and it cannot outlive the record it changes. Whoever
+> manages a device's overrides, such as a fleet-management tool, applies them again after updates.
+> To change a threshold, an operator copies its node to `/etc/system-runtime/health/nodes` and
+> changes the ranges. To disable a check, an operator overrides its node with an aggregate node
+> without inputs, such as `{"id": "telemetry.upload", "owner": "rugix.apps.telemetry", "rule":
+> {"type": "aggregate"}}`, which is healthy as long as no other node attaches to it.
 
 A directory MAY be a symlink. A reader MUST resolve each directory to its physical location before
 traversing it, so that changing the symlink during traversal cannot mix files of two
@@ -1098,7 +1098,8 @@ for directory configurations.
 
 This section defines how records are sent to another system, such as a fleet-management server,
 so that it can check compatibility or evaluate health. Reports and snapshots use the encoding of
-[Section 3.1](#31-encoding). The transport identifies the system that a snapshot describes.
+[Section 3.1](#31-encoding). A snapshot does not identify the system it describes; the transport
+does.
 
 ### 9.1 Snapshots
 
@@ -1127,13 +1128,13 @@ times or validity durations.
 
 The `specVersion` of a snapshot is the version of this specification that the snapshot's own fields
 follow, such as `1.0` ([Section 3.6](#36-evolution)). The records in it keep their own versions. A
-receiver MUST NOT interpret a snapshot unless it supports its version. A receiver supports the
-versions with its own major version, and applies the fallbacks of [Section 3.6](#36-evolution) to
+reader MUST NOT interpret a snapshot unless it supports its version. A reader supports the versions
+with its own major version, and applies the fallbacks of [Section 3.6](#36-evolution) to
 newer minor versions.
 
 ### 9.2 Clock Correlation
 
-The receiver of a snapshot cannot interpret boot-time clock values on its own. A
+The reader of a snapshot cannot interpret boot-time clock values on its own. A
 `HealthClockSample` correlates them with wall-clock time:
 
 | Field | Type | Description |
@@ -1142,8 +1143,9 @@ The receiver of a snapshot cannot interpret boot-time clock values on its own. A
 | `timestamp` | timestamp | Wall-clock time at the same instant, in RFC 3339 format in UTC. |
 
 The writer of a snapshot MUST take the clock sample after collecting the records. Timestamps MUST
-end in `Z`, MAY include fractional seconds, MUST NOT have the second `60`, and lie in the years 0001
-to 9999. Calculations with timestamps ignore leap seconds, as Unix time does.
+use the uppercase separators `T` and `Z`, MAY include fractional seconds, MUST NOT have the second
+`60`, and MUST lie in the years 0001 to 9999. Calculations with timestamps ignore leap seconds, as
+Unix time does.
 
 Evaluating a snapshot with the context of its clock sample evaluates the collected evidence at the
 time of the clock sample. For evidence from the boot of the clock sample, its estimated wall-clock
@@ -1166,11 +1168,11 @@ evaluation do not establish.
   also depends on constraints that nobody declared.
 - Health evaluation interprets evidence: the results of checks and measurements at the time they
   were taken. A healthy result does not show that a node stayed healthy between observations. How
-  long a node needs to stay healthy before a tool acts, for example, before it commits an update,
-  is the tool's decision.
-- Which node a tool bases a decision on, and which answer it requires, is the tool's decision
+  long a node needs to stay healthy before a consumer acts, for example, before it commits an
+  update, is the consumer's decision.
+- Which node a consumer bases a decision on, and which answer it requires, is its decision
   ([Section 6.1](#61-health-answers)).
-- Records can change while a tool reads them, and there are no transactions across files
+- Records can change while a reader reads them, and there are no transactions across files
   ([Section 8.2](#82-files)). A snapshot holds the records as they were collected, which need not
   correspond to a single instant.
 - Evaluating a snapshot establishes health at its clock sample, not at the time it is received or
