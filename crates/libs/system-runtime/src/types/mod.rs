@@ -15,7 +15,7 @@ pub mod component {
         #[doc = "Unique component ID within the composition.\n"]
         pub id: ::std::string::String,
         #[doc = "Ownership group for replacement or removal, matched exactly.\n"]
-        pub origin: ::std::option::Option<::std::string::String>,
+        pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Component version, also provided as an implicit capability.\n"]
         pub version: ::std::option::Option<::std::string::String>,
         #[doc = "Explicit capabilities.\n"]
@@ -38,7 +38,7 @@ pub mod component {
                 )
                 .with_docs("Unique component ID within the composition.\n"),
                 ::sidex::shape::FieldShape::new(
-                    "origin",
+                    "owner",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
                 .with_docs("Ownership group for replacement or removal, matched exactly.\n")
@@ -95,7 +95,7 @@ pub mod component {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
                 1usize => self
-                    .origin
+                    .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => self
@@ -189,7 +189,7 @@ pub mod component {
             })?;
             ::std::result::Result::Ok(Self {
                 id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                origin: __field_1,
+                owner: __field_1,
                 version: __field_2,
                 provides: __field_3,
                 claims: __field_4,
@@ -1574,7 +1574,7 @@ pub mod health {
         #[doc = "Unique health node ID.\n"]
         pub id: HealthNodeId,
         #[doc = "Ownership group for replacement or removal, matched exactly.\n"]
-        pub origin: ::std::option::Option<::std::string::String>,
+        pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Human-readable label.\n"]
         pub label: ::std::option::Option<::std::string::String>,
         #[doc = "Related component IDs; these associations do not imply health dependencies.\n"]
@@ -1590,7 +1590,7 @@ pub mod health {
                 ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<HealthNodeId>)
                     .with_docs("Unique health node ID.\n"),
                 ::sidex::shape::FieldShape::new(
-                    "origin",
+                    "owner",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
                 .with_docs("Ownership group for replacement or removal, matched exactly.\n")
@@ -1631,7 +1631,7 @@ pub mod health {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
                 1usize => self
-                    .origin
+                    .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => self
@@ -1694,7 +1694,7 @@ pub mod health {
             })?;
             ::std::result::Result::Ok(Self {
                 id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                origin: __field_1,
+                owner: __field_1,
                 label: __field_2,
                 components: __field_3,
                 rule: __field_4.ok_or_else(|| ::sidex::DecodeError::new("missing field `rule`"))?,
@@ -2237,8 +2237,8 @@ pub mod health {
     pub struct HealthStatus {
         #[doc = "Observed node ID.\n"]
         pub id: HealthNodeId,
-        #[doc = "Ownership group; must match the node's origin when one is specified.\n"]
-        pub origin: ::std::option::Option<::std::string::String>,
+        #[doc = "Ownership group; must match the node's owner when one is specified.\n"]
+        pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Reported health.\n"]
         pub state: HealthState,
         #[doc = "Boot identifier defining the observation clock domain.\n"]
@@ -2260,10 +2260,10 @@ pub mod health {
                 ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<HealthNodeId>)
                     .with_docs("Observed node ID.\n"),
                 ::sidex::shape::FieldShape::new(
-                    "origin",
+                    "owner",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
-                .with_docs("Ownership group; must match the node's origin when one is specified.\n")
+                .with_docs("Ownership group; must match the node's owner when one is specified.\n")
                 .optional(),
                 ::sidex::shape::FieldShape::new("state", ::sidex::shape::shape_of::<HealthState>)
                     .with_docs("Reported health.\n"),
@@ -2311,7 +2311,7 @@ pub mod health {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
                 1usize => self
-                    .origin
+                    .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.state)),
@@ -2392,7 +2392,7 @@ pub mod health {
             })?;
             ::std::result::Result::Ok(Self {
                 id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                origin: __field_1,
+                owner: __field_1,
                 state: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `state`"))?,
                 boot_id: __field_3
@@ -2706,7 +2706,7 @@ pub mod health {
     pub struct HealthSnapshot {
         #[doc = "Clock correlation sampled after collecting the records.\n"]
         pub clock: HealthClockSample,
-        #[doc = "Health definitions, including their origins.\n"]
+        #[doc = "Health definitions, including their owners.\n"]
         pub nodes: ::std::vec::Vec<HealthNode>,
         #[doc = "Original status records; observation times and validity are preserved.\n"]
         pub statuses: ::std::vec::Vec<HealthStatus>,
@@ -2730,7 +2730,7 @@ pub mod health {
                     "nodes",
                     ::sidex::shape::shape_of::<::std::vec::Vec<HealthNode>>,
                 )
-                .with_docs("Health definitions, including their origins.\n"),
+                .with_docs("Health definitions, including their owners.\n"),
                 ::sidex::shape::FieldShape::new(
                     "statuses",
                     ::sidex::shape::shape_of::<::std::vec::Vec<HealthStatus>>,
@@ -2950,8 +2950,8 @@ pub mod health {
     pub struct HealthNodeResult {
         #[doc = "Node ID.\n"]
         pub id: HealthNodeId,
-        #[doc = "Origin of the evaluated node.\n"]
-        pub origin: ::std::option::Option<::std::string::String>,
+        #[doc = "Owner of the evaluated node.\n"]
+        pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Evaluated health.\n"]
         pub state: HealthState,
         #[doc = "Direct dependencies explaining an aggregate result.\n"]
@@ -2967,10 +2967,10 @@ pub mod health {
                 ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<HealthNodeId>)
                     .with_docs("Node ID.\n"),
                 ::sidex::shape::FieldShape::new(
-                    "origin",
+                    "owner",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
-                .with_docs("Origin of the evaluated node.\n")
+                .with_docs("Owner of the evaluated node.\n")
                 .optional(),
                 ::sidex::shape::FieldShape::new("state", ::sidex::shape::shape_of::<HealthState>)
                     .with_docs("Evaluated health.\n"),
@@ -3005,7 +3005,7 @@ pub mod health {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
                 1usize => self
-                    .origin
+                    .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.state)),
@@ -3062,7 +3062,7 @@ pub mod health {
             })?;
             ::std::result::Result::Ok(Self {
                 id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                origin: __field_1,
+                owner: __field_1,
                 state: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `state`"))?,
                 inputs: __field_3
@@ -3165,7 +3165,7 @@ pub mod value {
         #[doc = "Unique value ID.\n"]
         pub id: ValueId,
         #[doc = "Ownership group for replacement or removal, matched exactly.\n"]
-        pub origin: ::std::option::Option<::std::string::String>,
+        pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Human-readable label.\n"]
         pub label: ::std::option::Option<::std::string::String>,
         #[doc = "Related component IDs; these associations do not imply health dependencies.\n"]
@@ -3179,7 +3179,7 @@ pub mod value {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for ValueDefinition {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::value::ValueDefinition" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < ValueId > ,) . with_docs ("Unique value ID.\n") , :: sidex :: shape :: FieldShape :: new ("origin" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Ownership group for replacement or removal, matched exactly.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable label.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Related component IDs; these associations do not imply health dependencies.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("unit" , :: sidex :: shape :: shape_of :: < ValueUnit > ,) . with_docs ("Unit shared by observations and all thresholds referencing this value.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on observation age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("expected_tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Optional tag that observations must match exactly.\n") . optional () . json_name ("expectedTag")]))) . with_docs ("A named measurement, independent of any health policy.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::value::ValueDefinition" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < ValueId > ,) . with_docs ("Unique value ID.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Ownership group for replacement or removal, matched exactly.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable label.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Related component IDs; these associations do not imply health dependencies.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("unit" , :: sidex :: shape :: shape_of :: < ValueUnit > ,) . with_docs ("Unit shared by observations and all thresholds referencing this value.\n") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Optional consumer limit on observation age, in milliseconds; must be positive.\n") . optional () . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("expected_tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Optional tag that observations must match exactly.\n") . optional () . json_name ("expectedTag")]))) . with_docs ("A named measurement, independent of any health policy.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for ValueDefinition {
@@ -3197,7 +3197,7 @@ pub mod value {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
                 1usize => self
-                    .origin
+                    .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => self
@@ -3279,7 +3279,7 @@ pub mod value {
             })?;
             ::std::result::Result::Ok(Self {
                 id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                origin: __field_1,
+                owner: __field_1,
                 label: __field_2,
                 components: __field_3,
                 unit: __field_4.ok_or_else(|| ::sidex::DecodeError::new("missing field `unit`"))?,
@@ -3310,8 +3310,8 @@ pub mod value {
     pub struct ValueObservation {
         #[doc = "Observed value ID.\n"]
         pub id: ValueId,
-        #[doc = "Ownership group; must match the definition's origin when specified.\n"]
-        pub origin: ::std::option::Option<::std::string::String>,
+        #[doc = "Ownership group; must match the definition's owner when specified.\n"]
+        pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Finite measurement in the definition's unit.\n"]
         pub value: f64,
         #[doc = "Boot identifier defining the observation clock domain.\n"]
@@ -3333,10 +3333,10 @@ pub mod value {
                 ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<ValueId>)
                     .with_docs("Observed value ID.\n"),
                 ::sidex::shape::FieldShape::new(
-                    "origin",
+                    "owner",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
-                .with_docs("Ownership group; must match the definition's origin when specified.\n")
+                .with_docs("Ownership group; must match the definition's owner when specified.\n")
                 .optional(),
                 ::sidex::shape::FieldShape::new("value", ::sidex::shape::shape_of::<f64>)
                     .with_docs("Finite measurement in the definition's unit.\n"),
@@ -3386,7 +3386,7 @@ pub mod value {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
                 1usize => self
-                    .origin
+                    .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.value)),
@@ -3466,7 +3466,7 @@ pub mod value {
             })?;
             ::std::result::Result::Ok(Self {
                 id: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                origin: __field_1,
+                owner: __field_1,
                 value: __field_2
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `value`"))?,
                 boot_id: __field_3

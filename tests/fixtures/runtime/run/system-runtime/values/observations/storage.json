@@ -1,6 +1,6 @@
 {
   "id": "storage.free",
-  "origin": "rugix.system",
+  "owner": "rugix.system",
   "value": 104857600,
   "bootId": "boot",
   "observedAtMs": 100,

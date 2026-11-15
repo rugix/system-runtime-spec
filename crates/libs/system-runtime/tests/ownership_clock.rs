@@ -3,22 +3,22 @@ use sidex::types::Timestamp;
 use system_runtime::clock::status_timestamp;
 use system_runtime::compatibility::check_components;
 use system_runtime::evaluation::evaluate_health;
-use system_runtime::snapshot::without_origin;
+use system_runtime::snapshot::without_owner;
 use system_runtime::types::component::ComponentDeclaration;
 use system_runtime::types::filesystem::RuntimeSnapshot;
 use system_runtime::types::health::{HealthClockSample, HealthSnapshot, HealthState, HealthStatus};
 
 #[derive(Deserialize)]
 struct Fixtures {
-    origins: Vec<OriginCase>,
+    owners: Vec<OwnerCase>,
     timestamps: Vec<TimestampCase>,
 }
 
 #[derive(Deserialize)]
-struct OriginCase {
+struct OwnerCase {
     name: String,
     snapshot: RuntimeSnapshot,
-    origin: String,
+    owner: String,
     expected: RuntimeSnapshot,
     replacement: Option<ComponentDeclaration>,
     consistent: bool,
@@ -42,10 +42,10 @@ fn fixtures() -> Fixtures {
 
 /// Remove obsolete IDs by owner, preserving sibling owners and constraints.
 #[test]
-fn origin_updates() {
-    for case in fixtures().origins {
+fn owner_updates() {
+    for case in fixtures().owners {
         let original = case.snapshot.clone();
-        let mut candidate = without_origin(&case.snapshot, &case.origin);
+        let mut candidate = without_owner(&case.snapshot, &case.owner);
         assert_eq!(candidate, case.expected, "{}", case.name);
         assert_eq!(
             check_components(&candidate.components).unwrap().consistent,
@@ -82,7 +82,7 @@ fn timestamp_correlation() {
 #[test]
 fn health_transport() {
     let mut cases = fixtures();
-    let source = cases.origins.remove(0).snapshot;
+    let source = cases.owners.remove(0).snapshot;
     let clock = cases.timestamps.remove(0).clock;
     let snapshot = HealthSnapshot {
         clock,
@@ -96,10 +96,7 @@ fn health_transport() {
     assert_eq!(received, snapshot);
     let report =
         evaluate_health(&received.nodes, &received.statuses, &received.clock.context).unwrap();
-    assert_eq!(
-        report.nodes[1].origin.as_deref(),
-        Some("rugix.apps.example")
-    );
+    assert_eq!(report.nodes[1].owner.as_deref(), Some("rugix.apps.example"));
     assert_eq!(report.nodes[1].state, HealthState::Healthy);
     assert_eq!(
         status_timestamp(&received.statuses[1], &received.clock)

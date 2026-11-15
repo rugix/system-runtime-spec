@@ -27,7 +27,7 @@
         "id": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "origin": {
+        "owner": {
           "type": "string"
         },
         "state": {

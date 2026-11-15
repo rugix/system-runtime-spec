@@ -103,7 +103,7 @@
         "id": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "origin": {
+        "owner": {
           "type": "string"
         },
         "label": {
@@ -229,7 +229,7 @@
         "id": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "origin": {
+        "owner": {
           "type": "string"
         },
         "state": {
@@ -297,7 +297,7 @@
         "id": {
           "$ref": "#/$defs/system_runtime.value.ValueId"
         },
-        "origin": {
+        "owner": {
           "type": "string"
         },
         "label": {
@@ -339,7 +339,7 @@
         "id": {
           "$ref": "#/$defs/system_runtime.value.ValueId"
         },
-        "origin": {
+        "owner": {
           "type": "string"
         },
         "value": {

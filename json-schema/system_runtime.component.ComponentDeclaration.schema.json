@@ -7,7 +7,7 @@
     "id": {
       "type": "string"
     },
-    "origin": {
+    "owner": {
       "type": "string"
     },
     "version": {

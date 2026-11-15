@@ -5,7 +5,7 @@ from .components import check_components
 from .filesystem import RuntimeDirectories
 from .health import current_context, evaluate_health
 from .models import component, filesystem, health, value
-from .snapshot import without_origin
+from .snapshot import without_owner
 
 __all__ = [
     "RuntimeDirectories",
@@ -18,5 +18,5 @@ __all__ = [
     "filesystem",
     "health",
     "value",
-    "without_origin",
+    "without_owner",
 ]

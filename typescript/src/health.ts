@@ -65,13 +65,13 @@ export function evaluateHealth(
     const node = byId.get(id)!;
     let result: HealthNodeResult;
     if (node.rule.rule === "observed") {
-      result = observe(id, node.rule, observations.get(id), context, node.origin);
+      result = observe(id, node.rule, observations.get(id), context, node.owner);
     } else if (node.rule.rule === "threshold") {
       result = evidence.evaluate(node, node.rule, context);
     } else {
       result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input.node)!));
     }
-    if (node.origin !== undefined) result.origin = node.origin;
+    if (node.owner !== undefined) result.owner = node.owner;
     results.set(id, result);
     for (const dependent of dependents.get(id)!) {
       const count = remaining.get(dependent)! - 1;
@@ -86,12 +86,12 @@ export function evaluateHealth(
 /** Apply freshness and identity constraints to one status. */
 function observe(
   id: HealthNodeId, rule: ObservationRule, status: HealthStatus | undefined, context: HealthContext,
-  origin: string | undefined,
+  owner: string | undefined,
 ): HealthNodeResult {
   let reason: string | undefined;
   if (!status) reason = "Missing status";
   else if (status.bootId !== context.bootId) reason = "Status belongs to another boot";
-  else if (origin !== undefined && status.origin !== origin) reason = "Status origin does not match";
+  else if (owner !== undefined && status.owner !== owner) reason = "Status owner does not match";
   else if (rule.expectedTag !== undefined && status.tag !== rule.expectedTag) reason = "Status tag does not match";
   else if (BigInt(status.observedAtMs) > BigInt(context.nowMs)) reason = "Status is in the future";
   else if (BigInt(context.nowMs) - BigInt(status.observedAtMs) >= BigInt(

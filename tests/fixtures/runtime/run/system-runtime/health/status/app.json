@@ -1,1 +1,1 @@
-{"id": "app", "state": "healthy", "bootId": "boot", "observedAtMs": 90, "maxAgeMs": 20, "origin": "rugix.apps.example", "tag": "7"}
+{"id": "app", "state": "healthy", "bootId": "boot", "observedAtMs": 90, "maxAgeMs": 20, "owner": "rugix.apps.example", "tag": "7"}

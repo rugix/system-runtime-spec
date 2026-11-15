@@ -19,7 +19,7 @@ class ValueDefinition(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     id: ValueId = pydantic.Field(description="Unique value ID.")
-    origin: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
+    owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
     label: str | None = pydantic.Field(default=None, description="Human-readable label.")
     components: list[str] | None = pydantic.Field(default=None, description="Related component IDs; these associations do not imply health dependencies.")
     unit: ValueUnit = pydantic.Field(description="Unit shared by observations and all thresholds referencing this value.")
@@ -32,7 +32,7 @@ class ValueObservation(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     id: ValueId = pydantic.Field(description="Observed value ID.")
-    origin: str | None = pydantic.Field(default=None, description="Ownership group; must match the definition's origin when specified.")
+    owner: str | None = pydantic.Field(default=None, description="Ownership group; must match the definition's owner when specified.")
     value: _sidex.F64 = pydantic.Field(description="Finite measurement in the definition's unit.")
     boot_id: str = pydantic.Field(description="Boot identifier defining the observation clock domain.", validation_alias="bootId", serialization_alias="bootId")
     observed_at_ms: _sidex.U64 = pydantic.Field(description="Milliseconds on the boot-time clock when the measurement was taken.", validation_alias="observedAtMs", serialization_alias="observedAtMs")

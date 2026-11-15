@@ -1,12 +1,12 @@
 {
-  "origins": [
+  "owners": [
     {
       "name": "system replacement with different IDs",
       "snapshot": {
         "components": [
           {
             "id": "os-old",
-            "origin": "rugix.system",
+            "owner": "rugix.system",
             "provides": [
               {
                 "id": "runtime",
@@ -16,11 +16,11 @@
           },
           {
             "id": "removed-driver",
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "app",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "requires": [
               {
                 "id": "runtime",
@@ -30,11 +30,11 @@
           },
           {
             "id": "sibling",
-            "origin": "rugix.apps.example.other"
+            "owner": "rugix.apps.example.other"
           },
           {
             "id": "extra",
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy"
@@ -46,21 +46,21 @@
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "app.health",
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.apps.example"
+            "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -76,7 +76,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "app.health",
@@ -84,7 +84,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.apps.example"
+            "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
@@ -92,7 +92,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -105,7 +105,7 @@
         "values": [
           {
             "id": "free",
-            "origin": "rugix.system",
+            "owner": "rugix.system",
             "unit": "bytes"
           },
           {
@@ -116,7 +116,7 @@
         "valueObservations": [
           {
             "id": "free",
-            "origin": "rugix.system",
+            "owner": "rugix.system",
             "value": 104857600,
             "bootId": "boot",
             "observedAtMs": 100,
@@ -124,12 +124,12 @@
           }
         ]
       },
-      "origin": "rugix.system",
+      "owner": "rugix.system",
       "expected": {
         "components": [
           {
             "id": "app",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "requires": [
               {
                 "id": "runtime",
@@ -139,11 +139,11 @@
           },
           {
             "id": "sibling",
-            "origin": "rugix.apps.example.other"
+            "owner": "rugix.apps.example.other"
           },
           {
             "id": "extra",
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy"
@@ -155,14 +155,14 @@
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.apps.example"
+            "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -178,7 +178,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.apps.example"
+            "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
@@ -186,7 +186,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -206,7 +206,7 @@
       },
       "replacement": {
         "id": "os-new",
-        "origin": "rugix.system",
+        "owner": "rugix.system",
         "provides": [
           {
             "id": "runtime",
@@ -217,12 +217,12 @@
       "consistent": false
     },
     {
-      "name": "exact app origin",
+      "name": "exact app owner",
       "snapshot": {
         "components": [
           {
             "id": "os-old",
-            "origin": "rugix.system",
+            "owner": "rugix.system",
             "provides": [
               {
                 "id": "runtime",
@@ -232,11 +232,11 @@
           },
           {
             "id": "removed-driver",
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "app",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "requires": [
               {
                 "id": "runtime",
@@ -246,11 +246,11 @@
           },
           {
             "id": "sibling",
-            "origin": "rugix.apps.example.other"
+            "owner": "rugix.apps.example.other"
           },
           {
             "id": "extra",
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy"
@@ -262,21 +262,21 @@
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "app.health",
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.apps.example"
+            "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -292,7 +292,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "app.health",
@@ -300,7 +300,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.apps.example"
+            "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
@@ -308,7 +308,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -319,12 +319,12 @@
           }
         ]
       },
-      "origin": "rugix.apps.example",
+      "owner": "rugix.apps.example",
       "expected": {
         "components": [
           {
             "id": "os-old",
-            "origin": "rugix.system",
+            "owner": "rugix.system",
             "provides": [
               {
                 "id": "runtime",
@@ -334,15 +334,15 @@
           },
           {
             "id": "removed-driver",
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "sibling",
-            "origin": "rugix.apps.example.other"
+            "owner": "rugix.apps.example.other"
           },
           {
             "id": "extra",
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy"
@@ -354,14 +354,14 @@
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "extra.health",
             "rule": {
               "rule": "observed"
             },
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -377,7 +377,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system"
+            "owner": "rugix.system"
           },
           {
             "id": "extra.health",
@@ -385,7 +385,7 @@
             "bootId": "boot",
             "observedAtMs": 3500,
             "maxAgeMs": 2000,
-            "origin": "rugix.system.extra"
+            "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
@@ -415,7 +415,7 @@
         "bootId": "boot",
         "observedAtMs": 3500,
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": "2026-10-14T11:59:58.623Z"
     },
@@ -434,7 +434,7 @@
         "bootId": "boot",
         "observedAtMs": 0,
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": "2026-10-14T11:59:55.123Z"
     },
@@ -453,7 +453,7 @@
         "bootId": "old",
         "observedAtMs": 3500,
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": null
     },
@@ -472,7 +472,7 @@
         "bootId": "boot",
         "observedAtMs": 5001,
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": null
     },
@@ -491,7 +491,7 @@
         "bootId": "boot",
         "observedAtMs": 0,
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": "1969-12-31T23:59:59.999Z"
     },
@@ -510,7 +510,7 @@
         "bootId": "boot",
         "observedAtMs": "9007199254740993",
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": "2026-10-14T11:59:58.623Z"
     },
@@ -529,7 +529,7 @@
         "bootId": "boot",
         "observedAtMs": 0,
         "maxAgeMs": 2000,
-        "origin": "rugix.apps.example"
+        "owner": "rugix.apps.example"
       },
       "expected": null
     },

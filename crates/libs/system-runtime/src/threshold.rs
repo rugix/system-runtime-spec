@@ -92,11 +92,11 @@ impl<'a> ValueEvidence<'a> {
             Some(v) if v.boot_id != context.boot_id => Some("Value belongs to another boot"),
             Some(v)
                 if definition
-                    .origin
+                    .owner
                     .as_ref()
-                    .is_some_and(|o| v.origin.as_ref() != Some(o)) =>
+                    .is_some_and(|o| v.owner.as_ref() != Some(o)) =>
             {
-                Some("Value origin does not match")
+                Some("Value owner does not match")
             }
             Some(v)
                 if definition
@@ -122,7 +122,7 @@ impl<'a> ValueEvidence<'a> {
         if let Some(reason) = reason {
             return HealthNodeResult {
                 id: node.id.clone(),
-                origin: node.origin.clone(),
+                owner: node.owner.clone(),
                 state: HealthState::Unknown,
                 inputs: Vec::new(),
                 message: Some(reason.into()),
@@ -138,7 +138,7 @@ impl<'a> ValueEvidence<'a> {
         };
         HealthNodeResult {
             id: node.id.clone(),
-            origin: node.origin.clone(),
+            owner: node.owner.clone(),
             state,
             inputs: Vec::new(),
             message: observation.message.clone(),

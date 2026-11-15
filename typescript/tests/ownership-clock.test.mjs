@@ -1,19 +1,19 @@
-/** Origin-based update candidates and transferable health clock correlation. */
+/** Owner-based update candidates and transferable health clock correlation. */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
-  statusTimestamp, checkComponents, evaluateHealth, filesystem, health, withoutOrigin,
+  statusTimestamp, checkComponents, evaluateHealth, filesystem, health, withoutOwner,
 } from "../dist/index.js";
 
 const cases = JSON.parse(readFileSync(new URL("../../tests/fixtures/ownership-clock.json", import.meta.url)));
 
-for (const example of cases.origins) {
-  test(`origin update: ${example.name}`, () => {
+for (const example of cases.owners) {
+  test(`owner update: ${example.name}`, () => {
     assert(filesystem.RuntimeSnapshot.is(example.snapshot));
     const original = JSON.stringify(example.snapshot);
-    const candidate = withoutOrigin(example.snapshot, example.origin);
+    const candidate = withoutOwner(example.snapshot, example.owner);
     assert.deepEqual(candidate, example.expected);
     assert.equal(checkComponents(candidate.components).consistent, example.consistent);
     if (example.replacement) {
@@ -34,7 +34,7 @@ for (const example of cases.timestamps) {
 }
 
 test("owned health graph survives transport without renewing evidence", () => {
-  const source = cases.origins[0].snapshot;
+  const source = cases.owners[0].snapshot;
   const snapshot = JSON.parse(JSON.stringify({
     clock: cases.timestamps[0].clock,
     nodes: source.healthNodes,
@@ -46,7 +46,7 @@ test("owned health graph survives transport without renewing evidence", () => {
   assert.deepEqual(snapshot.values, source.values);
   assert.deepEqual(snapshot.valueObservations, source.valueObservations);
   const report = evaluateHealth(snapshot.nodes, snapshot.statuses, snapshot.clock.context);
-  assert.equal(report.nodes[1].origin, "rugix.apps.example");
+  assert.equal(report.nodes[1].owner, "rugix.apps.example");
   assert.equal(report.nodes[1].state, "healthy");
   assert.equal(statusTimestamp(snapshot.statuses[1], snapshot.clock), "2026-10-14T11:59:58.623Z");
   snapshot.clock.context.nowMs = 5500;

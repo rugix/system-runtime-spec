@@ -65,7 +65,7 @@ export class ValueEvidence {
     let reason: string | undefined;
     if (!sample) reason = "Missing value observation";
     else if (sample.bootId !== context.bootId) reason = "Value belongs to another boot";
-    else if (definition.origin !== undefined && sample.origin !== definition.origin) reason = "Value origin does not match";
+    else if (definition.owner !== undefined && sample.owner !== definition.owner) reason = "Value owner does not match";
     else if (definition.expectedTag !== undefined && sample.tag !== definition.expectedTag) reason = "Value tag does not match";
     else if (BigInt(sample.observedAtMs) > BigInt(context.nowMs)) reason = "Value is in the future";
     else if (BigInt(context.nowMs) - BigInt(sample.observedAtMs) >= BigInt(Math.min(

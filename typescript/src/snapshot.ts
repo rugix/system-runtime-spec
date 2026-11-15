@@ -1,14 +1,14 @@
-/** Select contributions by their ownership origin before evaluating a candidate. */
+/** Select contributions by their ownership owner before evaluating a candidate. */
 
 import type { RuntimeSnapshot } from "./generated/filesystem.js";
 
-/** Remove an exact origin from all collections, preserving other constraints. */
-export function withoutOrigin(snapshot: RuntimeSnapshot, origin: string): RuntimeSnapshot {
+/** Remove an exact owner from all collections, preserving other constraints. */
+export function withoutOwner(snapshot: RuntimeSnapshot, owner: string): RuntimeSnapshot {
   return {
-    ...(snapshot.values === undefined ? {} : { values: snapshot.values.filter((r) => r.origin !== origin) }),
-    ...(snapshot.valueObservations === undefined ? {} : { valueObservations: snapshot.valueObservations.filter((r) => r.origin !== origin) }),
-    components: snapshot.components.filter((record) => record.origin !== origin),
-    healthNodes: snapshot.healthNodes.filter((record) => record.origin !== origin),
-    healthStatuses: snapshot.healthStatuses.filter((record) => record.origin !== origin),
+    ...(snapshot.values === undefined ? {} : { values: snapshot.values.filter((r) => r.owner !== owner) }),
+    ...(snapshot.valueObservations === undefined ? {} : { valueObservations: snapshot.valueObservations.filter((r) => r.owner !== owner) }),
+    components: snapshot.components.filter((record) => record.owner !== owner),
+    healthNodes: snapshot.healthNodes.filter((record) => record.owner !== owner),
+    healthStatuses: snapshot.healthStatuses.filter((record) => record.owner !== owner),
   };
 }

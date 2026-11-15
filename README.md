@@ -79,9 +79,9 @@ the reading, its age, and the ranges behind its health without parsing messages.
 
 ### Ownership and Updates
 
-An origin groups a contributor's component and health records, such as those
-supplied by a system image or an application. To check compatibility before an
-update, a controller builds a candidate composition by replacing that origin's
+A record's owner names the contributor that supplies it, such as a system image
+or an application, and replaces or removes it as a whole. To check compatibility
+before an update, a controller builds a candidate composition by replacing that owner's
 component declarations with the new version's declarations. Components omitted
 by the new version are removed from the candidate. Other declarations retain
 their requirements, allowing the check to catch dependencies broken by the
@@ -114,8 +114,8 @@ snapshot describes health at capture time.
 ### Components and Compatibility
 
 A component is one participant in a system composition. Its
-`ComponentDeclaration` has an `id` and optional `version`, `origin`, `provides`,
-`claims`, `requires`, and `conflicts` fields. The [origin](#origins-and-update-candidates)
+`ComponentDeclaration` has an `id` and optional `version`, `owner`, `provides`,
+`claims`, `requires`, and `conflicts` fields. The [owner](#owners-and-update-candidates)
 identifies record ownership. Component IDs are opaque, case-sensitive strings
 and must be unique within a composition.
 
@@ -131,7 +131,7 @@ This application requires a runtime capability and claims a TCP port:
 ```json
 {
   "id": "example.app",
-  "origin": "rugix.apps.example",
+  "owner": "rugix.apps.example",
   "version": "2.1",
   "requires": [{"id": "example.runtime", "version": ">=3,<4"}],
   "claims": [{"id": "tcp.port.8080"}]
@@ -194,7 +194,7 @@ without implicit exclusion. SemVer shorthand such as `^` and `~` is not accepted
 
 A runtime value is a named numeric measurement, such as CPU temperature, free
 disk space, or battery charge. A `ValueDefinition` declares its ID, unit, optional
-label, associated components, origin, and evidence constraints. A separate
+label, associated components, owner, and evidence constraints. A separate
 `ValueObservation` supplies the measurement. Values can be displayed without a
 health policy, and several threshold nodes can reference the same value.
 
@@ -205,7 +205,7 @@ can declare:
 ```json
 {
   "id": "cpu.temperature",
-  "origin": "platform.sensors",
+  "owner": "platform.sensors",
   "label": "CPU temperature",
   "unit": "celsius",
   "maxAgeMs": 10000,
@@ -218,7 +218,7 @@ Its service publishes a separate observation:
 ```json
 {
   "id": "cpu.temperature",
-  "origin": "platform.sensors",
+  "owner": "platform.sensors",
   "value": 72.5,
   "bootId": "e09a482c-4a41-4f95-891e-042af3d3c4a4",
   "observedAtMs": 42000,
@@ -231,8 +231,8 @@ Observation identity and freshness follow the health status rules: the boot must
 match, the observation cannot be in the future, and its age must be strictly less
 than its positive validity duration. A definition's `maxAgeMs` and a threshold
 rule's `maxAgeMs` can each shorten that duration. An observation must match the
-definition's origin and expected tag when specified. The health node may have a
-different origin, allowing another contributor to define a policy for the sensor.
+definition's owner and expected tag when specified. The health node may have a
+different owner, allowing another contributor to define a policy for the sensor.
 Observation messages are optional and are preserved in fresh threshold results.
 
 #### Numbers and Units
@@ -272,7 +272,7 @@ range and a minimum `usable` range. For example:
 ```json
 {
   "id": "cpu.thermal-health",
-  "origin": "platform.policy",
+  "owner": "platform.policy",
   "rule": {
     "rule": "threshold",
     "value": "cpu.temperature",
@@ -297,7 +297,7 @@ produces `unhealthy`. In the example, 75 °C is healthy, 90 °C is degraded, and
 anything above 90 °C is unhealthy. Lower bounds can express minimum free space,
 and two bounds can express acceptable voltage ranges.
 
-Missing, expired, future, wrong-boot, wrong-origin, or wrong-tag measurements
+Missing, expired, future, wrong-boot, wrong-owner, or wrong-tag measurements
 produce `unknown`. A threshold result has no health-node inputs; its source value
 is identified by its rule. It contributes to aggregate health like an observed
 node. Writers must not supply a `HealthStatus` for a threshold node.
@@ -337,7 +337,7 @@ node uses as an input. Separate roots can describe different system functions or
 policies, such as availability and readiness to commit an update (accept it as
 successful).
 
-A node can have an `origin`, a label, and associated component IDs. Component
+A node can have an `owner`, a label, and associated component IDs. Component
 associations do not create health dependencies. Node definitions and status
 records are stored separately, so a check remains defined when its observer
 stops publishing.
@@ -352,7 +352,7 @@ stops publishing.
 | `unknown` | Evidence does not determine whether minimum criteria are met. |
 
 A `HealthReport` contains evaluated nodes in declaration order. Each result
-inherits its node's origin and includes its state. Healthy and degraded states
+inherits its node's owner and includes its state. Healthy and degraded states
 confirm minimum criteria, unhealthy confirms they are unmet, and unknown leaves
 them unresolved. A result's `inputs` name its direct dependencies; observed and
 threshold nodes have no inputs. Its optional `message` carries the observer's
@@ -365,7 +365,7 @@ An observed node defines the check and any constraints on its evidence:
 ```json
 {
   "id": "application",
-  "origin": "rugix.apps.example",
+  "owner": "rugix.apps.example",
   "rule": {"rule": "observed", "maxAgeMs": 10000, "expectedTag": "profile-a"}
 }
 ```
@@ -375,7 +375,7 @@ A service reports the check's result in a separate record:
 ```json
 {
   "id": "application",
-  "origin": "rugix.apps.example",
+  "owner": "rugix.apps.example",
   "state": "healthy",
   "bootId": "e09a482c-4a41-4f95-891e-042af3d3c4a4",
   "observedAtMs": 42000,
@@ -392,8 +392,8 @@ On Linux, `bootId` is `/proc/sys/kernel/random/boot_id` and `observedAtMs` is
 A status is fresh only in that boot, at or after its observation time, and for
 strictly less than its positive `maxAgeMs`. An observed rule's optional
 `maxAgeMs` must also be positive and can shorten that lifetime. Missing, expired,
-future, wrong-boot, wrong-origin, and wrong-tag statuses evaluate to `unknown`
-with an explanation. A status must match its node's origin when the node
+future, wrong-boot, wrong-owner, and wrong-tag statuses evaluate to `unknown`
+with an explanation. A status must match its node's owner when the node
 specifies one. In the example, the status expires at boot-time millisecond 47000:
 its 5000 ms lifetime is shorter than the node's 10000 ms limit.
 
@@ -421,7 +421,7 @@ Existing declarations must convert string inputs such as `"storage"` to
 ```json
 {
   "id": "system.commit",
-  "origin": "rugix.system",
+  "owner": "rugix.system",
   "rule": {
     "rule": "aggregate",
     "inputs": [{"node": "storage"}, {"node": "application"}]
@@ -548,21 +548,21 @@ historical adjustments. Transport preserves observation times and `maxAgeMs`.
 Evaluating with `snapshot.clock.context` determines health at capture time;
 transport delays and subsequent changes can make that evidence stale.
 
-### Origins and Update Candidates
+### Owners and Update Candidates
 
-An `origin` groups components, health nodes, statuses, value definitions, and observations owned by one system
-image, app, or other contributor. Evaluated health results inherit their node's
-origin. Origin names are opaque, case-sensitive strings matched by exact
+The `owner` field names the system image, app, or other contributor that owns a
+component, health node, status, value definition, or observation. Evaluated
+health results inherit their node's owner. Owner names are opaque, case-sensitive strings matched by exact
 equality. For Rugix integration, use `rugix.system` for a system image and
 `rugix.apps.<name>` for an app. These are naming conventions; readers do not
-infer origins from directory paths.
+infer owners from directory paths.
 
-Origins do not scope IDs or affect capability matching. Several components or
-nodes may share an origin, while their IDs remain unique within their respective
-collections. Records without an origin remain valid.
+Owners do not scope IDs or affect capability matching. Several components or
+nodes may share an owner, while their IDs remain unique within their respective
+collections. Records without an owner remain valid.
 
-To check an update candidate, remove records with the origin being replaced and
-add the new declarations. Removing an origin also removes components omitted by
+To check an update candidate, remove records with the owner being replaced and
+add the new declarations. Removing an owner also removes components omitted by
 the replacement, even when their IDs have no direct replacements. Preserve other
 records and their references to removed records, so compatibility checking can
 detect unmet requirements. Evaluate runtime health after activation, using fresh
@@ -629,8 +629,8 @@ configurations; TOML files are ignored by discovery. This configuration in
 
 Rugix Ctrl also creates a `rugix.host` component in memory; integrations must
 supply it separately when requirements refer to its `host.arch` or `rugix.ctrl`
-capabilities. Existing files without origins need
-attribution before replacement by origin.
+capabilities. Existing files without owners need
+attribution before replacement by owner.
 
 In Rugix Apps, a generation is one installed version of an app's files. On
 installations where Rugix Ctrl exposes the activated generation through a

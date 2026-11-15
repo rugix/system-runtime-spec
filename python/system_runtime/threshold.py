@@ -88,8 +88,8 @@ class ValueEvidence:
             reason = "Missing value observation"
         elif sample.boot_id != context.boot_id:
             reason = "Value belongs to another boot"
-        elif definition.origin is not None and sample.origin != definition.origin:
-            reason = "Value origin does not match"
+        elif definition.owner is not None and sample.owner != definition.owner:
+            reason = "Value owner does not match"
         elif (
             definition.expected_tag is not None
             and sample.tag != definition.expected_tag
@@ -108,7 +108,7 @@ class ValueEvidence:
         if reason is not None:
             return HealthNodeResult(
                 id=node.id,
-                origin=node.origin,
+                owner=node.owner,
                 state=HealthState_Unknown("unknown"),
                 inputs=[],
                 message=reason,
@@ -123,7 +123,7 @@ class ValueEvidence:
         )
         return HealthNodeResult(
             id=node.id,
-            origin=node.origin,
+            owner=node.owner,
             state=state,
             inputs=[],
             message=sample.message,

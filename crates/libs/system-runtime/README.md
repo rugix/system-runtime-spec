@@ -88,24 +88,24 @@ still resolve against the host's root, rather than the supplied root.
 
 ## Check an Update Candidate
 
-An origin groups records owned by a system image, app, or other contributor.
-`without_origin` copies a snapshot without records owned by that exact origin.
+An owner groups records owned by a system image, app, or other contributor.
+`without_owner` copies a snapshot without records owned by that exact owner.
 Other records retain their requirements and references.
 
 ```rust
 use system_runtime::{
     compatibility::check_components,
     discovery::RuntimeDirectories,
-    snapshot::without_origin,
+    snapshot::without_owner,
     types::component::ComponentDeclaration,
 };
 
 fn main() -> Result<(), system_runtime::Error> {
     let current = RuntimeDirectories::standard("/").load()?;
-    let mut candidate = without_origin(&current, "rugix.system");
+    let mut candidate = without_owner(&current, "rugix.system");
     candidate.components.push(ComponentDeclaration {
         id: "example.system".into(),
-        origin: Some("rugix.system".into()),
+        owner: Some("rugix.system".into()),
         version: Some("2.0".into()),
         provides: None,
         claims: None,
@@ -118,7 +118,7 @@ fn main() -> Result<(), system_runtime::Error> {
 }
 ```
 
-The current records must already carry origins. Discovery does not infer
+The current records must already carry owners. Discovery does not infer
 ownership from paths; attribute imported records before assembling the snapshot.
 This operation changes only the in-memory candidate. After activation, evaluate
 health using fresh records from the running system.

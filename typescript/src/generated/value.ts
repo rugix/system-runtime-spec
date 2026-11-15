@@ -23,7 +23,7 @@ export const ValueId = {
                                                         "id": ValueId, /**
                                             * Ownership group for replacement or removal, matched exactly.
                                             */
-                                                        "origin"?: __sidex_types.builtins.String, /**
+                                                        "owner"?: __sidex_types.builtins.String, /**
                                             * Human-readable label.
                                             */
                                                         "label"?: __sidex_types.builtins.String, /**
@@ -41,7 +41,7 @@ export const ValueId = {
                                                         "expectedTag"?: __sidex_types.builtins.String };
 
 export const ValueDefinition = {
-    ...__sidex_types.checker<ValueDefinition>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueId), false], ["origin", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["unit", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueUnit), false], ["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<ValueDefinition>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["unit", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueUnit), false], ["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
 };
 /**
  * One measurement within a boot; publishing it does not assert health.
@@ -50,9 +50,9 @@ export const ValueDefinition = {
                                             * Observed value ID.
                                             */
                                                         "id": ValueId, /**
-                                            * Ownership group; must match the definition's origin when specified.
+                                            * Ownership group; must match the definition's owner when specified.
                                             */
-                                                        "origin"?: __sidex_types.builtins.String, /**
+                                                        "owner"?: __sidex_types.builtins.String, /**
                                             * Finite measurement in the definition's unit.
                                             */
                                                         "value": __sidex_types.builtins.F64, /**
@@ -73,7 +73,7 @@ export const ValueDefinition = {
                                                         "message"?: __sidex_types.builtins.String };
 
 export const ValueObservation = {
-    ...__sidex_types.checker<ValueObservation>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueId), false], ["origin", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("f64"), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<ValueObservation>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueId), false], ["owner", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("f64"), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
 };
 /**
  * Semantic unit; display prefixes, precision, and conversions are consumer choices.

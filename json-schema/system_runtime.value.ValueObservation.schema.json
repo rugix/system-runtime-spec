@@ -7,7 +7,7 @@
     "id": {
       "$ref": "#/$defs/system_runtime.value.ValueId"
     },
-    "origin": {
+    "owner": {
       "type": "string"
     },
     "value": {

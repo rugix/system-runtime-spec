@@ -1,1 +1,1 @@
-{"id": "app", "version": "1", "requires": [{"id": "runtime", "version": ">=2"}], "origin": "rugix.apps.example"}
+{"id": "app", "version": "1", "requires": [{"id": "runtime", "version": ">=2"}], "owner": "rugix.apps.example"}
