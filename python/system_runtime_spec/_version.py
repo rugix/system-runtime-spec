@@ -97,7 +97,6 @@ def parse_requirement(text: str) -> list[Comparator]:
 
 
 def matches_requirement(requirement: list[Comparator], version: Version) -> bool:
-    """Match all comparators of a requirement."""
     return all(_matches(comparator, version) for comparator in requirement)
 
 

@@ -70,7 +70,6 @@ pub(crate) struct Decoded<T> {
     pub unsupported_attachments: BTreeSet<String>,
 }
 
-/// Parse a specification version, returning None if it is invalid.
 pub(crate) fn parse_spec_version(text: &str) -> Option<(u64, u64)> {
     let (major, minor) = text.split_once('.')?;
     Some((number(major)?, number(minor)?))
@@ -238,7 +237,6 @@ pub(crate) fn decode_all<T: sidex::Decode>(
         .collect()
 }
 
-/// Check that a record of a kind is valid, returning a description of the problem.
 pub(crate) fn check(kind: RecordKind, value: &JsonValue) -> Result<bool, String> {
     let decoded = match kind {
         RecordKind::ComponentDeclaration => decode::<ComponentDeclaration>(kind, value)?.newer,
@@ -421,7 +419,6 @@ pub(crate) fn inclusive(bound: &JsonValue) -> bool {
     get(bound, "inclusive").and_then(JsonValue::as_bool) == Some(true)
 }
 
-/// Check that a path is absolute and has only whole `*` wildcards.
 pub(crate) fn check_directory_path(path: &str) -> Result<(), String> {
     if !path.starts_with('/') {
         return Err(format!("path is not absolute: {path:?}"));

@@ -91,7 +91,6 @@ def to_json(value: Json) -> Json:
 def diagnostic(
     severity: str, kind: str, message: str, path: str | None = None
 ) -> Diagnostic:
-    """Create a diagnostic."""
     value: JsonObject = {"severity": severity, "kind": kind, "message": message}
     if path is not None:
         value["path"] = path
@@ -142,7 +141,6 @@ def _integral(value: Json) -> Json:
 
 
 def parse_spec_version(text: object) -> tuple[int, int] | None:
-    """Parse a specification version, returning None if it is invalid."""
     if not isinstance(text, str):
         return None
     match = _SPEC_VERSION.fullmatch(text)
@@ -333,7 +331,6 @@ def _validate_directories(record: JsonObject) -> None:
 
 
 def check_directory_path(path: str) -> None:
-    """Check that a path is absolute and has only whole `*` wildcards."""
     if not path.startswith("/"):
         raise InvalidRecord(f"path is not absolute: {path!r}")
     for segment in path.split("/"):

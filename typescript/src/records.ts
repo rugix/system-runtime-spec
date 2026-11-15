@@ -56,7 +56,6 @@ export type Decoded = {
   unsupportedAttachments: Set<string>;
 };
 
-/** Create a diagnostic. */
 export function diagnostic(
   severity: Severity, kind: RecordKind, message: string, path?: string,
 ): Diagnostic {
@@ -82,7 +81,6 @@ function clone(value: unknown): unknown {
   return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 }
 
-/** Parse a specification version, returning undefined if it is invalid. */
 export function parseSpecVersion(text: unknown): [bigint, bigint] | undefined {
   if (typeof text !== "string") return undefined;
   const match = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.exec(text);
@@ -194,7 +192,6 @@ function checkPositive(record: JsonObject, key: string): void {
   }
 }
 
-/** Return a finite number, or fail. */
 export function finite(value: unknown, what: string): number {
   if (typeof value !== "number" || !Number.isFinite(value)) throw new InvalidRecord(`${what} is not finite`);
   return value;
@@ -243,7 +240,6 @@ function checkRanges(healthy: Range, usable: Range): void {
   }
 }
 
-/** Check that a path is absolute and has only whole `*` wildcards. */
 function checkDirectoryPath(path: string): void {
   if (!path.startsWith("/")) throw new InvalidRecord(`path is not absolute: ${path}`);
   for (const segment of path.split("/")) {

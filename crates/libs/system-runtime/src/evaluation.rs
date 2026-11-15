@@ -88,7 +88,6 @@ fn group<T>(items: Vec<Decoded<T>>, id: impl Fn(&T) -> &str) -> BTreeMap<String,
     groups
 }
 
-/// Fields of fresh evidence that results carry.
 struct Evidence<'a> {
     boot_id: &'a str,
     observed_at_ms: u64,
