@@ -137,8 +137,7 @@ sorted by their bytes.
 Each kind of record has its own namespace: a component, a health node, and a metric MAY share an
 ID without referring to each other. Within a namespace, the records of all contributors share the
 IDs. The IDs of components, health nodes, and metrics SHOULD therefore start with a prefix that the
-contributor controls, followed by a dot, such as `telemetry.database`. The health node ID `system`
-is reserved for the node that represents the whole system ([Section 6.2](#62-health-graphs)).
+contributor controls, followed by a dot, such as `telemetry.database`.
 
 ### 3.4 Owners
 
@@ -210,8 +209,9 @@ follows:
 | Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as of the kind `DirectoryConfig`. |
 | Diagnostic severities ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as an error. |
 
-> **Note:** The fallbacks are conservative. For example, a node that attaches to `system` with an
-> input mode added in a later minor version makes `system` unknown for older health evaluators.
+> **Note:** The fallbacks are conservative. For example, a node that attaches to an aggregate node
+> with an input mode added in a later minor version makes that aggregate node unknown for older
+> health evaluators.
 
 A change that readers cannot safely ignore requires a new major version. If records of a new major
 version appeared next to records of an earlier one, readers of the earlier major version would
@@ -553,29 +553,13 @@ The inputs of aggregate nodes, including attached inputs, form directed edges fr
 node to its inputs. The graph SHOULD be acyclic; nodes on a cycle are not evaluated
 ([Section 6.8](#68-evaluation-and-reports)).
 
-The node with the ID `system` represents the whole system. It is a convenience: contributors
-attach their nodes to it, and tools show it as the overall health of a device. A consumer that
-makes a decision, such as whether to commit an update, SHOULD base it on a node that is defined for
-that decision and covers what the decision depends on. A consumer that uses a node that does not
-exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
+Nodes that are no input of any other node are _roots_. Tools can show the roots of a graph as the
+overall health of a device. Which aggregate nodes contributors attach to is a convention of the
+platform that combines them, like the names of owners ([Section 3.4](#34-owners)).
 
-> **Example:** The system image defines the node `system` as an aggregate node, and each
-> contributor attaches its own nodes to it ([Section 6.7](#67-aggregate-nodes)):
->
-> ```json
-> {
->   "specVersion": "1.0",
->   "id": "system",
->   "owner": "rugix.system",
->   "rule": { "type": "Aggregate" }
-> }
-> ```
->
-> Without attached inputs, this node is healthy. If an app's records are not discovered, for
-> example, because a directory configuration names a wrong path, the app is missing from `system`
-> without a diagnostic. A system image that requires particular contributors lists their nodes as
-> inputs. A minimum count ([Section 6.7](#67-aggregate-nodes)) can detect too few inputs, but does
-> not establish which contributors are present.
+A consumer that makes a decision, such as whether to commit an update, SHOULD base it on a node that
+is defined for that decision and covers what the decision depends on. A consumer that uses a node
+that does not exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
 
 > **Example:** An integrator decides that an update can be committed once the network and the
 > telemetry app are usable, defines a node for this decision, and configures the update controller
@@ -591,6 +575,11 @@ exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
 >   }
 > }
 > ```
+>
+> Because the node lists its inputs, an input whose records are missing is `Unknown`. An aggregate
+> node whose inputs attach themselves cannot tell which contributors are absent; a minimum count
+> ([Section 6.7](#67-aggregate-nodes)) can detect too few inputs, but does not establish which
+> contributors are present.
 
 ### 6.3 Evidence
 
@@ -892,15 +881,15 @@ be met.
 
 > **Example:** A telemetry app needs its database and its connection to a machine controller to
 > collect data, and an upload to a cloud service to be fully healthy. While the upload fails, the
-> app buffers data locally and remains usable. The app attaches its node to the node `system`
-> ([Section 6.2](#62-health-graphs)):
+> app buffers data locally and remains usable. The app attaches its node to `rugix.apps`, an
+> aggregate node that its platform defines for all apps:
 >
 > ```json
 > {
 >   "specVersion": "1.0",
 >   "id": "telemetry",
 >   "owner": "rugix.apps.telemetry",
->   "partOf": [{ "node": "system" }],
+>   "partOf": [{ "node": "rugix.apps" }],
 >   "rule": {
 >     "type": "Aggregate",
 >     "inputs": [
@@ -915,8 +904,8 @@ be met.
 > Without counts, both counted inputs must be usable for the app to be usable, and all inputs must
 > be healthy for it to be healthy. If the upload's status record expires, the app's answers are
 > `Yes`/`Unknown`. If the database is not usable, they are `No`/`No`. While the app is installed,
-> the whole system is only healthy if the app is; when the app is removed, its attachment is
-> removed with it.
+> `rugix.apps` is only healthy if the app is; when the app is removed, its attachment is removed
+> with it.
 
 > **Example:** With three interchangeable workers, `"minUsable": 2` keeps a service usable while
 > one worker is down, and the omitted `minHealthy` requires all three workers for full health. If
