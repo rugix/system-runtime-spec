@@ -30,7 +30,7 @@ export function evaluateHealth(
     if (observations.has(status.id)) throw new Error("Duplicate health status ID");
     if (!status.maxAgeMs) throw new Error(`Status ${status.id} has zero maxAgeMs`);
     const node = byId.get(status.id);
-    if (node !== undefined && node.rule.rule !== "observed") {
+    if (node !== undefined && node.rule.type !== "observed") {
       throw new Error(`Status supplied for derived node ${status.id}`);
     }
     observations.set(status.id, status);
@@ -39,10 +39,10 @@ export function evaluateHealth(
   const dependents = new Map(nodes.map((node) => [node.id, [] as HealthNodeId[]]));
   for (const node of nodes) {
     const rule = node.rule;
-    if (rule.rule === "observed") {
+    if (rule.type === "observed") {
       if (rule.maxAgeMs === 0) throw new Error(`Node ${node.id} has zero maxAgeMs`);
       remaining.set(node.id, 0);
-    } else if (rule.rule === "threshold") {
+    } else if (rule.type === "threshold") {
       evidence.validate(rule);
       remaining.set(node.id, 0);
     } else {
@@ -68,9 +68,9 @@ export function evaluateHealth(
     const id = ready[position];
     const node = byId.get(id)!;
     let result: HealthNodeResult;
-    if (node.rule.rule === "observed") {
+    if (node.rule.type === "observed") {
       result = observe(id, node.rule, observations.get(id), context, node.owner);
-    } else if (node.rule.rule === "threshold") {
+    } else if (node.rule.type === "threshold") {
       result = evidence.evaluate(node, node.rule, context);
     } else {
       result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input.node)!));

@@ -564,7 +564,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -580,13 +580,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -639,7 +639,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -655,13 +655,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -714,7 +714,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -730,13 +730,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -789,7 +789,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -805,13 +805,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -864,7 +864,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -880,13 +880,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -939,7 +939,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -955,13 +955,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1014,7 +1014,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1030,13 +1030,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1089,7 +1089,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1105,13 +1105,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1164,7 +1164,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1180,13 +1180,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1239,7 +1239,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1255,13 +1255,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1314,7 +1314,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1330,13 +1330,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1389,7 +1389,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1405,13 +1405,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1464,7 +1464,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1480,13 +1480,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1539,7 +1539,7 @@
         {
           "id": "parent",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "root"
@@ -1552,7 +1552,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -1568,13 +1568,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1634,7 +1634,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1660,7 +1660,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1694,7 +1694,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1728,7 +1728,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1762,7 +1762,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed",
+            "type": "observed",
             "expectedTag": "8"
           }
         }
@@ -1798,7 +1798,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed",
+            "type": "observed",
             "maxAgeMs": 10
           }
         }
@@ -1833,7 +1833,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1866,7 +1866,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed",
+            "type": "observed",
             "expectedTag": "7"
           }
         }
@@ -1923,13 +1923,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1946,7 +1946,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -1978,7 +1978,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "missing"
@@ -2002,7 +2002,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2026,13 +2026,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2059,13 +2059,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2089,7 +2089,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2103,13 +2103,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2162,7 +2162,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2176,13 +2176,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2235,7 +2235,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2249,13 +2249,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2308,7 +2308,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2322,13 +2322,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2381,7 +2381,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2399,19 +2399,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2477,7 +2477,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2495,19 +2495,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2573,7 +2573,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2591,19 +2591,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2669,7 +2669,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2684,13 +2684,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2722,7 +2722,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": []
           }
         }
@@ -2740,7 +2740,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2758,19 +2758,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2836,7 +2836,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2854,19 +2854,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -2932,7 +2932,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -2950,19 +2950,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3022,7 +3022,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3037,13 +3037,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3096,7 +3096,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3111,13 +3111,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3170,7 +3170,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3185,13 +3185,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3238,7 +3238,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3257,19 +3257,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3335,7 +3335,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a",
@@ -3358,25 +3358,25 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "d",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3455,7 +3455,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a",
@@ -3471,13 +3471,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3509,7 +3509,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a",
@@ -3525,13 +3525,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3563,7 +3563,7 @@
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3579,13 +3579,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3617,13 +3617,13 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "root",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3655,7 +3655,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed",
+            "type": "observed",
             "maxAgeMs": 0
           }
         }
@@ -3673,7 +3673,7 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3698,7 +3698,7 @@
         {
           "id": "parent",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "inner"
@@ -3714,7 +3714,7 @@
         {
           "id": "inner",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -3730,19 +3730,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -3815,7 +3815,7 @@
         {
           "id": "app.health",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           },
           "owner": "rugix.apps.example"
         }
@@ -3851,7 +3851,7 @@
         {
           "id": "app.health",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           },
           "owner": "rugix.apps.example"
         }
@@ -3888,7 +3888,7 @@
         {
           "id": "app.health",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           },
           "owner": "rugix.apps.example"
         }
@@ -3925,7 +3925,7 @@
           "id": "root",
           "owner": "rugix.system",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "app.health"
@@ -3938,7 +3938,7 @@
         {
           "id": "app.health",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           },
           "owner": "rugix.apps.example"
         }
@@ -3983,7 +3983,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4042,7 +4042,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4101,7 +4101,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4160,7 +4160,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4219,7 +4219,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4278,7 +4278,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4337,7 +4337,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4398,7 +4398,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4448,7 +4448,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4508,7 +4508,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4568,7 +4568,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4628,7 +4628,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4688,7 +4688,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4748,7 +4748,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4809,7 +4809,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4870,7 +4870,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4929,7 +4929,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -4988,7 +4988,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "lower": {
@@ -5047,7 +5047,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "lower": {
@@ -5114,7 +5114,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {},
             "usable": {}
@@ -5163,7 +5163,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5206,7 +5206,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5262,7 +5262,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5321,7 +5321,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5372,7 +5372,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5422,7 +5422,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5473,7 +5473,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "lower": {
@@ -5522,7 +5522,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "lower": {
@@ -5571,7 +5571,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5621,7 +5621,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {},
             "usable": {
@@ -5666,7 +5666,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5716,7 +5716,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5774,7 +5774,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5793,7 +5793,7 @@
         {
           "id": "system",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "thermal"
@@ -5853,7 +5853,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5873,7 +5873,7 @@
           "id": "commit",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5938,7 +5938,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -5988,7 +5988,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -6038,7 +6038,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -6088,7 +6088,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -6138,7 +6138,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -6188,7 +6188,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -6237,7 +6237,7 @@
         {
           "id": "parent",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "replicas"
@@ -6250,7 +6250,7 @@
         {
           "id": "replicas",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "a"
@@ -6269,19 +6269,19 @@
         {
           "id": "a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "c",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -6355,7 +6355,7 @@
         {
           "id": "system",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "application"
@@ -6371,14 +6371,14 @@
         {
           "id": "application",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -6448,7 +6448,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -6468,19 +6468,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -6546,7 +6546,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -6566,19 +6566,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -6638,7 +6638,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -6658,19 +6658,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -6736,7 +6736,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -6756,19 +6756,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -6834,7 +6834,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -6854,19 +6854,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -6932,7 +6932,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -6952,19 +6952,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -7030,7 +7030,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -7050,19 +7050,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -7122,7 +7122,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -7143,19 +7143,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -7215,7 +7215,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -7236,19 +7236,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -7314,7 +7314,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -7334,7 +7334,7 @@
         {
           "id": "database",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "storage"
@@ -7347,19 +7347,19 @@
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "storage",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -7432,7 +7432,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "database",
@@ -7450,19 +7450,19 @@
         {
           "id": "database",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-a",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         },
         {
           "id": "worker-b",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],
@@ -7501,7 +7501,7 @@
         {
           "id": "service",
           "rule": {
-            "rule": "aggregate",
+            "type": "aggregate",
             "inputs": [
               {
                 "node": "thermal",
@@ -7519,7 +7519,7 @@
           "id": "thermal",
           "owner": "policy",
           "rule": {
-            "rule": "threshold",
+            "type": "threshold",
             "value": "cpu.temperature",
             "healthy": {
               "upper": {
@@ -7538,7 +7538,7 @@
         {
           "id": "worker",
           "rule": {
-            "rule": "observed"
+            "type": "observed"
           }
         }
       ],

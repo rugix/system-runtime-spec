@@ -97,7 +97,7 @@ def test_directory_integration(tmp_path):
         {
             "id": "storage",
             "rule": {
-                "rule": "threshold",
+                "type": "threshold",
                 "value": "storage.free",
                 "healthy": {
                     "lower": {
@@ -171,7 +171,7 @@ def test_app_generation_patterns(tmp_path):
         identifier = f"app.{generation}"
         (directory / "components/app.json").write_text(json.dumps({"id": identifier}))
         (directory / "health/nodes/app.json").write_text(
-            json.dumps({"id": identifier, "rule": {"rule": "observed"}})
+            json.dumps({"id": identifier, "rule": {"type": "observed"}})
         )
         (directory / "health/status/app.json").write_text(
             json.dumps(

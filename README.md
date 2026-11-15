@@ -274,7 +274,7 @@ range and a minimum `usable` range. For example:
   "id": "cpu.thermal-health",
   "owner": "platform.policy",
   "rule": {
-    "rule": "threshold",
+    "type": "threshold",
     "value": "cpu.temperature",
     "healthy": {
       "upper": {"value": 75, "inclusive": true}
@@ -366,7 +366,7 @@ An observed node defines the check and any constraints on its evidence:
 {
   "id": "application",
   "owner": "rugix.apps.example",
-  "rule": {"rule": "observed", "maxAgeMs": 10000, "expectedTag": "profile-a"}
+  "rule": {"type": "observed", "maxAgeMs": 10000, "expectedTag": "profile-a"}
 }
 ```
 
@@ -429,7 +429,7 @@ Existing declarations must convert string inputs such as `"storage"` to
   "id": "system.commit",
   "owner": "rugix.system",
   "rule": {
-    "rule": "aggregate",
+    "type": "aggregate",
     "inputs": [{"node": "storage"}, {"node": "application"}]
   }
 }
@@ -448,7 +448,7 @@ healthy. For example, a database can be mandatory while workers are redundant:
 {
   "id": "service",
   "rule": {
-    "rule": "aggregate",
+    "type": "aggregate",
     "inputs": [
       {"node": "database", "required": true},
       {"node": "worker-a"},
@@ -473,7 +473,7 @@ usable while its upload fails:
 {
   "id": "telemetry",
   "rule": {
-    "rule": "aggregate",
+    "type": "aggregate",
     "inputs": [
       {"node": "database"},
       {"node": "plc"},

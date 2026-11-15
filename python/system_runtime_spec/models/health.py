@@ -126,7 +126,7 @@ class HealthNodeResult(_sidex.Model):
 class HealthRule_Observed(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    rule: Literal["observed"] = "observed"
+    type: Literal["observed"] = "observed"
     max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on status age, in milliseconds.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     expected_tag: str | None = pydantic.Field(default=None, description="Optional tag that published status records must match exactly.", validation_alias="expectedTag", serialization_alias="expectedTag")
     def payload(self) -> "ObservationRule":
@@ -136,7 +136,7 @@ class HealthRule_Observed(_sidex.Model):
 class HealthRule_Threshold(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    rule: Literal["threshold"] = "threshold"
+    type: Literal["threshold"] = "threshold"
     value: _schema_value.ValueId = pydantic.Field(description="Value definition supplying the unit, identity, and freshness constraints.")
     healthy: _schema_value.ValueRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
     usable: _schema_value.ValueRange = pydantic.Field(description="Minimum range for usability.")
@@ -148,7 +148,7 @@ class HealthRule_Threshold(_sidex.Model):
 class HealthRule_Aggregate(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    rule: Literal["aggregate"] = "aggregate"
+    type: Literal["aggregate"] = "aggregate"
     inputs: list[AggregationInput] = pydantic.Field(description="Dependencies with distinct node IDs.")
     required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.")
     healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.")
@@ -157,7 +157,7 @@ class HealthRule_Aggregate(_sidex.Model):
 
 
 # Definition of an observed, threshold, or aggregate node.
-type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate, pydantic.Discriminator("rule")]
+type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate, pydantic.Discriminator("type")]
 
 
 class HealthState_Healthy(pydantic.RootModel[Literal["healthy"]]):

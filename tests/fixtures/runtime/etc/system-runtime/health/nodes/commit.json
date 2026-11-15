@@ -1,1 +1,1 @@
-{"id": "commit", "owner": "rugix.system", "rule": {"rule": "aggregate", "inputs": [{"node": "app"}], "required": 1, "healthy": 1}}
+{"id": "commit", "owner": "rugix.system", "rule": {"type": "aggregate", "inputs": [{"node": "app"}], "required": 1, "healthy": 1}}

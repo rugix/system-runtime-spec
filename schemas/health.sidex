@@ -24,7 +24,7 @@ record HealthNode {
 }
 
 /// Definition of an observed, threshold, or aggregate node.
-#[json(tag = "rule", rename_all = "lowercase")]
+#[json(tag = "type", rename_all = "lowercase")]
 variant HealthRule {
     /// Health is supplied by an external status record.
     Observed: ObservationRule,
