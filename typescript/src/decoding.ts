@@ -47,7 +47,7 @@ export type Record<T> = {
   readonly json: unknown;
   readonly value: T;
   readonly unsupported: boolean;
-  readonly unsupportedAttachments: ReadonlySet<string>;
+  readonly unsupportedParents: ReadonlySet<string>;
 };
 
 /** A record that is not valid and is skipped with an error diagnostic. */
@@ -101,7 +101,7 @@ export function decode<K extends RecordModelKind>(kind: K, json: unknown): Recor
   const data = structuredClone(json);
   checkVersion(kind, data);
   let unsupported = false;
-  const unsupportedAttachments = new Set<string>();
+  const unsupportedParents = new Set<string>();
   if (kind === "HealthNode") {
     const rule = data.rule;
     if (isObject(rule)) {
@@ -118,7 +118,7 @@ export function decode<K extends RecordModelKind>(kind: K, json: unknown): Recor
     if (Array.isArray(data.partOf)) {
       for (const entry of data.partOf) {
         if (isObject(entry) && applyModeFallback(entry) && typeof entry.node === "string") {
-          unsupportedAttachments.add(entry.node);
+          unsupportedParents.add(entry.node);
         }
       }
     }
@@ -138,7 +138,7 @@ export function decode<K extends RecordModelKind>(kind: K, json: unknown): Recor
   checkId(id, "id");
   checkId(owner, "owner");
   VALIDATORS[kind](data as never);
-  return { json: original, value: data as never, unsupported, unsupportedAttachments };
+  return { json: original, value: data as never, unsupported, unsupportedParents };
 }
 
 function checkId(value: string | undefined, what: string): void {

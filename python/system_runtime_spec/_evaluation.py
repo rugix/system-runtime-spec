@@ -127,7 +127,7 @@ class _Evaluation:
                 parent = attachment.node
                 if self._aggregate_rule(parent) is None:
                     continue
-                if parent in node.unsupported_attachments:
+                if parent in node.unsupported_parents:
                     self.unsupported.add(parent)
                 attached.setdefault(parent, []).append(
                     (id, attachment.mode or "Counted")

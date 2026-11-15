@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
+from dataclasses import dataclass
 
 import pydantic
 
@@ -30,7 +31,17 @@ _LISTS: tuple[tuple[str, type[RecordModel]], ...] = (
     ("metrics", MetricDefinition),
     ("metricSamples", MetricSample),
 )
-_HEALTH = ("healthNodes", "healthStatuses", "metrics", "metricSamples")
+_HEALTH_FIELDS = ("healthNodes", "healthStatuses", "metrics", "metricSamples")
+
+
+@dataclass(frozen=True)
+class Parts:
+    """Parts of the specification whose records a snapshot includes."""
+
+    components: bool = True
+    """Whether the snapshot includes component declarations."""
+    health: bool = True
+    """Whether the snapshot includes health nodes, status records, and metrics."""
 
 
 class SnapshotError(ValueError):
@@ -58,8 +69,7 @@ class Snapshot:
         """
         self._records = records._only(components=components, health=health)
         self._clock = clock
-        self._components = components
-        self._health = health
+        self._parts = Parts(components, health)
 
     @property
     def records(self) -> Records:
@@ -72,14 +82,9 @@ class Snapshot:
         return self._clock
 
     @property
-    def components(self) -> bool:
-        """Whether the snapshot includes component declarations."""
-        return self._components
-
-    @property
-    def health(self) -> bool:
-        """Whether the snapshot includes health nodes, status records, and metrics."""
-        return self._health
+    def parts(self) -> Parts:
+        """Parts whose records the snapshot includes."""
+        return self._parts
 
     def to_json(self) -> dict[str, Json]:
         """Encode the snapshot as a `RuntimeSnapshot`."""
@@ -88,7 +93,7 @@ class Snapshot:
             "clock": to_json(self._clock),
         }
         for name, model in _LISTS:
-            if self._components if name == "components" else self._health:
+            if self._parts.components if name == "components" else self._parts.health:
                 snapshot[name] = self._records._original(KINDS[model])
         if self._records.diagnostics:
             snapshot["diagnostics"] = [to_json(d) for d in self._records.diagnostics]
@@ -119,7 +124,7 @@ class Snapshot:
             sample = HealthClockSample.model_validate(clock)
         except pydantic.ValidationError as error:
             raise SnapshotError(f"invalid clock sample: {error}") from None
-        present = [name in value for name in _HEALTH]
+        present = [name in value for name in _HEALTH_FIELDS]
         health = all(present)
         if any(present) and not health:
             raise SnapshotError("snapshot includes only some lists of the health part")
@@ -131,25 +136,20 @@ class Snapshot:
                 records.push_json(model, record)
         # Keep all received diagnostics, also those about parts the snapshot omits.
         snapshot = cls(records, sample)
-        snapshot._components = "components" in value
-        snapshot._health = health
+        snapshot._parts = Parts("components" in value, health)
         return snapshot
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Snapshot):
             return NotImplemented
-        return (self._records, self._clock, self._components, self._health) == (
+        return (self._records, self._clock, self._parts) == (
             other._records,
             other._clock,
-            other._components,
-            other._health,
+            other._parts,
         )
 
     def __repr__(self) -> str:
-        return (
-            f"Snapshot({self._records!r}, components={self._components}, "
-            f"health={self._health})"
-        )
+        return f"Snapshot({self._records!r}, {self._parts!r})"
 
 
 def _read_diagnostic(item: Json) -> Diagnostic:

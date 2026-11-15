@@ -7,10 +7,11 @@
 from ._clock import current_clock_sample, current_context, estimate_timestamp
 from ._decoding import SPEC_VERSION, RecordModel
 from ._records import Records
-from ._snapshot import Snapshot, SnapshotError
+from ._snapshot import Parts, Snapshot, SnapshotError
 
 __all__ = [
     "SPEC_VERSION",
+    "Parts",
     "RecordModel",
     "Records",
     "Snapshot",

@@ -7,7 +7,7 @@ use crate::types::component::ComponentDeclaration;
 use crate::types::health::{HealthClockSample, HealthNode, HealthStatus};
 use crate::types::metric::{MetricDefinition, MetricSample};
 
-const HEALTH: [&str; 4] = ["healthNodes", "healthStatuses", "metrics", "metricSamples"];
+const HEALTH_FIELDS: [&str; 4] = ["healthNodes", "healthStatuses", "metrics", "metricSamples"];
 const KINDS: [&str; 6] = [
     "ComponentDeclaration",
     "HealthNode",
@@ -186,7 +186,7 @@ impl Snapshot {
         }
         let clock: HealthClockSample = sidex::formats::json::from_value(&clock)
             .map_err(|error| SnapshotError::InvalidClock(error.to_string()))?;
-        let present = HEALTH.map(|field| value.get(field).is_some());
+        let present = HEALTH_FIELDS.map(|field| value.get(field).is_some());
         let health = present.iter().all(|p| *p);
         if present.iter().any(|p| *p) && !health {
             return Err(SnapshotError::PartialHealth);

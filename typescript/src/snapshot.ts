@@ -11,7 +11,7 @@ const LISTS: readonly [keyof RuntimeSnapshot, RecordModelKind][] = [
   ["metrics", "MetricDefinition"],
   ["metricSamples", "MetricSample"],
 ];
-const HEALTH = ["healthNodes", "healthStatuses", "metrics", "metricSamples"] as const;
+const HEALTH_FIELDS = ["healthNodes", "healthStatuses", "metrics", "metricSamples"] as const;
 const TIMESTAMP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:([0-9]{2})(\.[0-9]+)?Z$/;
 
 /** Parts of the specification whose records a snapshot includes. */
@@ -84,7 +84,7 @@ export class Snapshot {
     }
     const check = HealthClockSample.check(clock);
     if (check.isErr()) throw new SnapshotError(`invalid clock sample: ${check}`);
-    const present = HEALTH.map((field) => value[field] !== undefined);
+    const present = HEALTH_FIELDS.map((field) => value[field] !== undefined);
     const health = present.every(Boolean);
     if (present.some(Boolean) && !health) {
       throw new SnapshotError("snapshot includes only some lists of the health part");

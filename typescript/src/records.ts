@@ -10,7 +10,7 @@ import type { MetricDefinition, MetricSample } from "./generated/metric.js";
 
 const HEALTH_KINDS: readonly RecordKind[] = ["HealthNode", "HealthStatus", "MetricDefinition", "MetricSample"];
 
-type Lists = { [K in RecordModelKind]: Record<RecordModels[K]>[] };
+type RecordLists = { [K in RecordModelKind]: Record<RecordModels[K]>[] };
 
 /**
  * The records of a system and the diagnostics about them.
@@ -20,7 +20,7 @@ type Lists = { [K in RecordModelKind]: Record<RecordModels[K]>[] };
  * snapshots contain them unchanged, including fields of newer minor versions.
  */
 export class Records {
-  #lists: Lists = {
+  #records: RecordLists = {
     ComponentDeclaration: [],
     HealthNode: [],
     HealthStatus: [],
@@ -37,7 +37,7 @@ export class Records {
   /** Add a record given as JSON, such as a record received from another system. */
   pushJson(kind: RecordModelKind, value: unknown): void {
     try {
-      (this.#lists[kind] as Record<unknown>[]).push(decode(kind, value));
+      (this.#records[kind] as Record<unknown>[]).push(decode(kind, value));
     } catch (error) {
       if (!(error instanceof InvalidRecord)) throw error;
       this.#diagnostics.push(diagnostic("Error", kind, error.message));
@@ -109,9 +109,9 @@ export class Records {
    * evaluation adds.
    */
   evaluateHealth(context: HealthContext): HealthReport {
-    const lists = this.#lists;
+    const records = this.#records;
     return evaluate(
-      lists.HealthNode, lists.HealthStatus, lists.MetricDefinition, lists.MetricSample,
+      records.HealthNode, records.HealthStatus, records.MetricDefinition, records.MetricSample,
       this.#diagnosticsAbout([...HEALTH_KINDS, "DirectoryConfig"]), context,
     );
   }
@@ -129,9 +129,9 @@ export class Records {
     const isReplaced = (declaration: ComponentDeclaration) =>
       declaration.owner !== undefined && replaced.has(declaration.owner);
     const candidate = this.#copy();
-    const components = candidate.#lists.ComponentDeclaration.filter((record) => !isReplaced(record.value));
+    const components = candidate.#records.ComponentDeclaration.filter((record) => !isReplaced(record.value));
     candidate.#diagnostics.push(...update.#diagnosticsAbout(["ComponentDeclaration"]));
-    for (const record of update.#lists.ComponentDeclaration) {
+    for (const record of update.#records.ComponentDeclaration) {
       if (isReplaced(record.value)) components.push(record);
       else {
         candidate.#diagnostics.push(diagnostic(
@@ -140,16 +140,16 @@ export class Records {
         ));
       }
     }
-    candidate.#lists.ComponentDeclaration = components;
+    candidate.#records.ComponentDeclaration = components;
     return candidate;
   }
 
   /** @internal Copy the records and diagnostics of the given parts. */
   only(parts: { components: boolean; health: boolean }): Records {
     const result = this.#copy();
-    if (!parts.components) result.#lists.ComponentDeclaration = [];
+    if (!parts.components) result.#records.ComponentDeclaration = [];
     if (!parts.health) {
-      for (const kind of HEALTH_KINDS as RecordModelKind[]) result.#lists[kind] = [];
+      for (const kind of HEALTH_KINDS as RecordModelKind[]) result.#records[kind] = [];
     }
     result.#diagnostics = result.#diagnostics.filter((d) =>
       d.kind === "DirectoryConfig" || (d.kind === "ComponentDeclaration" ? parts.components : parts.health));
@@ -158,11 +158,11 @@ export class Records {
 
   /** @internal The original JSON of the records of a kind. */
   originals(kind: RecordModelKind): unknown[] {
-    return this.#lists[kind].map((record) => structuredClone(record.json));
+    return this.#records[kind].map((record) => structuredClone(record.json));
   }
 
   #values<K extends RecordModelKind>(kind: K): RecordModels[K][] {
-    return (this.#lists[kind] as Record<RecordModels[K]>[]).map((record) => record.value);
+    return (this.#records[kind] as Record<RecordModels[K]>[]).map((record) => record.value);
   }
 
   #diagnosticsAbout(kinds: readonly RecordKind[]): Diagnostic[] {
@@ -171,8 +171,8 @@ export class Records {
 
   #copy(): Records {
     const result = new Records();
-    for (const kind of Object.keys(this.#lists) as RecordModelKind[]) {
-      (result.#lists[kind] as Record<unknown>[]) = [...this.#lists[kind]];
+    for (const kind of Object.keys(this.#records) as RecordModelKind[]) {
+      (result.#records[kind] as Record<unknown>[]) = [...this.#records[kind]];
     }
     result.#diagnostics = [...this.#diagnostics];
     return result;

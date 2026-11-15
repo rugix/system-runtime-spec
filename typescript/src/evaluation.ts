@@ -115,7 +115,7 @@ class Evaluation {
       for (const attachment of node.value.partOf ?? []) {
         const parent = attachment.node;
         if (this.aggregateRule(parent) === undefined) continue;
-        if (node.unsupportedAttachments.has(parent)) this.unsupported.add(parent);
+        if (node.unsupportedParents.has(parent)) this.unsupported.add(parent);
         attached.set(parent, [...(attached.get(parent) ?? []), [id, attachment.mode ?? "Counted"]]);
       }
     }
@@ -246,7 +246,7 @@ class Evaluation {
     return undefined;
   }
 
-  private carry(result: HealthNodeResult, evidence: HealthStatus | MetricSample): void {
+  private copyMessageAndDetails(result: HealthNodeResult, evidence: HealthStatus | MetricSample): void {
     if (evidence.message !== undefined) result.message = evidence.message;
     if (evidence.details !== undefined) result.details = evidence.details;
   }
@@ -270,7 +270,7 @@ class Evaluation {
     }
     if (status.unsupported) result.reason = "Unsupported";
     else [result.usable, result.healthy] = STATE_ANSWERS[status.value.state];
-    this.carry(result, status.value);
+    this.copyMessageAndDetails(result, status.value);
   }
 
   private threshold(result: HealthNodeResult, node: HealthNode, rule: ThresholdRule): void {
@@ -307,7 +307,7 @@ class Evaluation {
     [result.usable, result.healthy] = contains(rule.healthy, value)
       ? ["Yes", "Yes"]
       : contains(rule.usable, value) ? ["Yes", "No"] : ["No", "No"];
-    this.carry(result, sample);
+    this.copyMessageAndDetails(result, sample);
   }
 
   private aggregate(result: HealthNodeResult, rule: AggregationRule): void {

@@ -65,7 +65,7 @@ class Record[M: pydantic.BaseModel]:
     value: M
     newer: bool = False
     unsupported: bool = False
-    unsupported_attachments: frozenset[str] = field(default_factory=frozenset)
+    unsupported_parents: frozenset[str] = field(default_factory=frozenset)
 
 
 def to_json(model: pydantic.BaseModel) -> Json:

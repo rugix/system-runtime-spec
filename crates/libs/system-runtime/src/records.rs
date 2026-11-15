@@ -238,7 +238,7 @@ pub struct Record<T> {
     pub(crate) value: T,
     pub(crate) newer: bool,
     pub(crate) unsupported: bool,
-    pub(crate) unsupported_attachments: BTreeSet<String>,
+    pub(crate) unsupported_parents: BTreeSet<String>,
 }
 
 pub(crate) fn parse_spec_version(text: &str) -> Option<(u64, u64)> {
@@ -325,7 +325,7 @@ pub(crate) fn decode<T: sidex::Decode>(
     let mut record = object(&integral(&json))?;
     let newer = check_version(kind, &record)?;
     let mut unsupported = false;
-    let mut unsupported_attachments = BTreeSet::new();
+    let mut unsupported_parents = BTreeSet::new();
     match kind {
         RecordKind::HealthNode => {
             if let Some(JsonValue::Map(rule)) = record.get("rule").cloned() {
@@ -359,7 +359,7 @@ pub(crate) fn decode<T: sidex::Decode>(
                         if apply_mode_fallback(&mut entry)?
                             && let Some(node) = entry.get("node").and_then(JsonValue::as_str)
                         {
-                            unsupported_attachments.insert(node.to_owned());
+                            unsupported_parents.insert(node.to_owned());
                         }
                         entries.push(JsonValue::Map(entry));
                     } else {
@@ -386,7 +386,7 @@ pub(crate) fn decode<T: sidex::Decode>(
         value,
         newer,
         unsupported,
-        unsupported_attachments,
+        unsupported_parents,
     })
 }
 

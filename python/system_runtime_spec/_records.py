@@ -63,15 +63,15 @@ class Records:
         """Add a record given as a model."""
         self.push_json(type(record), to_json(record))
 
-    def push_json(self, kind: type[RecordModel], value: Json) -> None:
+    def push_json(self, model: type[RecordModel], value: Json) -> None:
         """Add a record given as JSON, such as a record received from another system.
 
-        `kind` is the model of the record, such as `HealthStatus`.
+        `model` is the model of the record, such as `HealthStatus`.
         """
         try:
-            self._add(decode(kind, value))
+            self._add(decode(model, value))
         except InvalidRecord as error:
-            self._diagnostics.append(diagnostic("Error", KINDS[kind], str(error)))
+            self._diagnostics.append(diagnostic("Error", KINDS[model], str(error)))
 
     def push_diagnostic(self, diagnostic: Diagnostic) -> None:
         """Add a diagnostic, such as one that another reader reported."""

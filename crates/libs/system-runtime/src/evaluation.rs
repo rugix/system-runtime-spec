@@ -199,7 +199,7 @@ impl<'a> Evaluation<'a> {
                 if self.aggregate_rule(parent).is_none() {
                     continue;
                 }
-                if node.unsupported_attachments.contains(parent) {
+                if node.unsupported_parents.contains(parent) {
                     unsupported.push(parent.clone());
                 }
                 attached
