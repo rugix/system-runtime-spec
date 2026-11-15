@@ -8042,22 +8042,13 @@
             }
           },
           {
-            "id": "database",
-            "rule": {
-              "type": "Observed"
-            }
+            "id": "database"
           },
           {
-            "id": "worker-a",
-            "rule": {
-              "type": "Observed"
-            }
+            "id": "worker-a"
           },
           {
-            "id": "worker-b",
-            "rule": {
-              "type": "Observed"
-            }
+            "id": "worker-b"
           }
         ],
         "healthStatuses": [
@@ -10226,95 +10217,6 @@
             "id": "a",
             "usable": "No",
             "healthy": "No",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "mandatory unknown input",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "root",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": [
-                {
-                  "node": "a",
-                  "mode": "Mandatory"
-                },
-                {
-                  "node": "b"
-                },
-                {
-                  "node": "c"
-                }
-              ],
-              "minUsable": 1
-            }
-          },
-          {
-            "id": "a"
-          },
-          {
-            "id": "b"
-          },
-          {
-            "id": "c"
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "b",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 900,
-            "maxAgeMs": 500
-          },
-          {
-            "id": "c",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 900,
-            "maxAgeMs": 500
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 1000
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "root",
-            "usable": "Unknown",
-            "healthy": "Unknown",
-            "inputs": [
-              "a",
-              "b",
-              "c"
-            ]
-          },
-          {
-            "id": "a",
-            "usable": "Unknown",
-            "healthy": "Unknown",
-            "inputs": [],
-            "reason": "Missing"
-          },
-          {
-            "id": "b",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          },
-          {
-            "id": "c",
-            "usable": "Yes",
-            "healthy": "Yes",
             "inputs": []
           }
         ],
