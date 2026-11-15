@@ -186,8 +186,6 @@ class _Reader:
             if child.name.startswith("."):
                 continue
             try:
-                if child.is_symlink():
-                    continue
                 if child.is_dir(follow_symlinks=False):
                     self._traverse(kind, Path(child.path), files)
                 elif child.is_file(follow_symlinks=False) and child.name.endswith(
