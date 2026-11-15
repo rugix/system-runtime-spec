@@ -133,14 +133,15 @@ class _Reader:
             status = os.stat(path)
         except FileNotFoundError:
             try:
-                os.lstat(path)
+                status = os.lstat(path)
             except FileNotFoundError:
                 return False
             except OSError as error:
                 self._report("Error", kind, f"cannot inspect path: {error}", path)
                 return False
-            self._report("Error", kind, "directory is a broken symlink", path)
-            return False
+            if stat.S_ISLNK(status.st_mode):
+                self._report("Error", kind, "directory is a broken symlink", path)
+                return False
         except OSError as error:
             self._report("Error", kind, f"cannot inspect path: {error}", path)
             return False

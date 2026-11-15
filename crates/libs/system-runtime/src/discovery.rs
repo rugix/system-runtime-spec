@@ -192,7 +192,9 @@ impl Reader {
             Ok(metadata) if metadata.is_dir() => return true,
             Ok(_) => "path is not a directory".to_owned(),
             Err(error) if not_found(&error) => match std::fs::symlink_metadata(path) {
-                Ok(_) => "directory is a broken symlink".to_owned(),
+                Ok(metadata) if metadata.is_dir() => return true,
+                Ok(metadata) if metadata.is_symlink() => "directory is a broken symlink".to_owned(),
+                Ok(_) => "path is not a directory".to_owned(),
                 Err(error) if not_found(&error) => return false,
                 Err(error) => format!("cannot inspect path: {error}"),
             },

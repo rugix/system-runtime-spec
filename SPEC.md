@@ -1086,7 +1086,7 @@ their installation directories:
 | `metrics` | list of paths, optional | Directories of metric definitions. |
 | `metricSamples` | list of paths, optional | Directories of metric samples. |
 
-Paths MUST be absolute and MUST NOT contain `..` segments. A path segment consisting only of `*`
+Paths MUST be absolute and MUST NOT contain `..` segments or NUL characters. A path segment consisting only of `*`
 matches every directory at that level whose name does not start with `.`, in the order of the
 bytes of their names, but no symlink. Other wildcards, such as `*.d` or `**`, are invalid. Readers
 MUST expand wildcards whenever they read records. Directory configurations cannot add directories

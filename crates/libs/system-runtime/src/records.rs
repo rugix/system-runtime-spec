@@ -422,6 +422,9 @@ fn check_directory_path(path: &str) -> Result<(), String> {
     if !path.starts_with('/') {
         return Err(format!("path is not absolute: {path:?}"));
     }
+    if path.contains('\0') {
+        return Err(format!("path contains a NUL character: {path:?}"));
+    }
     for segment in path.split('/') {
         if segment == ".." {
             return Err(format!("path contains '..': {path:?}"));

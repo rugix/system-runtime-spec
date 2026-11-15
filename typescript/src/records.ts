@@ -231,6 +231,7 @@ function checkRanges(healthy: Range, usable: Range): void {
 
 function checkDirectoryPath(path: string): void {
   if (!path.startsWith("/")) throw new InvalidRecord(`path is not absolute: ${path}`);
+  if (path.includes("\0")) throw new InvalidRecord(`path contains a NUL character: ${JSON.stringify(path)}`);
   for (const segment of path.split("/")) {
     if (segment === "..") throw new InvalidRecord(`path contains '..': ${path}`);
     if (segment.includes("*") && segment !== "*") throw new InvalidRecord(`path contains a partial wildcard: ${path}`);

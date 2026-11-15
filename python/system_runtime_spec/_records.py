@@ -328,6 +328,8 @@ def _validate_directories(record: JsonObject) -> None:
 def check_directory_path(path: str) -> None:
     if not path.startswith("/"):
         raise InvalidRecord(f"path is not absolute: {path!r}")
+    if "\0" in path:
+        raise InvalidRecord(f"path contains a NUL character: {path!r}")
     for segment in path.split("/"):
         if segment == "..":
             raise InvalidRecord(f"path contains '..': {path!r}")
