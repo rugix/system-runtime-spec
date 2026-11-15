@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from system_runtime import RuntimeDirectories, check_components, evaluate_health
-from system_runtime.models.component import ComponentDeclaration
-from system_runtime.models.filesystem import DirectoryConfig
-from system_runtime.models.health import HealthContext, HealthNode, HealthStatus
-from system_runtime.models.value import ValueDefinition, ValueObservation
+from system_runtime_spec import RuntimeDirectories, check_components, evaluate_health
+from system_runtime_spec.models.component import ComponentDeclaration
+from system_runtime_spec.models.filesystem import DirectoryConfig
+from system_runtime_spec.models.health import HealthContext, HealthNode, HealthStatus
+from system_runtime_spec.models.value import ValueDefinition, ValueObservation
 
 FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures"
 CASES = json.loads((FIXTURES / "conformance.json").read_text())

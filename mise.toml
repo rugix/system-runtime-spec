@@ -31,7 +31,7 @@ run = [
     "uv sync --locked",
     "uv run ruff format --check .",
     "uv run ruff check .",
-    "uv run mypy system_runtime",
+    "uv run mypy system_runtime_spec",
     "uv run pytest",
     "uv build",
 ]

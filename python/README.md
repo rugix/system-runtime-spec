@@ -12,7 +12,7 @@ Python 3.12 or later is required. Install from PyPI:
 python -m pip install system-runtime-spec
 ```
 
-The distribution is named `system-runtime-spec`; import it as `system_runtime`.
+The distribution is named `system-runtime-spec`; import it as `system_runtime_spec`.
 
 ## Read and Check a System
 
@@ -21,7 +21,7 @@ and extension configurations. The returned `RuntimeSnapshot` contains components
 health nodes and statuses, and optional value definitions and observations.
 
 ```python
-from system_runtime import (
+from system_runtime_spec import (
     RuntimeDirectories,
     check_components,
     current_context,
@@ -56,8 +56,8 @@ Use extension files as described in the
 or extend the sources in code:
 
 ```python
-from system_runtime import RuntimeDirectories
-from system_runtime.filesystem import DirectoryConfig
+from system_runtime_spec import RuntimeDirectories
+from system_runtime_spec.filesystem import DirectoryConfig
 
 directories = RuntimeDirectories.standard()
 directories.extend(DirectoryConfig(components=["/opt/example/components"]))
@@ -78,8 +78,8 @@ record objects are shared with the original snapshot; copy a record before
 modifying its fields.
 
 ```python
-from system_runtime import RuntimeDirectories, check_components, without_owner
-from system_runtime.models.component import ComponentDeclaration
+from system_runtime_spec import RuntimeDirectories, check_components, without_owner
+from system_runtime_spec.models.component import ComponentDeclaration
 
 current = RuntimeDirectories.standard().load()
 candidate = without_owner(current, "rugix.system")
@@ -103,7 +103,7 @@ system-image and device-local directories without loading directory configuratio
 files:
 
 ```python
-from system_runtime import RuntimeDirectories
+from system_runtime_spec import RuntimeDirectories
 
 current = RuntimeDirectories(
     components=["/etc/rugix/components", "/run/rugix/components"],
@@ -127,8 +127,12 @@ records without an owner survive replacement.
 Collect records first, then sample the observed system's clock:
 
 ```python
-from system_runtime import RuntimeDirectories, current_clock_sample, status_timestamp
-from system_runtime.models.health import HealthSnapshot
+from system_runtime_spec import (
+    RuntimeDirectories,
+    current_clock_sample,
+    status_timestamp,
+)
+from system_runtime_spec.models.health import HealthSnapshot
 
 records = RuntimeDirectories.standard().load()
 snapshot = HealthSnapshot(
@@ -154,9 +158,9 @@ current evidence before making an update decision.
 
 ## Models
 
-Sidex generates Pydantic models in `system_runtime.models.component`,
-`system_runtime.models.health`, `system_runtime.models.value`, and
-`system_runtime.models.filesystem`. Python
+Sidex generates Pydantic models in `system_runtime_spec.models.component`,
+`system_runtime_spec.models.health`, `system_runtime_spec.models.value`, and
+`system_runtime_spec.models.filesystem`. Python
 attributes use snake_case, such as `boot_id`; serialized fields use names such as
 `bootId`. Use `model_validate` or `model_validate_json` to parse records and
 `model_dump_json()` to serialize them in the specified wire format. Unset

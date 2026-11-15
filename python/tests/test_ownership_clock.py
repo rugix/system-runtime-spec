@@ -6,16 +6,16 @@ from pathlib import Path
 
 import pytest
 
-from system_runtime import (
+from system_runtime_spec import (
     check_components,
     current_clock_sample,
     evaluate_health,
     status_timestamp,
     without_owner,
 )
-from system_runtime.models.component import ComponentDeclaration
-from system_runtime.models.filesystem import RuntimeSnapshot
-from system_runtime.models.health import (
+from system_runtime_spec.models.component import ComponentDeclaration
+from system_runtime_spec.models.filesystem import RuntimeSnapshot
+from system_runtime_spec.models.health import (
     HealthClockSample,
     HealthSnapshot,
     HealthStatus,
