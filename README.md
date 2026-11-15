@@ -55,7 +55,8 @@ for a part to publish its records.
 
 All three implementations are published as `system-runtime-spec` and provide the record types,
 compatibility checking, and health evaluation. The Rust and Python implementations also discover
-records in the filesystem.
+records in the filesystem. The published packages implement a draft of the specification, and
+support for version 1.0 is in progress.
 
 | Language | Package | Documentation |
 | --- | --- | --- |
