@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.ComponentIdProblem",
   "type": "object",
-  "description": "Duplicate component ID.",
+  "description": "A component ID that more than one component uses.",
   "properties": {
     "id": {
       "type": "string"

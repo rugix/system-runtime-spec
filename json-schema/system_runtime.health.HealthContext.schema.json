@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthContext",
   "type": "object",
-  "description": "Clock context supplied by a consumer.",
+  "description": "Boot and time in which evidence is evaluated.",
   "properties": {
     "bootId": {
       "type": "string"

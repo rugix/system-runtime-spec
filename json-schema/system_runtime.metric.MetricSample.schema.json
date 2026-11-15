@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.metric.MetricSample",
   "type": "object",
-  "description": "One measurement within a boot; publishing it does not assert health.",
+  "description": "Current measurement of a metric, published while the system runs.",
   "properties": {
+    "specVersion": {
+      "type": "string"
+    },
     "id": {
       "$ref": "#/$defs/system_runtime.metric.MetricId"
-    },
-    "owner": {
-      "type": "string"
     },
     "value": {
       "type": [
@@ -30,16 +30,26 @@
       "pattern": "^[0-9]+$"
     },
     "maxAgeMs": {
-      "type": "integer",
-      "format": "uint32",
-      "maximum": 4294967295,
-      "minimum": 0
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
+    },
+    "owner": {
+      "type": "string"
     },
     "tag": {
       "type": "string"
     },
     "message": {
       "type": "string"
+    },
+    "details": {
+      "type": "object",
+      "additionalProperties": {}
     }
   },
   "required": [
@@ -53,7 +63,7 @@
   "$defs": {
     "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a metric, unique independently of health node IDs."
+      "description": "ID of a metric."
     }
   }
 }

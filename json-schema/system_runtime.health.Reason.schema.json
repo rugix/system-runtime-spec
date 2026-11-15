@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.Reason",
+  "enum": [
+    "Missing",
+    "OtherBoot",
+    "OwnerMismatch",
+    "TagMismatch",
+    "Future",
+    "Expired",
+    "Conflict",
+    "Cycle",
+    "Unsupported"
+  ],
+  "description": "Why a node's evidence was not used or its rule was not applied."
+}

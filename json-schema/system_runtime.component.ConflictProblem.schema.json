@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.ConflictProblem",
   "type": "object",
-  "description": "A matching conflict.",
+  "description": "A conflict that matches a capability.",
   "properties": {
     "component": {
       "type": "string"
@@ -27,7 +27,7 @@
   "$defs": {
     "system_runtime.component.CapabilityDeclaration": {
       "type": "object",
-      "description": "A fact supplied by a component.",
+      "description": "A fact that a component provides.",
       "properties": {
         "id": {
           "type": "string"
@@ -46,7 +46,7 @@
     },
     "system_runtime.component.CapabilitySelectorDeclaration": {
       "type": "object",
-      "description": "A selector over provided capabilities.",
+      "description": "A selector over capabilities.",
       "properties": {
         "id": {
           "type": "string"

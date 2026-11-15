@@ -1,244 +1,160 @@
-"""Shared cross-language compatibility and health use cases."""
+"""Run the conformance suite shared by all implementations."""
 
 import json
+import os
 import shutil
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-from system_runtime_spec import RuntimeDirectories, check_components, evaluate_health
-from system_runtime_spec.models.component import ComponentDeclaration
-from system_runtime_spec.models.filesystem import DirectoryConfig
-from system_runtime_spec.models.health import HealthContext, HealthNode, HealthStatus
-from system_runtime_spec.models.metric import MetricDefinition, MetricSample
+from system_runtime_spec import (
+    Records,
+    candidate_composition,
+    check_components,
+    estimate_timestamp,
+    evaluate_health,
+    make_snapshot,
+    read_records,
+    read_snapshot,
+)
+from system_runtime_spec.models.common import Diagnostic
 
 FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures"
 CASES = json.loads((FIXTURES / "conformance.json").read_text())
 
 
+def brief(report: Any) -> dict[str, Any]:
+    """Keep the severity and kind of diagnostics, whose messages are not specified."""
+    value: dict[str, Any] = json.loads(report.model_dump_json())
+    value["diagnostics"] = sorted(
+        ({"severity": d["severity"], "kind": d["kind"]} for d in value["diagnostics"]),
+        key=lambda d: (d["kind"], d["severity"]),
+    )
+    return value
+
+
+def diagnostics(values: list[dict[str, Any]]) -> list[Diagnostic]:
+    return [Diagnostic.model_validate(value) for value in values]
+
+
 @pytest.mark.parametrize("case", CASES["versions"])
-def test_versions(case):
-    """Version requirements preserve numeric precision and Rugix ordering."""
-    components = [
-        ComponentDeclaration(id="provider", version=case["version"]),
-        ComponentDeclaration.model_validate(
+def test_versions(case: dict[str, Any]) -> None:
+    report = check_components(
+        [
+            {"id": "provider", "version": case["version"]},
             {
                 "id": "consumer",
                 "requires": [{"id": "provider", "version": case["requirement"]}],
-            }
-        ),
-    ]
-    if case.get("error"):
-        with pytest.raises(ValueError):
-            check_components(components)
-    else:
-        assert check_components(components).consistent == case["matches"]
+            },
+        ]
+    )
+    errors = [d for d in report.diagnostics if d.severity.root == "Error"]
+    assert bool(errors) == bool(case.get("error"))
+    if not case.get("error"):
+        assert report.consistent == case["matches"]
 
 
 @pytest.mark.parametrize("case", CASES["components"], ids=lambda case: case["name"])
-def test_components(case):
-    """Whole compositions produce the shared constraint diagnostics."""
-    components = [
-        ComponentDeclaration.model_validate(value) for value in case["components"]
-    ]
-    if case.get("error"):
-        with pytest.raises(ValueError):
-            check_components(components)
-    else:
-        assert (
-            json.loads(check_components(components).model_dump_json()) == case["report"]
-        )
+def test_components(case: dict[str, Any]) -> None:
+    report = check_components(
+        case["components"], diagnostics(case.get("diagnostics", []))
+    )
+    assert brief(report) == case["report"]
+
+
+@pytest.mark.parametrize("case", CASES["candidates"], ids=lambda case: case["name"])
+def test_candidates(case: dict[str, Any]) -> None:
+    components, candidate_diagnostics = candidate_composition(
+        case["components"],
+        diagnostics(case.get("diagnostics", [])),
+        case["replace"],
+        case["new"],
+    )
+    assert brief(check_components(components, candidate_diagnostics)) == case["report"]
 
 
 @pytest.mark.parametrize("case", CASES["health"], ids=lambda case: case["name"])
-def test_health(case):
-    """Health evaluation preserves uncertainty, identity, and finite freshness."""
-    nodes = [HealthNode.model_validate(value) for value in case["nodes"]]
-    statuses = [HealthStatus.model_validate(value) for value in case["statuses"]]
-    context = HealthContext.model_validate(case["context"])
-    metrics = [MetricDefinition.model_validate(v) for v in case.get("metrics", [])]
-    samples = [MetricSample.model_validate(v) for v in case.get("metricSamples", [])]
-    if case.get("error"):
+def test_health(case: dict[str, Any]) -> None:
+    records = case["records"]
+    report = evaluate_health(
+        Records(
+            health_nodes=records["healthNodes"],
+            health_statuses=records["healthStatuses"],
+            metrics=records.get("metrics", []),
+            metric_samples=records.get("metricSamples", []),
+            diagnostics=diagnostics(records.get("diagnostics", [])),
+        ),
+        case["context"],
+    )
+    assert brief(report) == case["report"]
+
+
+@pytest.mark.parametrize("case", CASES["snapshots"], ids=lambda case: case["name"])
+def test_snapshots(case: dict[str, Any]) -> None:
+    if not case["valid"]:
         with pytest.raises(ValueError):
-            evaluate_health(
-                nodes, statuses, context, metrics=metrics, metric_samples=samples
-            )
-    else:
-        assert (
-            json.loads(
-                evaluate_health(
-                    nodes, statuses, context, metrics=metrics, metric_samples=samples
-                ).model_dump_json()
-            )
-            == case["report"]
-        )
-
-
-def test_directory_integration(tmp_path):
-    """Reload JSON contributions, ignoring other formats and retaining evidence age."""
-    shutil.copytree(FIXTURES / "runtime", tmp_path, dirs_exist_ok=True)
-    directories = RuntimeDirectories.standard(tmp_path)
-    directories.extend(DirectoryConfig(components=["/apps/7/components"]))
-    snapshot = directories.load()
-    assert [component.id for component in snapshot.components] == ["runtime", "app"]
-    assert check_components(snapshot.components).consistent
-    assert len(snapshot.health_nodes) == 2
-    assert len(snapshot.health_statuses) == 1
-    context = HealthContext(boot_id="boot", now_ms=100)
+            read_snapshot(case["snapshot"])
+        return
+    snapshot = read_snapshot(case["snapshot"])
     assert (
-        evaluate_health(snapshot.health_nodes, snapshot.health_statuses, context)
-        .nodes[0]
-        .state.root
-        == "healthy"
-    )
-    node = HealthNode.model_validate(
-        {
-            "id": "storage",
-            "rule": {
-                "type": "threshold",
-                "metric": "storage.free",
-                "healthy": {
-                    "lower": {
-                        "value": 104857600,
-                        "inclusive": True,
-                    }
-                },
-                "usable": {},
-            },
-        }
-    )
-    assert len(snapshot.metrics) == len(snapshot.metric_samples) == 1
-
-    def measured_state():
-        return (
-            evaluate_health(
-                [node],
-                [],
-                context,
-                metrics=snapshot.metrics,
-                metric_samples=snapshot.metric_samples,
-            )
-            .nodes[0]
-            .state.root
+        sorted(
+            (
+                {"severity": d.severity.root, "kind": d.kind.root}
+                for d in snapshot.records.diagnostics
+            ),
+            key=lambda d: (d["kind"], d["severity"]),
         )
-
-    assert measured_state() == "healthy"
-    context.now_ms = 110
-    assert measured_state() == "unknown"
-    assert (
-        evaluate_health(snapshot.health_nodes, snapshot.health_statuses, context)
-        .nodes[0]
-        .state.root
-        == "unknown"
+        == case["diagnostics"]
     )
-    config = tmp_path / "run/system-runtime/directories/apps.json"
-    config.write_text(json.dumps({"components": ["/apps/8/components"]}))
-    assert [component.id for component in directories.load().components] == [
-        "runtime",
-        "app",
-        "inactive",
-    ]
 
 
-def test_directory_symlinks_and_errors(tmp_path):
-    """Read explicit symlinks, skip nested links, and report invalid files."""
-    source = tmp_path / "source"
-    source.mkdir()
-    (source / "ok.json").write_text(json.dumps({"id": "ok"}))
-    (source / "nested.json").symlink_to(source / "ok.json")
-    (tmp_path / "active").symlink_to(source, target_is_directory=True)
-    directories = RuntimeDirectories(root=tmp_path, components=["/active", "/source"])
-    assert len(directories.load().components) == 1
-    (source / "bad.json").write_text('id = "bad"\n')
-    with pytest.raises(ValueError, match="bad.json"):
-        directories.load()
-    for invalid in ["relative", "/source/../source", "/source/**", "/sou*"]:
-        with pytest.raises(ValueError, match="absolute"):
-            RuntimeDirectories(root=tmp_path, components=[invalid]).load()
-    with pytest.raises(NotADirectoryError):
-        RuntimeDirectories(root=tmp_path, components=["/source/ok.json"]).load()
+@pytest.mark.parametrize("case", CASES["timestamps"], ids=lambda case: case["name"])
+def test_timestamps(case: dict[str, Any]) -> None:
+    estimate = estimate_timestamp(case["evidence"], case["clock"])
+    text = (
+        None
+        if estimate is None
+        else estimate.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    )
+    assert text == case["expected"]
 
 
-def test_app_generation_patterns(tmp_path):
-    """One static extension follows activated app components and health on reload."""
-    app = tmp_path / "apps/example"
-    for generation in (1, 2):
-        directory = app / f"generations/{generation}/.rugix"
-        for collection in ("components", "health/nodes", "health/status"):
-            (directory / collection).mkdir(parents=True)
-        identifier = f"app.{generation}"
-        (directory / "components/app.json").write_text(json.dumps({"id": identifier}))
-        (directory / "health/nodes/app.json").write_text(
-            json.dumps({"id": identifier, "rule": {"type": "observed"}})
-        )
-        (directory / "health/status/app.json").write_text(
-            json.dumps(
-                {
-                    "id": identifier,
-                    "state": "healthy",
-                    "bootId": "boot",
-                    "observedAtMs": 100,
-                    "maxAgeMs": 10,
-                }
-            )
-        )
-    (tmp_path / "apps/inactive").mkdir()
-    other = tmp_path / "unrelated/current/.rugix/components"
-    other.mkdir(parents=True)
-    (other / "app.json").write_text(json.dumps({"id": "unrelated"}))
-    (tmp_path / "apps/alias").symlink_to(tmp_path / "unrelated")
-    configuration = tmp_path / "etc/system-runtime/directories"
-    configuration.mkdir(parents=True)
-    (configuration / "apps.json").write_text(
-        json.dumps(
+def test_discovery(tmp_path: Path) -> None:
+    fixture = FIXTURES / "discovery"
+    spec = json.loads((fixture / "discovery.json").read_text())
+    root = tmp_path / "root"
+    shutil.copytree(fixture / "root", root)
+    for link in spec["symlinks"]:
+        (root / link["path"]).parent.mkdir(parents=True, exist_ok=True)
+        os.symlink(link["target"], root / link["path"])
+    records = read_records(root)
+    real = os.path.realpath(root)
+    expected = spec["expected"]
+    assert records.components == expected["components"]
+    assert records.health_nodes == expected["healthNodes"]
+    assert records.health_statuses == expected["healthStatuses"]
+    assert records.metrics == expected["metrics"]
+    assert records.metric_samples == expected["metricSamples"]
+    found = sorted(
+        (
             {
-                "components": [
-                    "/apps/*/current/.rugix/components",
-                    "/apps/example/current/.rugix/components",
-                ],
-                "healthNodes": ["/apps/*/current/.rugix/health/nodes"],
-                "healthStatuses": ["/apps/*/current/.rugix/health/status"],
+                "severity": d.severity.root,
+                "kind": d.kind.root,
+                "path": os.path.relpath(d.path or "", real),
             }
-        )
+            for d in records.diagnostics
+        ),
+        key=lambda d: (d["path"], d["kind"], d["severity"]),
     )
-    directories = RuntimeDirectories.standard(tmp_path)
-    for generation in (1, 2):
-        temporary = app / "next"
-        temporary.symlink_to(f"generations/{generation}")
-        temporary.replace(app / "current")
-        snapshot = directories.load()
-        identifier = f"app.{generation}"
-        assert [item.id for item in snapshot.components] == [identifier]
-        assert [item.id for item in snapshot.health_nodes] == [identifier]
-        assert [item.id for item in snapshot.health_statuses] == [identifier]
-        assert (
-            evaluate_health(
-                snapshot.health_nodes,
-                snapshot.health_statuses,
-                HealthContext(boot_id="boot", now_ms=100),
-            )
-            .nodes[0]
-            .state.root
-            == "healthy"
-        )
-    (app / "current").unlink()
-    snapshot = directories.load()
-    assert (
-        snapshot.components == snapshot.health_nodes == snapshot.health_statuses == []
-    )
+    assert found == expected["diagnostics"]
 
-
-def test_discovery_pins_generation_before_reading(tmp_path):
-    """Changing current after discovery cannot redirect an already collected file."""
-    for generation in (1, 2):
-        directory = tmp_path / str(generation)
-        directory.mkdir()
-        (directory / "app.json").write_text(json.dumps({"id": f"app.{generation}"}))
-    current = tmp_path / "current"
-    current.symlink_to("1")
-    directories = RuntimeDirectories(root=tmp_path, components=["/current"])
-    files = directories._files(directories.components)
-    current.unlink()
-    current.symlink_to("2")
-    assert json.loads(files[0].read_text()) == {"id": "app.1"}
-    assert directories.load().components[0].id == "app.2"
+    clock = {
+        "context": {"bootId": "boot", "nowMs": 100},
+        "timestamp": "2026-10-14T12:00:00Z",
+    }
+    snapshot = read_snapshot(make_snapshot(records, clock))
+    assert snapshot.components and snapshot.health
+    assert snapshot.records.components == records.components
+    assert snapshot.records.health_nodes == records.health_nodes
+    assert len(snapshot.records.diagnostics) == len(records.diagnostics)

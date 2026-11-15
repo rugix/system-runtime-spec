@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.ClaimProblem",
   "type": "object",
-  "description": "Duplicate exclusive ownership.",
+  "description": "A resource that more than one component claims.",
   "properties": {
     "id": {
       "type": "string"

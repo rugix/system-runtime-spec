@@ -1,211 +1,402 @@
-"""Evaluate health graphs using caller-supplied boot-time evidence."""
+"""Evaluate health in a health context."""
 
 import time
-from collections import deque
-from collections.abc import Sequence
+from collections.abc import Callable
 from pathlib import Path
-from typing import Literal
 
-from .models.health import (
-    HealthContext,
-    HealthNode,
-    HealthNodeId,
-    HealthNodeResult,
-    HealthReport,
-    HealthRule_Aggregate,
-    HealthRule_Observed,
-    HealthRule_Threshold,
-    HealthState,
-    HealthState_Degraded,
-    HealthState_Healthy,
-    HealthState_Unhealthy,
-    HealthState_Unknown,
-    HealthStatus,
+from ._records import (
+    Decoded,
+    Json,
+    JsonObject,
+    Records,
+    decode_all,
+    diagnostic,
+    to_json,
 )
-from .models.metric import MetricDefinition, MetricSample
-from .threshold import MetricEvidence
+from .models.common import Diagnostic
+from .models.health import HealthContext, HealthReport
 
-StateName = Literal["healthy", "degraded", "unhealthy", "unknown"]
+type Answers = tuple[str, str]
+
+_STATE_ANSWERS: dict[str, Answers] = {
+    "Healthy": ("Yes", "Yes"),
+    "Degraded": ("Yes", "No"),
+    "Unhealthy": ("No", "No"),
+    "Unknown": ("Unknown", "Unknown"),
+}
+_UNKNOWN: Answers = ("Unknown", "Unknown")
 
 
 def current_context() -> HealthContext:
-    """Read the Linux boot identifier and CLOCK_BOOTTIME in milliseconds."""
+    """Read the Linux boot ID and the boot-time clock in milliseconds."""
     return HealthContext(
         boot_id=Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
         now_ms=time.clock_gettime_ns(time.CLOCK_BOOTTIME) // 1_000_000,
     )
 
 
-def evaluate_health(
-    nodes: Sequence[HealthNode],
-    statuses: Sequence[HealthStatus],
-    context: HealthContext,
-    *,
-    metrics: Sequence[MetricDefinition] = (),
-    metric_samples: Sequence[MetricSample] = (),
-) -> HealthReport:
-    """Validate the graph, then evaluate every node in declaration order.
+def evaluate_health(records: Records, context: HealthContext | Json) -> HealthReport:
+    """Evaluate the health records of `records` in a health context.
 
-    Malformed graphs and duplicate observations raise ValueError. Missing, expired,
-    future, wrong-boot, or wrong-tag evidence yields unknown health.
+    Invalid records are skipped with an error diagnostic. The report contains one result
+    per node ID, in the order of the node definitions, and all diagnostics.
     """
-    evidence = MetricEvidence(metrics, metric_samples)
-    by_id = {node.id: node for node in nodes}
-    if len(by_id) != len(nodes):
-        raise ValueError("Duplicate health node ID")
-    observations = {status.id: status for status in statuses}
-    if len(observations) != len(statuses):
-        raise ValueError("Duplicate health status ID")
-    for status in statuses:
-        if status.max_age_ms == 0:
-            raise ValueError(f"Status {status.id!r} has zero maxAgeMs")
-        if status.id in by_id and not isinstance(
-            _rule(by_id[status.id]), HealthRule_Observed
-        ):
-            raise ValueError(f"Status supplied for derived node {status.id!r}")
-    remaining: dict[HealthNodeId, int] = {}
-    dependents: dict[HealthNodeId, list[HealthNodeId]] = {node.id: [] for node in nodes}
-    for node in nodes:
-        rule = _rule(node)
-        if isinstance(rule, HealthRule_Observed):
-            if rule.max_age_ms == 0:
-                raise ValueError(f"Node {node.id!r} has zero maxAgeMs")
-            remaining[node.id] = 0
-        elif isinstance(rule, HealthRule_Threshold):
-            evidence.validate(rule)
-            remaining[node.id] = 0
-        else:
-            if any(input.required and input.optional for input in rule.inputs):
-                raise ValueError(f"Input both required and optional for {node.id!r}")
-            required, healthy = _counts(rule)
-            counted = sum(not input.optional for input in rule.inputs)
-            if not 1 <= required <= healthy <= counted:
-                raise ValueError(f"Invalid thresholds for {node.id!r}")
-            if len({input.node for input in rule.inputs}) != len(rule.inputs):
-                raise ValueError(f"Duplicate input for {node.id!r}")
-            remaining[node.id] = len(rule.inputs)
-            for input in rule.inputs:
-                input_id = input.node
-                if input_id not in by_id:
-                    raise ValueError(f"Missing health node {input_id!r}")
-                dependents[input_id].append(node.id)
-    ready = deque(id for id, count in remaining.items() if count == 0)
-    results: dict[HealthNodeId, HealthNodeResult] = {}
-    while ready:
-        id = ready.popleft()
-        node = by_id[id]
-        rule = _rule(node)
-        if isinstance(rule, HealthRule_Observed):
-            results[id] = _observe(node, observations.get(id), context)
-        elif isinstance(rule, HealthRule_Threshold):
-            results[id] = evidence.evaluate(node, context)
-        else:
-            required, desired = _counts(rule)
-            inputs = [
-                results[input.node] for input in rule.inputs if not input.optional
-            ]
-            optional = [results[input.node] for input in rule.inputs if input.optional]
-            mandatory = [results[input.node] for input in rule.inputs if input.required]
-            healthy = sum(result.state.root == "healthy" for result in inputs)
-            minimum_met = sum(
-                result.state.root in ("healthy", "degraded") for result in inputs
-            )
-            possible_minimum = sum(
-                result.state.root != "unhealthy" for result in inputs
-            )
-            state: StateName
-            if possible_minimum < required or any(
-                input.state.root == "unhealthy" for input in mandatory
-            ):
-                state = "unhealthy"
-            elif minimum_met < required or any(
-                input.state.root == "unknown" for input in mandatory
-            ):
-                state = "unknown"
-            elif healthy >= desired and all(
-                input.state.root == "healthy" for input in mandatory + optional
-            ):
-                state = "healthy"
-            else:
-                state = "degraded"
-            results[id] = HealthNodeResult(
-                id=id,
-                owner=node.owner,
-                state=_state(state),
-                inputs=[input.node for input in rule.inputs],
-            )
-        for dependent in dependents[id]:
-            remaining[dependent] -= 1
-            if remaining[dependent] == 0:
-                ready.append(dependent)
-    if len(results) != len(nodes):
-        raise ValueError("Cycle in health graph")
-    return HealthReport(nodes=[results[node.id] for node in nodes])
+    return _Evaluation(records, to_json(context)).report()
 
 
-def _rule(
-    node: HealthNode,
-) -> HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate:
-    """Treat an omitted rule as an observed node without constraints."""
-    return HealthRule_Observed() if node.rule is None else node.rule
+def _group(decoded: list[Decoded]) -> dict[str, list[Decoded]]:
+    groups: dict[str, list[Decoded]] = {}
+    for item in decoded:
+        groups.setdefault(item.record["id"], []).append(item)
+    return groups
 
 
-def _counts(rule: HealthRule_Aggregate) -> tuple[int, int]:
-    """Resolve the minimum and desired counts, defaulting to all non-optional inputs."""
-    counted = sum(not input.optional for input in rule.inputs)
-    healthy = counted if rule.healthy is None else rule.healthy
-    required = healthy if rule.required is None else rule.required
-    return required, healthy
+def _conjunction(answers: list[str]) -> str:
+    if "No" in answers:
+        return "No"
+    if "Unknown" in answers:
+        return "Unknown"
+    return "Yes"
 
 
-def _observe(
-    node: HealthNode, status: HealthStatus | None, context: HealthContext
-) -> HealthNodeResult:
-    """Apply freshness and identity constraints to one observed node."""
-    rule = _rule(node)
-    assert isinstance(rule, HealthRule_Observed)
-    reason: str | None = None
-    if status is None:
-        reason = "Missing status"
-    elif status.boot_id != context.boot_id:
-        reason = "Status belongs to another boot"
-    elif node.owner is not None and status.owner != node.owner:
-        reason = "Status owner does not match"
-    elif rule.expected_tag is not None and status.tag != rule.expected_tag:
-        reason = "Status tag does not match"
-    elif status.observed_at_ms > context.now_ms:
-        reason = "Status is in the future"
-    elif context.now_ms - status.observed_at_ms >= min(
-        status.max_age_ms,
-        rule.max_age_ms if rule.max_age_ms is not None else status.max_age_ms,
-    ):
-        reason = "Status has expired"
-    if reason is not None:
-        return HealthNodeResult(
-            id=node.id,
-            owner=node.owner,
-            state=_state("unknown"),
-            inputs=[],
-            message=reason,
-        )
-    assert status is not None
-    return HealthNodeResult(
-        id=node.id,
-        owner=node.owner,
-        state=status.state,
-        inputs=[],
-        message=status.message,
+def _count(minimum: int, answers: list[str]) -> str:
+    yes = answers.count("Yes")
+    if yes >= minimum:
+        return "Yes"
+    if yes + answers.count("Unknown") < minimum:
+        return "No"
+    return "Unknown"
+
+
+def _contains(range_: JsonObject, value: float) -> bool:
+    lower, upper = range_.get("lower"), range_.get("upper")
+    return (
+        lower is None
+        or value > lower["value"]
+        or (value == lower["value"] and lower["inclusive"])
+    ) and (
+        upper is None
+        or value < upper["value"]
+        or (value == upper["value"] and upper["inclusive"])
     )
 
 
-def _state(name: StateName) -> HealthState:
-    """Construct the generated externally tagged state model."""
-    match name:
-        case "healthy":
-            return HealthState_Healthy(name)
-        case "degraded":
-            return HealthState_Degraded(name)
-        case "unhealthy":
-            return HealthState_Unhealthy(name)
-        case "unknown":
-            return HealthState_Unknown(name)
+class _Evaluation:
+    def __init__(self, records: Records, context: JsonObject) -> None:
+        self.context = context
+        self.reported: set[str] = set()
+        self.diagnostics: list[Diagnostic] = list(records.diagnostics)
+        self.nodes = decode_all("HealthNode", records.health_nodes, self.diagnostics)
+        self.statuses = _group(
+            decode_all("HealthStatus", records.health_statuses, self.diagnostics)
+        )
+        self.metrics = _group(
+            decode_all("MetricDefinition", records.metrics, self.diagnostics)
+        )
+        self.samples = _group(
+            decode_all("MetricSample", records.metric_samples, self.diagnostics)
+        )
+        groups = _group(self.nodes)
+        self.conflicts = {id for id, group in groups.items() if len(group) > 1}
+        for id in sorted(self.conflicts):
+            self._diagnose("Error", "HealthNode", f"several nodes have the ID {id!r}")
+        self.unique = {id: group[0] for id, group in groups.items() if len(group) == 1}
+        self.inputs: dict[str, list[tuple[str, str]]] = {}
+        self.unsupported = {id for id, node in self.unique.items() if node.unsupported}
+        self._resolve_inputs()
+        self.on_cycle = self._find_cycles()
+        self.results: dict[str, JsonObject] = {}
+
+    def _diagnose(self, severity: str, kind: str, message: str) -> None:
+        if message not in self.reported:
+            self.reported.add(message)
+            self.diagnostics.append(diagnostic(severity, kind, message))
+
+    def _is_aggregate(self, id: str) -> bool:
+        node = self.unique.get(id)
+        return (
+            node is not None and node.record.get("rule", {}).get("type") == "Aggregate"
+        )
+
+    def _resolve_inputs(self) -> None:
+        attached: dict[str, list[tuple[str, str]]] = {}
+        for id, node in self.unique.items():
+            for attachment in node.record.get("partOf") or []:
+                parent = attachment["node"]
+                if not self._is_aggregate(parent):
+                    continue
+                if parent in node.unsupported_attachments:
+                    self.unsupported.add(parent)
+                attached.setdefault(parent, []).append(
+                    (id, attachment.get("mode", "Counted"))
+                )
+        for id, node in self.unique.items():
+            if not self._is_aggregate(id):
+                continue
+            inputs: dict[str, str] = {}
+            for entry in node.record["rule"].get("inputs") or []:
+                if (
+                    entry["node"] not in self.unique
+                    and entry["node"] not in self.conflicts
+                ):
+                    self._diagnose(
+                        "Warning",
+                        "HealthNode",
+                        f"input {entry['node']!r} of {id!r} does not exist",
+                    )
+                inputs.setdefault(entry["node"], entry.get("mode", "Counted"))
+            for child, mode in attached.get(id, []):
+                inputs.setdefault(child, mode)
+            self.inputs[id] = list(inputs.items())
+
+    def _find_cycles(self) -> set[str]:
+        """Find the nodes on a cycle with Tarjan's algorithm."""
+        index: dict[str, int] = {}
+        low: dict[str, int] = {}
+        stack: list[str] = []
+        on_stack: set[str] = set()
+        on_cycle: set[str] = set()
+
+        def edges(id: str) -> list[str]:
+            return [
+                child for child, _ in self.inputs.get(id, []) if child in self.unique
+            ]
+
+        for start in self.inputs:
+            if start in index:
+                continue
+            work = [(start, 0)]
+            index[start] = low[start] = len(index)
+            stack.append(start)
+            on_stack.add(start)
+            while work:
+                id, position = work[-1]
+                children = edges(id)
+                if position < len(children):
+                    work[-1] = (id, position + 1)
+                    child = children[position]
+                    if child not in index:
+                        index[child] = low[child] = len(index)
+                        stack.append(child)
+                        on_stack.add(child)
+                        work.append((child, 0))
+                    elif child in on_stack:
+                        low[id] = min(low[id], index[child])
+                    continue
+                work.pop()
+                if work:
+                    parent = work[-1][0]
+                    low[parent] = min(low[parent], low[id])
+                if low[id] == index[id]:
+                    component = []
+                    while True:
+                        member = stack.pop()
+                        on_stack.discard(member)
+                        component.append(member)
+                        if member == id:
+                            break
+                    if len(component) > 1 or id in edges(id):
+                        on_cycle.update(component)
+        return on_cycle
+
+    def report(self) -> HealthReport:
+        nodes = []
+        emitted = set()
+        for node in self.nodes:
+            id = node.record["id"]
+            if id in emitted:
+                continue
+            emitted.add(id)
+            if id in self.conflicts:
+                nodes.append(
+                    {
+                        "id": id,
+                        "usable": "Unknown",
+                        "healthy": "Unknown",
+                        "inputs": [],
+                        "reason": "Conflict",
+                    }
+                )
+            else:
+                nodes.append(self._result(id))
+        return HealthReport.model_validate(
+            {
+                "nodes": nodes,
+                "diagnostics": [to_json(item) for item in self.diagnostics],
+            }
+        )
+
+    def _answers(self, id: str) -> Answers:
+        if id in self.unique:
+            result = self._result(id)
+            return result["usable"], result["healthy"]
+        return _UNKNOWN
+
+    def _result(self, id: str) -> JsonObject:
+        if id in self.results:
+            return self.results[id]
+        node = self.unique[id].record
+        result: JsonObject = {"id": id}
+        if "owner" in node:
+            result["owner"] = node["owner"]
+        result["inputs"] = [child for child, _ in self.inputs.get(id, [])]
+        rule = node.get("rule", {"type": "Observed"})
+        if id in self.on_cycle:
+            self._set(result, _UNKNOWN, "Cycle")
+        elif id in self.unsupported:
+            self._set(result, _UNKNOWN, "Unsupported")
+        elif rule["type"] == "Observed":
+            self._observe(result, node, rule)
+        elif rule["type"] == "Threshold":
+            self._threshold(result, node, rule)
+        else:
+            self._aggregate(result, node, rule)
+        self.results[id] = result
+        return result
+
+    @staticmethod
+    def _set(result: JsonObject, answers: Answers, reason: str | None = None) -> None:
+        result["usable"], result["healthy"] = answers
+        if reason is not None:
+            result["reason"] = reason
+
+    def _fresh(
+        self,
+        evidence: JsonObject,
+        owner: str | None,
+        tag: str | None,
+        max_ages: list[int | None],
+    ) -> str | None:
+        """Return why evidence is not fresh, or None if it is fresh."""
+        if evidence["bootId"] != self.context["bootId"]:
+            return "OtherBoot"
+        if owner is not None and evidence.get("owner") != owner:
+            return "OwnerMismatch"
+        if tag is not None and evidence.get("tag") != tag:
+            return "TagMismatch"
+        now = int(self.context["nowMs"])
+        observed = int(evidence["observedAtMs"])
+        if observed > now:
+            return "Future"
+        limits = [evidence["maxAgeMs"], *(age for age in max_ages if age is not None)]
+        if any(now - observed >= int(limit) for limit in limits):
+            return "Expired"
+        return None
+
+    def _evidence(
+        self,
+        result: JsonObject,
+        evidence: JsonObject,
+        reason: str | None,
+        interpret: Callable[[JsonObject], Answers | str],
+    ) -> None:
+        if reason is not None:
+            self._set(result, _UNKNOWN, reason)
+            return
+        answers = interpret(evidence)
+        if isinstance(answers, str):
+            self._set(result, _UNKNOWN, answers)
+        else:
+            self._set(result, answers)
+        for name in ("message", "details"):
+            if name in evidence:
+                result[name] = evidence[name]
+
+    def _observe(self, result: JsonObject, node: JsonObject, rule: JsonObject) -> None:
+        statuses = self.statuses.get(node["id"], [])
+        if len(statuses) > 1:
+            self._diagnose(
+                "Warning", "HealthStatus", f"several status records for {node['id']!r}"
+            )
+            self._set(result, _UNKNOWN, "Conflict")
+            return
+        if not statuses:
+            self._set(result, _UNKNOWN, "Missing")
+            return
+        status = statuses[0]
+        reason = self._fresh(
+            status.record,
+            node.get("owner"),
+            rule.get("expectedTag"),
+            [rule.get("maxAgeMs")],
+        )
+        self._evidence(
+            result,
+            status.record,
+            reason,
+            lambda record: (
+                "Unsupported" if status.unsupported else _STATE_ANSWERS[record["state"]]
+            ),
+        )
+
+    def _threshold(
+        self, result: JsonObject, node: JsonObject, rule: JsonObject
+    ) -> None:
+        metric = rule["metric"]
+        definitions = self.metrics.get(metric, [])
+        samples = self.samples.get(metric, [])
+        if not definitions:
+            self._set(result, _UNKNOWN, "Missing")
+            return
+        if len(definitions) > 1:
+            self._diagnose(
+                "Warning", "MetricDefinition", f"several definitions of {metric!r}"
+            )
+        if len(samples) > 1:
+            self._diagnose("Warning", "MetricSample", f"several samples of {metric!r}")
+        definition = definitions[0].record
+        mismatch = "unit" in rule and rule["unit"] != definition["unit"]
+        if mismatch:
+            self._diagnose(
+                "Warning",
+                "HealthNode",
+                f"unit of {node['id']!r} differs from {metric!r}",
+            )
+        if len(definitions) > 1 or len(samples) > 1 or mismatch:
+            self._set(result, _UNKNOWN, "Conflict")
+            return
+        if not samples:
+            self._set(result, _UNKNOWN, "Missing")
+            return
+        sample = samples[0].record
+        reason = self._fresh(
+            sample,
+            definition.get("owner"),
+            definition.get("expectedTag"),
+            [definition.get("maxAgeMs"), rule.get("maxAgeMs")],
+        )
+
+        def interpret(record: JsonObject) -> Answers:
+            if _contains(rule["healthy"], record["value"]):
+                return "Yes", "Yes"
+            if _contains(rule["usable"], record["value"]):
+                return "Yes", "No"
+            return "No", "No"
+
+        self._evidence(result, sample, reason, interpret)
+
+    def _aggregate(
+        self, result: JsonObject, node: JsonObject, rule: JsonObject
+    ) -> None:
+        inputs = self.inputs[node["id"]]
+        answers = {child: self._answers(child) for child, _ in inputs}
+        counted = [answers[child] for child, mode in inputs if mode != "Optional"]
+        mandatory = [answers[child] for child, mode in inputs if mode == "Mandatory"]
+        optional = [answers[child] for child, mode in inputs if mode == "Optional"]
+        min_healthy = int(rule.get("minHealthy", len(counted)))
+        min_usable = int(rule.get("minUsable", min_healthy))
+        usable = _conjunction(
+            [
+                _count(min_usable, [usable for usable, _ in counted]),
+                *(usable for usable, _ in mandatory),
+            ]
+        )
+        healthy = _conjunction(
+            [
+                usable,
+                _count(min_healthy, [healthy for _, healthy in counted]),
+                *(healthy for _, healthy in mandatory),
+                *(healthy for _, healthy in optional),
+            ]
+        )
+        self._set(result, (usable, healthy))

@@ -2,27 +2,84 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthReport",
   "type": "object",
-  "description": "Evaluated graph, in declaration order.",
+  "description": "Result of evaluating health.",
   "properties": {
     "nodes": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/system_runtime.health.HealthNodeResult"
       }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.common.Diagnostic"
+      }
     }
   },
   "required": [
-    "nodes"
+    "nodes",
+    "diagnostics"
   ],
   "unevaluatedProperties": false,
   "$defs": {
+    "system_runtime.common.Diagnostic": {
+      "type": "object",
+      "description": "A record that was skipped or used despite a problem.",
+      "properties": {
+        "severity": {
+          "$ref": "#/$defs/system_runtime.common.Severity"
+        },
+        "kind": {
+          "$ref": "#/$defs/system_runtime.common.RecordKind"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "severity",
+        "kind",
+        "message"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.common.RecordKind": {
+      "enum": [
+        "ComponentDeclaration",
+        "HealthNode",
+        "HealthStatus",
+        "MetricDefinition",
+        "MetricSample",
+        "DirectoryConfig"
+      ],
+      "description": "Kind of records, named after the record types."
+    },
+    "system_runtime.common.Severity": {
+      "enum": [
+        "Error",
+        "Warning"
+      ],
+      "description": "Effect of a diagnostic on the results."
+    },
+    "system_runtime.health.Answer": {
+      "enum": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "description": "Answer to whether criteria are met."
+    },
     "system_runtime.health.HealthNodeId": {
       "type": "string",
-      "description": "Identifier of a health graph node, serialized as a string."
+      "description": "ID of a health node."
     },
     "system_runtime.health.HealthNodeResult": {
       "type": "object",
-      "description": "Evaluated state and evidence for a node.",
+      "description": "Answers of one node.",
       "properties": {
         "id": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
@@ -30,8 +87,11 @@
         "owner": {
           "type": "string"
         },
-        "state": {
-          "$ref": "#/$defs/system_runtime.health.HealthState"
+        "usable": {
+          "$ref": "#/$defs/system_runtime.health.Answer"
+        },
+        "healthy": {
+          "$ref": "#/$defs/system_runtime.health.Answer"
         },
         "inputs": {
           "type": "array",
@@ -39,25 +99,38 @@
             "$ref": "#/$defs/system_runtime.health.HealthNodeId"
           }
         },
+        "reason": {
+          "$ref": "#/$defs/system_runtime.health.Reason"
+        },
         "message": {
           "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {}
         }
       },
       "required": [
         "id",
-        "state",
+        "usable",
+        "healthy",
         "inputs"
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.health.HealthState": {
+    "system_runtime.health.Reason": {
       "enum": [
-        "healthy",
-        "degraded",
-        "unhealthy",
-        "unknown"
+        "Missing",
+        "OtherBoot",
+        "OwnerMismatch",
+        "TagMismatch",
+        "Future",
+        "Expired",
+        "Conflict",
+        "Cycle",
+        "Unsupported"
       ],
-      "description": "Health relative to a node's declared expectations."
+      "description": "Why a node's evidence was not used or its rule was not applied."
     }
   }
 }

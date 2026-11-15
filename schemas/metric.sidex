@@ -1,87 +1,67 @@
-//! Metrics, their samples, units, and threshold ranges.
+//! Metrics, their samples, and ranges.
 
-/// Identifier of a metric, unique independently of health node IDs.
+/// ID of a metric.
 #[rust(derive(Eq, PartialOrd, Ord, Hash))]
 wrapper MetricId: string
 
-/// A named numeric measurement, independent of any health policy; samples carry no history.
+/// A named numeric measurement.
 record MetricDefinition {
-    /// Unique metric ID.
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Unique ID of the metric.
     id: MetricId,
-    /// Ownership group for replacement or removal, matched exactly.
+    /// Owner of the definition, which replaces or removes it as a whole.
     owner?: string,
-    /// Human-readable label.
+    /// Human-readable name of the metric.
     label?: string,
-    /// Related component IDs; these associations do not imply health dependencies.
+    /// IDs of associated components; associations create no dependencies.
     components?: [string],
-    /// Unit shared by samples and all thresholds referencing this metric.
-    unit: MetricUnit,
-    /// Optional consumer limit on sample age, in milliseconds; must be positive.
-    max_age_ms?: u32,
-    /// Optional tag that samples must match exactly.
+    /// Unit of all samples and thresholds of the metric, as a UCUM code.
+    unit: string,
+    /// Upper limit for the age of samples, in milliseconds; must be positive.
+    max_age_ms?: u64,
+    /// Tag that samples need to carry to be fresh.
     expected_tag?: string,
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
 }
 
-/// One measurement within a boot; publishing it does not assert health.
+/// Current measurement of a metric, published while the system runs.
 record MetricSample {
-    /// Measured metric ID.
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// ID of the metric.
     id: MetricId,
-    /// Ownership group; must match the definition's owner when specified.
-    owner?: string,
-    /// Finite measurement in the definition's unit.
+    /// Measured value in the metric's unit; must be finite.
     value: f64,
-    /// Boot identifier defining the sample clock domain.
+    /// ID of the boot during which the measurement took place.
     boot_id: string,
-    /// Milliseconds on the boot-time clock when the measurement was taken.
+    /// Boot-time clock value, in milliseconds, when the measurement took place.
     observed_at_ms: u64,
-    /// Positive validity duration in milliseconds.
-    max_age_ms: u32,
-    /// Opaque label identifying the measurement configuration or instance.
+    /// Duration, in milliseconds, for which the sample is valid; must be positive.
+    max_age_ms: u64,
+    /// Owner of the sample.
+    owner?: string,
+    /// Opaque label identifying the configuration or instance that took the evidence.
     tag?: string,
-    /// Explanation supplied by the observer.
+    /// Explanation supplied by the writer.
     message?: string,
+    /// Further information supplied by the writer, in any structure.
+    details?: [string: json],
 }
 
-/// Semantic unit; display prefixes, precision, and conversions are consumer choices.
-#[json(tagged = externally, rename_all = "kebab-case")]
-#[rust(derive(Copy, Eq))]
-variant MetricUnit {
-    /// Degrees Celsius; consumers may convert for display.
-    Celsius,
-    /// Bytes; consumers may display decimal or binary prefixes.
-    Bytes,
-    /// Seconds; consumers may display subsecond units.
-    Seconds,
-    /// Dimensionless fraction, with 1 corresponding to 100 percent.
-    Ratio,
-    /// Number of items or events.
-    Count,
-    /// Bytes per second.
-    BytesPerSecond,
-    /// Cycles per second.
-    Hertz,
-    /// Electric potential in volts.
-    Volts,
-    /// Electric current in amperes.
-    Amperes,
-    /// Power in watts.
-    Watts,
-    /// Revolutions per minute.
-    RevolutionsPerMinute,
-}
-
-/// One endpoint of a numeric range, in the referenced metric's unit.
+/// One bound of a range, in the metric's unit.
 record MetricBound {
-    /// Finite endpoint in the referenced metric's unit.
+    /// Finite value of the bound.
     value: f64,
-    /// Whether equality with this endpoint is inside the range.
+    /// Whether the bound itself belongs to the range.
     inclusive: bool,
 }
 
-/// A nonempty interval; omitted endpoints are unbounded.
+/// A non-empty range; a missing bound leaves the range unbounded on that side.
 record MetricRange {
-    /// Optional lower endpoint.
+    /// Lower bound.
     lower?: MetricBound,
-    /// Optional upper endpoint.
+    /// Upper bound.
     upper?: MetricBound,
 }

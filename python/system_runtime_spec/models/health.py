@@ -10,125 +10,132 @@ import pydantic_core  # noqa: F401
 from . import _sidex  # noqa: F401
 
 if TYPE_CHECKING:
+    from . import common as _schema_common  # noqa: F401
     from . import metric as _schema_metric  # noqa: F401
 
 
-# Identifier of a health graph node, serialized as a string.
+# ID of a health node.
 type HealthNodeId = str
 
 
 class HealthNode(_sidex.Model):
-    """A health check or function in a directed acyclic graph."""
+    """A check or function whose health is evaluated."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: HealthNodeId = pydantic.Field(description="Unique health node ID.")
-    owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
-    label: str | None = pydantic.Field(default=None, description="Human-readable label.")
-    components: list[str] | None = pydantic.Field(default=None, description="Related component IDs; these associations do not imply health dependencies.")
-    rule: HealthRule | None = pydantic.Field(default=None, description="How this node's health is determined; omitted means an observed node without constraints.")
+    spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
+    id: HealthNodeId = pydantic.Field(description="Unique ID of the node within the graph.")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the node, which replaces or removes it as a whole.")
+    label: str | None = pydantic.Field(default=None, description="Human-readable name of the node.")
+    components: list[str] | None = pydantic.Field(default=None, description="IDs of associated components; associations create no dependencies.")
+    rule: HealthRule | None = pydantic.Field(default=None, description="How the node's answers are determined; omitted means an observed node without constraints.")
+    part_of: list[Attachment] | None = pydantic.Field(default=None, description="Aggregate nodes that the node attaches to as an input.", validation_alias="partOf", serialization_alias="partOf")
+    annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
 class ObservationRule(_sidex.Model):
-    """Constraints on externally supplied observations."""
+    """Constraints on the status records of an observed node."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on status age, in milliseconds.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
-    expected_tag: str | None = pydantic.Field(default=None, description="Optional tag that published status records must match exactly.", validation_alias="expectedTag", serialization_alias="expectedTag")
+    max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of status records, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    expected_tag: str | None = pydantic.Field(default=None, description="Tag that status records need to carry to be fresh.", validation_alias="expectedTag", serialization_alias="expectedTag")
 
 
 class ThresholdRule(_sidex.Model):
-    """Desired and minimum ranges for one metric."""
+    """Ranges that a metric sample is compared with."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    metric: _schema_metric.MetricId = pydantic.Field(description="Metric definition supplying the unit, identity, and freshness constraints.")
-    healthy: _schema_metric.MetricRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
-    usable: _schema_metric.MetricRange = pydantic.Field(description="Minimum range for usability.")
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on sample age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    metric: _schema_metric.MetricId = pydantic.Field(description="ID of the metric.")
+    unit: str | None = pydantic.Field(default=None, description="Unit of the ranges, as a UCUM code; must equal the metric's unit.")
+    healthy: _schema_metric.MetricRange = pydantic.Field(description="Range in which the desired criteria are met; a subset of the usable range.")
+    usable: _schema_metric.MetricRange = pydantic.Field(description="Range in which the minimum criteria are met.")
+    max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
 
 
 class AggregationRule(_sidex.Model):
-    """Minimum and desired health targets."""
+    """Inputs of an aggregate node and the counts they need to meet."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    inputs: list[AggregationInput] = pydantic.Field(description="Dependencies with distinct node IDs.")
-    required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.")
-    healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.")
+    inputs: list[AggregationInput] | None = pydantic.Field(default=None, description="The node's inputs.")
+    min_usable: _sidex.U64 | None = pydantic.Field(default=None, description="Number of counted inputs that need to be usable; omitted means `min_healthy`.", validation_alias="minUsable", serialization_alias="minUsable")
+    min_healthy: _sidex.U64 | None = pydantic.Field(default=None, description="Number of counted inputs that need to be healthy; omitted means all counted inputs.", validation_alias="minHealthy", serialization_alias="minHealthy")
 
 
 class AggregationInput(_sidex.Model):
-    """One dependency of an aggregate health node."""
+    """One input of an aggregate node."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    node: HealthNodeId = pydantic.Field(description="Referenced health node ID.")
-    required: _sidex.Bool | None = pydantic.Field(default=None, description="Whether this dependency must meet minimum and desired criteria; omitted means false.")
-    optional: _sidex.Bool | None = pydantic.Field(default=None, description="Whether this dependency only affects desired criteria; omitted means false.\nMust not be combined with required.")
+    node: HealthNodeId = pydantic.Field(description="ID of the input node.")
+    mode: InputMode | None = pydantic.Field(default=None, description="How the input affects the node's answers; omitted means `Counted`.")
+
+
+class Attachment(_sidex.Model):
+    """Attachment of a node to an aggregate node as an input."""
+    model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
+
+    node: HealthNodeId = pydantic.Field(description="ID of the aggregate node.")
+    mode: InputMode | None = pydantic.Field(default=None, description="Mode of the input; omitted means `Counted`.")
 
 
 class HealthStatus(_sidex.Model):
-    """Reported status of one observed node within a boot."""
+    """Result of a check, published while the system runs."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: HealthNodeId = pydantic.Field(description="Observed node ID.")
-    owner: str | None = pydantic.Field(default=None, description="Ownership group; must match the node's owner when one is specified.")
-    state: HealthState = pydantic.Field(description="Reported health.")
-    boot_id: str = pydantic.Field(description="Boot identifier defining the observation clock domain.", validation_alias="bootId", serialization_alias="bootId")
-    observed_at_ms: _sidex.U64 = pydantic.Field(description="Milliseconds on the boot-time clock when health was observed.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
-    max_age_ms: _sidex.U32 = pydantic.Field(description="Finite positive validity duration in milliseconds.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
-    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the check configuration or instance.")
-    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the observer.")
+    spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
+    id: HealthNodeId = pydantic.Field(description="ID of the observed node.")
+    state: HealthState = pydantic.Field(description="Result of the check.")
+    boot_id: str = pydantic.Field(description="ID of the boot during which the check took place.", validation_alias="bootId", serialization_alias="bootId")
+    observed_at_ms: _sidex.U64 = pydantic.Field(description="Boot-time clock value, in milliseconds, when the check took place.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
+    max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the status record is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the status record.")
+    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
+    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
+    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information supplied by the writer, in any structure.")
 
 
 class HealthContext(_sidex.Model):
-    """Clock context supplied by a consumer."""
+    """Boot and time in which evidence is evaluated."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    boot_id: str = pydantic.Field(description="Current boot identifier.", validation_alias="bootId", serialization_alias="bootId")
+    boot_id: str = pydantic.Field(description="Current boot ID.", validation_alias="bootId", serialization_alias="bootId")
     now_ms: _sidex.U64 = pydantic.Field(description="Current boot-time clock value in milliseconds.", validation_alias="nowMs", serialization_alias="nowMs")
 
 
 class HealthClockSample(_sidex.Model):
-    """Paired wall-clock and boot-time sample from the system being observed."""
+    """Correlation of the boot-time clock with wall-clock time."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    context: HealthContext = pydantic.Field(description="Boot identifier and boot-time milliseconds at sampling.")
-    timestamp: _sidex.Timestamp = pydantic.Field(description="Wall-clock timestamp at the same instant, serialized as an RFC 3339 string.")
-
-
-class HealthSnapshot(_sidex.Model):
-    """Transport view of a health graph and the evidence used to evaluate it."""
-    model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
-
-    clock: HealthClockSample = pydantic.Field(description="Clock correlation sampled after collecting the records.")
-    nodes: list[HealthNode] = pydantic.Field(description="Health definitions, including their owners.")
-    statuses: list[HealthStatus] = pydantic.Field(description="Original status records; observation times and validity are preserved.")
-    metrics: list[_schema_metric.MetricDefinition] | None = pydantic.Field(default=None, description="Metric definitions used by threshold nodes or displayed independently.")
-    metric_samples: list[_schema_metric.MetricSample] | None = pydantic.Field(default=None, description="Original metric samples; sample times and validity are preserved.", validation_alias="metricSamples", serialization_alias="metricSamples")
+    context: HealthContext = pydantic.Field(description="Boot ID and boot-time clock value at sampling.")
+    timestamp: _sidex.Timestamp = pydantic.Field(description="Wall-clock time at the same instant, in RFC 3339 format in UTC.")
 
 
 class HealthReport(_sidex.Model):
-    """Evaluated graph, in declaration order."""
+    """Result of evaluating health."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    nodes: list[HealthNodeResult] = pydantic.Field(description="Evaluated nodes.")
+    nodes: list[HealthNodeResult] = pydantic.Field(description="One result per node ID, in the order of the node definitions.")
+    diagnostics: list[_schema_common.Diagnostic] = pydantic.Field(description="Diagnostics about health records and directory configurations, and those added during\nevaluation.")
 
 
 class HealthNodeResult(_sidex.Model):
-    """Evaluated state and evidence for a node."""
+    """Answers of one node."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: HealthNodeId = pydantic.Field(description="Node ID.")
-    owner: str | None = pydantic.Field(default=None, description="Owner of the evaluated node.")
-    state: HealthState = pydantic.Field(description="Evaluated health.")
-    inputs: list[HealthNodeId] = pydantic.Field(description="Direct dependencies explaining an aggregate result.")
-    message: str | None = pydantic.Field(default=None, description="Observation message or freshness explanation.")
+    id: HealthNodeId = pydantic.Field(description="ID of the node.")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the node.")
+    usable: Answer = pydantic.Field(description="Whether the minimum criteria are met.")
+    healthy: Answer = pydantic.Field(description="Whether the desired criteria are met.")
+    inputs: list[HealthNodeId] = pydantic.Field(description="IDs of the inputs of an aggregate node; empty for other nodes.")
+    reason: Reason | None = pydantic.Field(default=None, description="Why the node's evidence was not used or its rule was not applied.")
+    message: str | None = pydantic.Field(default=None, description="Message of the fresh evidence.")
+    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Details of the fresh evidence.")
 
 
 class HealthRule_Observed(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    type: Literal["observed"] = "observed"
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on status age, in milliseconds.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
-    expected_tag: str | None = pydantic.Field(default=None, description="Optional tag that published status records must match exactly.", validation_alias="expectedTag", serialization_alias="expectedTag")
+    type: Literal["Observed"] = "Observed"
+    max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of status records, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    expected_tag: str | None = pydantic.Field(default=None, description="Tag that status records need to carry to be fresh.", validation_alias="expectedTag", serialization_alias="expectedTag")
     def payload(self) -> "ObservationRule":
         return ObservationRule(max_age_ms=self.max_age_ms, expected_tag=self.expected_tag)
 
@@ -136,45 +143,118 @@ class HealthRule_Observed(_sidex.Model):
 class HealthRule_Threshold(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    type: Literal["threshold"] = "threshold"
-    metric: _schema_metric.MetricId = pydantic.Field(description="Metric definition supplying the unit, identity, and freshness constraints.")
-    healthy: _schema_metric.MetricRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
-    usable: _schema_metric.MetricRange = pydantic.Field(description="Minimum range for usability.")
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on sample age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    type: Literal["Threshold"] = "Threshold"
+    metric: _schema_metric.MetricId = pydantic.Field(description="ID of the metric.")
+    unit: str | None = pydantic.Field(default=None, description="Unit of the ranges, as a UCUM code; must equal the metric's unit.")
+    healthy: _schema_metric.MetricRange = pydantic.Field(description="Range in which the desired criteria are met; a subset of the usable range.")
+    usable: _schema_metric.MetricRange = pydantic.Field(description="Range in which the minimum criteria are met.")
+    max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     def payload(self) -> "ThresholdRule":
-        return ThresholdRule(metric=self.metric, healthy=self.healthy, usable=self.usable, max_age_ms=self.max_age_ms)
+        return ThresholdRule(metric=self.metric, unit=self.unit, healthy=self.healthy, usable=self.usable, max_age_ms=self.max_age_ms)
 
 
 class HealthRule_Aggregate(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    type: Literal["aggregate"] = "aggregate"
-    inputs: list[AggregationInput] = pydantic.Field(description="Dependencies with distinct node IDs.")
-    required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.")
-    healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.")
+    type: Literal["Aggregate"] = "Aggregate"
+    inputs: list[AggregationInput] | None = pydantic.Field(default=None, description="The node's inputs.")
+    min_usable: _sidex.U64 | None = pydantic.Field(default=None, description="Number of counted inputs that need to be usable; omitted means `min_healthy`.", validation_alias="minUsable", serialization_alias="minUsable")
+    min_healthy: _sidex.U64 | None = pydantic.Field(default=None, description="Number of counted inputs that need to be healthy; omitted means all counted inputs.", validation_alias="minHealthy", serialization_alias="minHealthy")
     def payload(self) -> "AggregationRule":
-        return AggregationRule(inputs=self.inputs, required=self.required, healthy=self.healthy)
+        return AggregationRule(inputs=self.inputs, min_usable=self.min_usable, min_healthy=self.min_healthy)
 
 
-# Definition of an observed, threshold, or aggregate node.
+# How a node's answers are determined.
 type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate, pydantic.Discriminator("type")]
 
 
-class HealthState_Healthy(pydantic.RootModel[Literal["healthy"]]):
+class InputMode_Counted(pydantic.RootModel[Literal["Counted"]]):
     pass
 
 
-class HealthState_Degraded(pydantic.RootModel[Literal["degraded"]]):
+class InputMode_Mandatory(pydantic.RootModel[Literal["Mandatory"]]):
     pass
 
 
-class HealthState_Unhealthy(pydantic.RootModel[Literal["unhealthy"]]):
+class InputMode_Optional(pydantic.RootModel[Literal["Optional"]]):
     pass
 
 
-class HealthState_Unknown(pydantic.RootModel[Literal["unknown"]]):
+# How an input affects the answers of an aggregate node.
+type InputMode = InputMode_Counted | InputMode_Mandatory | InputMode_Optional
+
+
+class HealthState_Healthy(pydantic.RootModel[Literal["Healthy"]]):
     pass
 
 
-# Health relative to a node's declared expectations.
+class HealthState_Degraded(pydantic.RootModel[Literal["Degraded"]]):
+    pass
+
+
+class HealthState_Unhealthy(pydantic.RootModel[Literal["Unhealthy"]]):
+    pass
+
+
+class HealthState_Unknown(pydantic.RootModel[Literal["Unknown"]]):
+    pass
+
+
+# Summary of the answers of a node.
 type HealthState = HealthState_Healthy | HealthState_Degraded | HealthState_Unhealthy | HealthState_Unknown
+
+
+class Answer_Yes(pydantic.RootModel[Literal["Yes"]]):
+    pass
+
+
+class Answer_No(pydantic.RootModel[Literal["No"]]):
+    pass
+
+
+class Answer_Unknown(pydantic.RootModel[Literal["Unknown"]]):
+    pass
+
+
+# Answer to whether criteria are met.
+type Answer = Answer_Yes | Answer_No | Answer_Unknown
+
+
+class Reason_Missing(pydantic.RootModel[Literal["Missing"]]):
+    pass
+
+
+class Reason_OtherBoot(pydantic.RootModel[Literal["OtherBoot"]]):
+    pass
+
+
+class Reason_OwnerMismatch(pydantic.RootModel[Literal["OwnerMismatch"]]):
+    pass
+
+
+class Reason_TagMismatch(pydantic.RootModel[Literal["TagMismatch"]]):
+    pass
+
+
+class Reason_Future(pydantic.RootModel[Literal["Future"]]):
+    pass
+
+
+class Reason_Expired(pydantic.RootModel[Literal["Expired"]]):
+    pass
+
+
+class Reason_Conflict(pydantic.RootModel[Literal["Conflict"]]):
+    pass
+
+
+class Reason_Cycle(pydantic.RootModel[Literal["Cycle"]]):
+    pass
+
+
+class Reason_Unsupported(pydantic.RootModel[Literal["Unsupported"]]):
+    pass
+
+
+# Why a node's evidence was not used or its rule was not applied.
+type Reason = Reason_Missing | Reason_OtherBoot | Reason_OwnerMismatch | Reason_TagMismatch | Reason_Future | Reason_Expired | Reason_Conflict | Reason_Cycle | Reason_Unsupported

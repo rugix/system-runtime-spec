@@ -1,0 +1,155 @@
+{
+  "symlinks": [
+    {
+      "path": "usr/lib/system-runtime/components/link.json",
+      "target": "os.json"
+    },
+    {
+      "path": "usr/lib/system-runtime/components/linked",
+      "target": "sub"
+    },
+    {
+      "path": "apps/demo/current",
+      "target": "v2"
+    },
+    {
+      "path": "apps/alias",
+      "target": "demo"
+    },
+    {
+      "path": "apps/broken",
+      "target": "missing"
+    },
+    {
+      "path": "etc/system-runtime/metrics/definitions",
+      "target": "../../../opt/shared"
+    }
+  ],
+  "expected": {
+    "components": [
+      {
+        "specVersion": "1.0",
+        "id": "runtime",
+        "owner": "rugix.system",
+        "version": "2"
+      },
+      {
+        "id": "nested"
+      },
+      {
+        "id": "board",
+        "version": "4"
+      },
+      {
+        "id": "os",
+        "owner": "rugix.system",
+        "version": "1-patched"
+      },
+      {
+        "id": "runtime",
+        "owner": "other",
+        "version": "9"
+      },
+      {
+        "id": "app",
+        "owner": "rugix.apps.demo",
+        "version": "2",
+        "requires": [
+          {
+            "id": "runtime",
+            "version": ">=2"
+          }
+        ]
+      }
+    ],
+    "healthNodes": [
+      {
+        "id": "rugix.apps",
+        "owner": "rugix.system",
+        "rule": {
+          "type": "Aggregate"
+        }
+      },
+      {
+        "specVersion": "1.2",
+        "id": "newer.node",
+        "rule": {
+          "type": "Schedule"
+        }
+      },
+      {
+        "id": "app",
+        "owner": "rugix.apps.demo",
+        "partOf": [
+          {
+            "node": "rugix.apps"
+          }
+        ]
+      }
+    ],
+    "healthStatuses": [
+      {
+        "id": "app",
+        "state": "Healthy",
+        "bootId": "boot",
+        "observedAtMs": 90,
+        "maxAgeMs": 20,
+        "owner": "rugix.apps.demo"
+      }
+    ],
+    "metrics": [
+      {
+        "id": "storage.free",
+        "owner": "rugix.system",
+        "unit": "By"
+      },
+      {
+        "id": "limit",
+        "unit": "1",
+        "label": "shared"
+      }
+    ],
+    "metricSamples": [
+      {
+        "id": "storage.free",
+        "owner": "rugix.system",
+        "value": 104857600,
+        "bootId": "boot",
+        "observedAtMs": 100,
+        "maxAgeMs": 10
+      }
+    ],
+    "diagnostics": [
+      {
+        "severity": "Error",
+        "kind": "HealthNode",
+        "path": "apps/broken"
+      },
+      {
+        "severity": "Error",
+        "kind": "ComponentDeclaration",
+        "path": "apps/notes.txt"
+      },
+      {
+        "severity": "Error",
+        "kind": "DirectoryConfig",
+        "path": "etc/system-runtime/directories/bad.json"
+      },
+      {
+        "severity": "Warning",
+        "kind": "HealthNode",
+        "path": "etc/system-runtime/health/nodes/newer.json"
+      },
+      {
+        "severity": "Error",
+        "kind": "ComponentDeclaration",
+        "path": "usr/lib/system-runtime/components/broken.json"
+      },
+      {
+        "severity": "Error",
+        "kind": "ComponentDeclaration",
+        "path": "usr/lib/system-runtime/components/newer.json"
+      }
+    ]
+  }
+}

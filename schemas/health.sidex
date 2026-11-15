@@ -1,162 +1,219 @@
-//! Named health observations, numeric thresholds, and aggregation rules.
+//! Health nodes, status records, evaluation, and reports.
 
-import metric::MetricDefinition
+import common::Diagnostic
 import metric::MetricId
 import metric::MetricRange
-import metric::MetricSample
 
-/// Identifier of a health graph node, serialized as a string.
+/// ID of a health node.
 #[rust(derive(Eq, PartialOrd, Ord, Hash))]
 wrapper HealthNodeId: string
 
-/// A health check or function in a directed acyclic graph.
+/// A check or function whose health is evaluated.
 record HealthNode {
-    /// Unique health node ID.
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Unique ID of the node within the graph.
     id: HealthNodeId,
-    /// Ownership group for replacement or removal, matched exactly.
+    /// Owner of the node, which replaces or removes it as a whole.
     owner?: string,
-    /// Human-readable label.
+    /// Human-readable name of the node.
     label?: string,
-    /// Related component IDs; these associations do not imply health dependencies.
+    /// IDs of associated components; associations create no dependencies.
     components?: [string],
-    /// How this node's health is determined; omitted means an observed node without constraints.
+    /// How the node's answers are determined; omitted means an observed node without constraints.
     rule?: HealthRule,
+    /// Aggregate nodes that the node attaches to as an input.
+    part_of?: [Attachment],
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
 }
 
-/// Definition of an observed, threshold, or aggregate node.
-#[json(tag = "type", rename_all = "lowercase")]
+/// How a node's answers are determined.
+#[json(tag = "type")]
 variant HealthRule {
-    /// Health is supplied by an external status record.
+    /// The node takes its answers from a status record.
     Observed: ObservationRule,
-    /// Health is derived from a fresh metric sample.
+    /// The node derives its answers from a metric sample.
     Threshold: ThresholdRule,
-    /// Health is evaluated from other nodes.
+    /// The node derives its answers from other nodes.
     Aggregate: AggregationRule,
 }
 
-/// Constraints on externally supplied observations.
+/// Constraints on the status records of an observed node.
 record ObservationRule {
-    /// Optional consumer limit on status age, in milliseconds.
-    max_age_ms?: u32,
-    /// Optional tag that published status records must match exactly.
+    /// Upper limit for the age of status records, in milliseconds; must be positive.
+    max_age_ms?: u64,
+    /// Tag that status records need to carry to be fresh.
     expected_tag?: string,
 }
 
-/// Desired and minimum ranges for one metric.
+/// Ranges that a metric sample is compared with.
 record ThresholdRule {
-    /// Metric definition supplying the unit, identity, and freshness constraints.
+    /// ID of the metric.
     metric: MetricId,
-    /// Desired range; must be a subset of the usable range.
+    /// Unit of the ranges, as a UCUM code; must equal the metric's unit.
+    unit?: string,
+    /// Range in which the desired criteria are met; a subset of the usable range.
     healthy: MetricRange,
-    /// Minimum range for usability.
+    /// Range in which the minimum criteria are met.
     usable: MetricRange,
-    /// Optional consumer limit on sample age, in milliseconds; must be positive.
-    max_age_ms?: u32,
+    /// Upper limit for the age of samples, in milliseconds; must be positive.
+    max_age_ms?: u64,
 }
 
-/// Minimum and desired health targets.
+/// Inputs of an aggregate node and the counts they need to meet.
 record AggregationRule {
-    /// Dependencies with distinct node IDs.
-    inputs: [AggregationInput],
-    /// Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;
-    /// omitted means the healthy count.
-    required?: u32,
-    /// Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all
-    /// non-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.
-    healthy?: u32,
+    /// The node's inputs.
+    inputs?: [AggregationInput],
+    /// Number of counted inputs that need to be usable; omitted means `min_healthy`.
+    min_usable?: u64,
+    /// Number of counted inputs that need to be healthy; omitted means all counted inputs.
+    min_healthy?: u64,
 }
 
-/// One dependency of an aggregate health node.
+/// One input of an aggregate node.
 record AggregationInput {
-    /// Referenced health node ID.
+    /// ID of the input node.
     node: HealthNodeId,
-    /// Whether this dependency must meet minimum and desired criteria; omitted means false.
-    required?: bool,
-    /// Whether this dependency only affects desired criteria; omitted means false.
-    /// Must not be combined with required.
-    optional?: bool,
+    /// How the input affects the node's answers; omitted means `Counted`.
+    mode?: InputMode,
 }
 
-/// Reported status of one observed node within a boot.
+/// Attachment of a node to an aggregate node as an input.
+record Attachment {
+    /// ID of the aggregate node.
+    node: HealthNodeId,
+    /// Mode of the input; omitted means `Counted`.
+    mode?: InputMode,
+}
+
+/// How an input affects the answers of an aggregate node.
+#[json(tagged = externally)]
+#[rust(derive(Copy, Eq))]
+variant InputMode {
+    /// The input counts toward `min_usable` and `min_healthy`.
+    Counted,
+    /// The input counts, and the node is only usable and healthy if the input is.
+    Mandatory,
+    /// The input does not count; the node is only healthy if the input is healthy.
+    Optional,
+}
+
+/// Result of a check, published while the system runs.
 record HealthStatus {
-    /// Observed node ID.
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// ID of the observed node.
     id: HealthNodeId,
-    /// Ownership group; must match the node's owner when one is specified.
-    owner?: string,
-    /// Reported health.
+    /// Result of the check.
     state: HealthState,
-    /// Boot identifier defining the observation clock domain.
+    /// ID of the boot during which the check took place.
     boot_id: string,
-    /// Milliseconds on the boot-time clock when health was observed.
+    /// Boot-time clock value, in milliseconds, when the check took place.
     observed_at_ms: u64,
-    /// Finite positive validity duration in milliseconds.
-    max_age_ms: u32,
-    /// Opaque label identifying the check configuration or instance.
+    /// Duration, in milliseconds, for which the status record is valid; must be positive.
+    max_age_ms: u64,
+    /// Owner of the status record.
+    owner?: string,
+    /// Opaque label identifying the configuration or instance that took the evidence.
     tag?: string,
-    /// Explanation supplied by the observer.
+    /// Explanation supplied by the writer.
     message?: string,
+    /// Further information supplied by the writer, in any structure.
+    details?: [string: json],
 }
 
-/// Health relative to a node's declared expectations.
-#[json(tagged = externally, tag = "state", rename_all = "lowercase")]
+/// Summary of the answers of a node.
+#[json(tagged = externally)]
 #[rust(derive(Copy, Eq))]
 variant HealthState {
-    /// Desired health criteria are confirmed.
+    /// The desired criteria are met.
     Healthy,
-    /// Minimum criteria are confirmed; desired criteria are unconfirmed or unmet.
+    /// The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.
     Degraded,
-    /// Minimum criteria are confirmed to be unmet.
+    /// The minimum criteria are not met.
     Unhealthy,
-    /// Evidence does not determine whether minimum criteria are met.
+    /// Whether the minimum criteria are met is unknown.
     Unknown,
 }
 
-/// Clock context supplied by a consumer.
+/// Answer to whether criteria are met.
+#[json(tagged = externally)]
+#[rust(derive(Copy, Eq))]
+variant Answer {
+    /// The criteria are met.
+    Yes,
+    /// The criteria are not met.
+    No,
+    /// The available evidence does not determine whether the criteria are met.
+    Unknown,
+}
+
+/// Why a node's evidence was not used or its rule was not applied.
+#[json(tagged = externally)]
+#[rust(derive(Copy, Eq))]
+variant Reason {
+    /// The evidence or the metric definition does not exist.
+    Missing,
+    /// The evidence belongs to another boot.
+    OtherBoot,
+    /// The owner of the evidence differs.
+    OwnerMismatch,
+    /// The tag of the evidence differs.
+    TagMismatch,
+    /// The evidence was observed after the current time.
+    Future,
+    /// The evidence is too old.
+    Expired,
+    /// Records contradict each other.
+    Conflict,
+    /// The node is on a cycle.
+    Cycle,
+    /// A rule type, state, or input mode is unknown to the evaluator.
+    Unsupported,
+}
+
+/// Boot and time in which evidence is evaluated.
 record HealthContext {
-    /// Current boot identifier.
+    /// Current boot ID.
     boot_id: string,
     /// Current boot-time clock value in milliseconds.
     now_ms: u64,
 }
 
-/// Paired wall-clock and boot-time sample from the system being observed.
+/// Correlation of the boot-time clock with wall-clock time.
 record HealthClockSample {
-    /// Boot identifier and boot-time milliseconds at sampling.
+    /// Boot ID and boot-time clock value at sampling.
     context: HealthContext,
-    /// Wall-clock timestamp at the same instant, serialized as an RFC 3339 string.
+    /// Wall-clock time at the same instant, in RFC 3339 format in UTC.
     timestamp: timestamp,
 }
 
-/// Transport view of a health graph and the evidence used to evaluate it.
-record HealthSnapshot {
-    /// Clock correlation sampled after collecting the records.
-    clock: HealthClockSample,
-    /// Health definitions, including their owners.
-    nodes: [HealthNode],
-    /// Original status records; observation times and validity are preserved.
-    statuses: [HealthStatus],
-    /// Metric definitions used by threshold nodes or displayed independently.
-    metrics?: [MetricDefinition],
-    /// Original metric samples; sample times and validity are preserved.
-    metric_samples?: [MetricSample],
-}
-
-/// Evaluated graph, in declaration order.
+/// Result of evaluating health.
 record HealthReport {
-    /// Evaluated nodes.
+    /// One result per node ID, in the order of the node definitions.
     nodes: [HealthNodeResult],
+    /// Diagnostics about health records and directory configurations, and those added during
+    /// evaluation.
+    diagnostics: [Diagnostic],
 }
 
-/// Evaluated state and evidence for a node.
+/// Answers of one node.
 record HealthNodeResult {
-    /// Node ID.
+    /// ID of the node.
     id: HealthNodeId,
-    /// Owner of the evaluated node.
+    /// Owner of the node.
     owner?: string,
-    /// Evaluated health.
-    state: HealthState,
-    /// Direct dependencies explaining an aggregate result.
+    /// Whether the minimum criteria are met.
+    usable: Answer,
+    /// Whether the desired criteria are met.
+    healthy: Answer,
+    /// IDs of the inputs of an aggregate node; empty for other nodes.
     inputs: [HealthNodeId],
-    /// Observation message or freshness explanation.
+    /// Why the node's evidence was not used or its rule was not applied.
+    reason?: Reason,
+    /// Message of the fresh evidence.
     message?: string,
+    /// Details of the fresh evidence.
+    details?: [string: json],
 }

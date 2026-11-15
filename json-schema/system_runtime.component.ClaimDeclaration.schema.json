@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.ClaimDeclaration",
   "type": "object",
-  "description": "An exclusive resource key.",
+  "description": "A resource that at most one component may claim.",
   "properties": {
     "id": {
       "type": "string"

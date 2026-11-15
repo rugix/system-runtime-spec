@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.CompatibilityReport",
   "type": "object",
-  "description": "Result of evaluating the complete component set.",
+  "description": "Result of checking a composition.",
   "properties": {
     "consistent": {
       "type": "boolean"
@@ -12,17 +12,66 @@
       "items": {
         "$ref": "#/$defs/system_runtime.component.CompatibilityProblem"
       }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_runtime.common.Diagnostic"
+      }
     }
   },
   "required": [
     "consistent",
-    "problems"
+    "problems",
+    "diagnostics"
   ],
   "unevaluatedProperties": false,
   "$defs": {
+    "system_runtime.common.Diagnostic": {
+      "type": "object",
+      "description": "A record that was skipped or used despite a problem.",
+      "properties": {
+        "severity": {
+          "$ref": "#/$defs/system_runtime.common.Severity"
+        },
+        "kind": {
+          "$ref": "#/$defs/system_runtime.common.RecordKind"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "severity",
+        "kind",
+        "message"
+      ],
+      "unevaluatedProperties": false
+    },
+    "system_runtime.common.RecordKind": {
+      "enum": [
+        "ComponentDeclaration",
+        "HealthNode",
+        "HealthStatus",
+        "MetricDefinition",
+        "MetricSample",
+        "DirectoryConfig"
+      ],
+      "description": "Kind of records, named after the record types."
+    },
+    "system_runtime.common.Severity": {
+      "enum": [
+        "Error",
+        "Warning"
+      ],
+      "description": "Effect of a diagnostic on the results."
+    },
     "system_runtime.component.CapabilityDeclaration": {
       "type": "object",
-      "description": "A fact supplied by a component.",
+      "description": "A fact that a component provides.",
       "properties": {
         "id": {
           "type": "string"
@@ -41,7 +90,7 @@
     },
     "system_runtime.component.CapabilitySelectorDeclaration": {
       "type": "object",
-      "description": "A selector over provided capabilities.",
+      "description": "A selector over capabilities.",
       "properties": {
         "id": {
           "type": "string"
@@ -59,13 +108,13 @@
       "unevaluatedProperties": false
     },
     "system_runtime.component.CompatibilityProblem": {
-      "description": "A violated composition constraint.",
+      "description": "A violated constraint.",
       "oneOf": [
         {
           "type": "object",
           "properties": {
             "problem": {
-              "const": "duplicateComponent"
+              "const": "DuplicateComponent"
             },
             "id": {
               "type": "string"
@@ -80,7 +129,7 @@
           "type": "object",
           "properties": {
             "problem": {
-              "const": "duplicateClaim"
+              "const": "DuplicateClaim"
             },
             "id": {
               "type": "string"
@@ -102,7 +151,7 @@
           "type": "object",
           "properties": {
             "problem": {
-              "const": "unsatisfiedRequirement"
+              "const": "UnsatisfiedRequirement"
             },
             "component": {
               "type": "string"
@@ -121,7 +170,7 @@
           "type": "object",
           "properties": {
             "problem": {
-              "const": "conflict"
+              "const": "Conflict"
             },
             "component": {
               "type": "string"

@@ -1,0 +1,1 @@
+{"components": ["/apps/*/current/components", "/apps/notes.txt"], "healthNodes": ["/apps/*/current/health/nodes", "/apps/broken"], "metrics": ["/opt/shared"]}

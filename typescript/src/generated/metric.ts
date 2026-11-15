@@ -2,12 +2,13 @@
 /* eslint-disable */
 
 import * as __sidex_types from "@sidex/types";
+import * as __schema_common from "./common.js";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
 import * as __schema_metric from "./metric.js";
 /**
- * Identifier of a metric, unique independently of health node IDs.
+ * ID of a metric.
  */
  export type MetricId = __sidex_types.Nominal<__sidex_types.builtins.String, "::system_runtime::metric::MetricId">;
 
@@ -15,82 +16,86 @@ export const MetricId = {
     ...__sidex_types.checker<MetricId>((): __sidex_types.Check => __sidex_types.builtin("string")),
 };
 /**
- * A named numeric measurement, independent of any health policy; samples carry no history.
+ * A named numeric measurement.
  */
  export type MetricDefinition = { /**
-                                            * Unique metric ID.
+                                            * Version of the specification that the record follows; omitted means `1.0`.
+                                            */
+                                                        "specVersion"?: __sidex_types.builtins.String, /**
+                                            * Unique ID of the metric.
                                             */
                                                         "id": MetricId, /**
-                                            * Ownership group for replacement or removal, matched exactly.
+                                            * Owner of the definition, which replaces or removes it as a whole.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
-                                            * Human-readable label.
+                                            * Human-readable name of the metric.
                                             */
                                                         "label"?: __sidex_types.builtins.String, /**
-                                            * Related component IDs; these associations do not imply health dependencies.
+                                            * IDs of associated components; associations create no dependencies.
                                             */
                                                         "components"?: __sidex_types.builtins.String[], /**
-                                            * Unit shared by samples and all thresholds referencing this metric.
+                                            * Unit of all samples and thresholds of the metric, as a UCUM code.
                                             */
-                                                        "unit": MetricUnit, /**
-                                            * Optional consumer limit on sample age, in milliseconds; must be positive.
+                                                        "unit": __sidex_types.builtins.String, /**
+                                            * Upper limit for the age of samples, in milliseconds; must be positive.
                                             */
-                                                        "maxAgeMs"?: __sidex_types.builtins.U32, /**
-                                            * Optional tag that samples must match exactly.
+                                                        "maxAgeMs"?: __sidex_types.builtins.U64, /**
+                                            * Tag that samples need to carry to be fresh.
                                             */
-                                                        "expectedTag"?: __sidex_types.builtins.String };
+                                                        "expectedTag"?: __sidex_types.builtins.String, /**
+                                            * Further data that the specification does not define, with namespaced member names.
+                                            */
+                                                        "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const MetricDefinition = {
-    ...__sidex_types.checker<MetricDefinition>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["unit", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricUnit), false], ["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<MetricDefinition>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["unit", __sidex_types.builtin("string"), false], ["maxAgeMs", __sidex_types.builtin("u64"), true], ["expectedTag", __sidex_types.builtin("string"), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
- * One measurement within a boot; publishing it does not assert health.
+ * Current measurement of a metric, published while the system runs.
  */
  export type MetricSample = { /**
-                                            * Measured metric ID.
+                                            * Version of the specification that the record follows; omitted means `1.0`.
+                                            */
+                                                        "specVersion"?: __sidex_types.builtins.String, /**
+                                            * ID of the metric.
                                             */
                                                         "id": MetricId, /**
-                                            * Ownership group; must match the definition's owner when specified.
-                                            */
-                                                        "owner"?: __sidex_types.builtins.String, /**
-                                            * Finite measurement in the definition's unit.
+                                            * Measured value in the metric's unit; must be finite.
                                             */
                                                         "value": __sidex_types.builtins.F64, /**
-                                            * Boot identifier defining the sample clock domain.
+                                            * ID of the boot during which the measurement took place.
                                             */
                                                         "bootId": __sidex_types.builtins.String, /**
-                                            * Milliseconds on the boot-time clock when the measurement was taken.
+                                            * Boot-time clock value, in milliseconds, when the measurement took place.
                                             */
                                                         "observedAtMs": __sidex_types.builtins.U64, /**
-                                            * Positive validity duration in milliseconds.
+                                            * Duration, in milliseconds, for which the sample is valid; must be positive.
                                             */
-                                                        "maxAgeMs": __sidex_types.builtins.U32, /**
-                                            * Opaque label identifying the measurement configuration or instance.
+                                                        "maxAgeMs": __sidex_types.builtins.U64, /**
+                                            * Owner of the sample.
+                                            */
+                                                        "owner"?: __sidex_types.builtins.String, /**
+                                            * Opaque label identifying the configuration or instance that took the evidence.
                                             */
                                                         "tag"?: __sidex_types.builtins.String, /**
-                                            * Explanation supplied by the observer.
+                                            * Explanation supplied by the writer.
                                             */
-                                                        "message"?: __sidex_types.builtins.String };
+                                                        "message"?: __sidex_types.builtins.String, /**
+                                            * Further information supplied by the writer, in any structure.
+                                            */
+                                                        "details"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const MetricSample = {
-    ...__sidex_types.checker<MetricSample>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricId), false], ["owner", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("f64"), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<MetricSample>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricId), false], ["value", __sidex_types.builtin("f64"), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
- * Semantic unit; display prefixes, precision, and conversions are consumer choices.
- */
- export type MetricUnit = ("celsius" | "bytes" | "seconds" | "ratio" | "count" | "bytes-per-second" | "hertz" | "volts" | "amperes" | "watts" | "revolutions-per-minute");
-
-export const MetricUnit = {
-    ...__sidex_types.checker<MetricUnit>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["celsius", null, null], ["bytes", null, null], ["seconds", null, null], ["ratio", null, null], ["count", null, null], ["bytes-per-second", null, null], ["hertz", null, null], ["volts", null, null], ["amperes", null, null], ["watts", null, null], ["revolutions-per-minute", null, null]])),
-};
-/**
- * One endpoint of a numeric range, in the referenced metric's unit.
+ * One bound of a range, in the metric's unit.
  */
  export type MetricBound = { /**
-                                            * Finite endpoint in the referenced metric's unit.
+                                            * Finite value of the bound.
                                             */
                                                         "value": __sidex_types.builtins.F64, /**
-                                            * Whether equality with this endpoint is inside the range.
+                                            * Whether the bound itself belongs to the range.
                                             */
                                                         "inclusive": __sidex_types.builtins.Bool };
 
@@ -98,13 +103,13 @@ export const MetricBound = {
     ...__sidex_types.checker<MetricBound>((): __sidex_types.Check => __sidex_types.record([["value", __sidex_types.builtin("f64"), false], ["inclusive", __sidex_types.builtin("bool"), false]], [])),
 };
 /**
- * A nonempty interval; omitted endpoints are unbounded.
+ * A non-empty range; a missing bound leaves the range unbounded on that side.
  */
  export type MetricRange = { /**
-                                            * Optional lower endpoint.
+                                            * Lower bound.
                                             */
                                                         "lower"?: MetricBound, /**
-                                            * Optional upper endpoint.
+                                            * Upper bound.
                                             */
                                                         "upper"?: MetricBound };
 

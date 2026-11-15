@@ -1,169 +1,223 @@
-"""Load file contributions from standard and additional Linux directories."""
+"""Discover records in the standard directories and added directories."""
 
 import json
+import os
 import stat
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TypeVar
 
-from pydantic import BaseModel
+from ._records import (
+    InvalidRecord,
+    JsonObject,
+    Records,
+    decode,
+    diagnostic,
+)
+from .models.common import Diagnostic
 
-from .models.component import ComponentDeclaration
-from .models.filesystem import DirectoryConfig, RuntimeSnapshot
-from .models.health import HealthNode, HealthStatus
-from .models.metric import MetricDefinition, MetricSample
-
-_PREFIXES = ("/usr/lib/system-runtime", "/etc/system-runtime", "/run/system-runtime")
-Model = TypeVar("Model", bound=BaseModel)
+# Levels of the directories, from lowest to highest.
+_LIB, _RUN, _ETC = 0, 1, 2
+_PREFIXES = (
+    ("/usr/lib/system-runtime", _LIB),
+    ("/etc/system-runtime", _ETC),
+    ("/run/system-runtime", _RUN),
+)
+_STANDARD = {
+    "ComponentDeclaration": [(f"{p}/components", level) for p, level in _PREFIXES],
+    "HealthNode": [(f"{p}/health/nodes", level) for p, level in _PREFIXES],
+    "HealthStatus": [("/run/system-runtime/health/status", _RUN)],
+    "MetricDefinition": [(f"{p}/metrics/definitions", level) for p, level in _PREFIXES],
+    "MetricSample": [("/run/system-runtime/metrics/samples", _RUN)],
+    "DirectoryConfig": [(f"{p}/directories", level) for p, level in _PREFIXES],
+}
+_CONFIG_FIELDS = {
+    "ComponentDeclaration": "components",
+    "HealthNode": "healthNodes",
+    "HealthStatus": "healthStatuses",
+    "MetricDefinition": "metrics",
+    "MetricSample": "metricSamples",
+}
+_OVERRIDABLE = ("ComponentDeclaration", "HealthNode", "MetricDefinition")
 
 
 @dataclass
-class RuntimeDirectories:
-    """Directory sources, resolved beneath root, with explicit extension support."""
+class _Entry:
+    path: str
+    level: int
+    record: JsonObject
 
-    root: Path = field(default_factory=lambda: Path("/"))
-    components: list[str] = field(default_factory=list)
-    health_nodes: list[str] = field(default_factory=list)
-    health_statuses: list[str] = field(default_factory=list)
-    metrics: list[str] = field(default_factory=list)
-    metric_samples: list[str] = field(default_factory=list)
-    configuration: list[str] = field(default_factory=list)
 
-    @classmethod
-    def standard(cls, root: str | Path = "/") -> "RuntimeDirectories":
-        return cls(
-            root=Path(root),
-            components=[f"{prefix}/components" for prefix in _PREFIXES],
-            health_nodes=[f"{prefix}/health/nodes" for prefix in _PREFIXES],
-            health_statuses=["/run/system-runtime/health/status"],
-            metrics=[f"{prefix}/metrics/definitions" for prefix in _PREFIXES],
-            metric_samples=["/run/system-runtime/metrics/samples"],
-            configuration=[f"{prefix}/directories" for prefix in _PREFIXES],
-        )
+def read_records(root: str | Path = "/") -> Records:
+    """Read the records of all kinds from the directories below `root`.
 
-    def extend(self, config: DirectoryConfig) -> None:
-        """Append directory sources without replacing existing contributions."""
-        self.components.extend(config.components or [])
-        self.health_nodes.extend(config.health_nodes or [])
-        self.health_statuses.extend(config.health_statuses or [])
-        self.metrics.extend(config.metrics or [])
-        self.metric_samples.extend(config.metric_samples or [])
+    Files that cannot be read or do not contain a valid record are skipped with an error
+    diagnostic. Overrides are applied, so the records are those that readers use.
+    """
+    reader = _Reader(Path(root))
+    configs = reader.read("DirectoryConfig", _STANDARD["DirectoryConfig"])
+    added: dict[str, list[tuple[str, int]]] = {kind: [] for kind in _CONFIG_FIELDS}
+    for config in configs:
+        for kind, name in _CONFIG_FIELDS.items():
+            added[kind].extend((path, _LIB) for path in config.get(name) or [])
+    lists = {
+        kind: reader.read(kind, _STANDARD[kind] + added[kind])
+        for kind in _CONFIG_FIELDS
+    }
+    return Records(
+        components=lists["ComponentDeclaration"],
+        health_nodes=lists["HealthNode"],
+        health_statuses=lists["HealthStatus"],
+        metrics=lists["MetricDefinition"],
+        metric_samples=lists["MetricSample"],
+        diagnostics=reader.diagnostics,
+    )
 
-    def load(self) -> RuntimeSnapshot:
-        """Reload extension configurations and collect regular JSON files.
 
-        Whole '*' segments select real directories. Missing roots are ignored.
-        An explicit root may be a symlink; nested symlinks are skipped.
-        Overlapping sources read each physical file once.
-        """
-        effective = RuntimeDirectories(
-            root=self.root,
-            components=self.components.copy(),
-            health_nodes=self.health_nodes.copy(),
-            health_statuses=self.health_statuses.copy(),
-            metrics=self.metrics.copy(),
-            metric_samples=self.metric_samples.copy(),
-        )
-        for path in self._files(self.configuration):
-            effective.extend(_read(path, DirectoryConfig))
-        metrics = [
-            _read(path, MetricDefinition)
-            for path in effective._files(effective.metrics)
-        ]
-        observations = [
-            _read(path, MetricSample)
-            for path in effective._files(effective.metric_samples)
-        ]
-        return RuntimeSnapshot(
-            metrics=metrics or None,
-            metric_samples=observations or None,
-            components=[
-                _read(path, ComponentDeclaration)
-                for path in effective._files(effective.components)
-            ],
-            health_nodes=[
-                _read(path, HealthNode)
-                for path in effective._files(effective.health_nodes)
-            ],
-            health_statuses=[
-                _read(path, HealthStatus)
-                for path in effective._files(effective.health_statuses)
-            ],
-        )
+def _byte_order(name: str) -> bytes:
+    return os.fsencode(name)
 
-    def _files(self, directories: list[str]) -> list[Path]:
-        """List contributions in source order, deduplicating canonical paths."""
-        files: list[Path] = []
-        seen: set[Path] = set()
-        for source in self._sources(directories):
-            if not _is_directory(source):
+
+class _Reader:
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.diagnostics: list[Diagnostic] = []
+
+    def _report(self, severity: str, kind: str, message: str, path: Path | str) -> None:
+        self.diagnostics.append(diagnostic(severity, kind, message, str(path)))
+
+    def read(self, kind: str, directories: list[tuple[str, int]]) -> list[JsonObject]:
+        files: dict[str, tuple[Path, int]] = {}
+        for directory, level in directories:
+            for source in self._expand(kind, directory):
+                for path in self._walk(kind, source):
+                    canonical = os.path.realpath(path)
+                    if canonical in files:
+                        files[canonical] = (
+                            files[canonical][0],
+                            max(level, files[canonical][1]),
+                        )
+                    else:
+                        files[canonical] = (path, level)
+        entries = []
+        for path, level in files.values():
+            record = self._load(kind, path)
+            if record is not None:
+                entries.append(_Entry(str(path), level, record))
+        if kind in _OVERRIDABLE:
+            highest: dict[tuple[str, str | None], int] = {}
+            for entry in entries:
+                key = (entry.record["id"], entry.record.get("owner"))
+                highest[key] = max(highest.get(key, entry.level), entry.level)
+            entries = [
+                entry
+                for entry in entries
+                if entry.level
+                == highest[(entry.record["id"], entry.record.get("owner"))]
+            ]
+        return [entry.record for entry in entries]
+
+    def _expand(self, kind: str, directory: str) -> list[Path]:
+        """Expand whole `*` segments over directories that are no symlinks."""
+        matches = [self.root]
+        for segment in directory.strip("/").split("/"):
+            if not segment:
                 continue
-            for candidate in _walk(source.resolve(strict=True)):
-                canonical = candidate.resolve(strict=True)
-                if canonical not in seen:
-                    seen.add(canonical)
-                    files.append(canonical)
+            if segment != "*":
+                matches = [match / segment for match in matches]
+                continue
+            expanded = []
+            for match in matches:
+                try:
+                    with os.scandir(match) as entries:
+                        children = sorted(entries, key=lambda e: _byte_order(e.name))
+                except FileNotFoundError:
+                    continue
+                except NotADirectoryError:
+                    continue
+                except OSError as error:
+                    self._report(
+                        "Error", kind, f"cannot list directory: {error}", match
+                    )
+                    continue
+                for child in children:
+                    try:
+                        if not child.name.startswith(".") and child.is_dir(
+                            follow_symlinks=False
+                        ):
+                            expanded.append(Path(child.path))
+                    except FileNotFoundError:
+                        continue
+            matches = expanded
+        return matches
+
+    def _walk(self, kind: str, source: Path) -> list[Path]:
+        try:
+            os.lstat(source)
+        except FileNotFoundError:
+            return []
+        except OSError as error:
+            self._report("Error", kind, f"cannot inspect directory: {error}", source)
+            return []
+        try:
+            status = os.stat(source)
+        except FileNotFoundError:
+            self._report("Error", kind, "directory is a broken symlink", source)
+            return []
+        except OSError as error:
+            self._report("Error", kind, f"cannot inspect directory: {error}", source)
+            return []
+        if not stat.S_ISDIR(status.st_mode):
+            self._report("Error", kind, "path is not a directory", source)
+            return []
+        files: list[Path] = []
+        self._traverse(kind, Path(os.path.realpath(source)), files)
         return files
 
-    def _sources(self, directories: list[str]) -> list[Path]:
-        """Expand whole-segment wildcards over real directories in lexical order."""
-        sources = []
-        for directory in directories:
-            path = Path(directory)
-            if (
-                not path.is_absolute()
-                or ".." in path.parts
-                or any("*" in part and part != "*" for part in path.parts)
-            ):
-                raise ValueError(
-                    "Directory must be absolute without '..' "
-                    f"and use only whole '*' segments: {directory!r}"
-                )
-            matches = [self.root]
-            for part in path.parts[1:]:
-                if part == "*":
-                    matches = [
-                        entry
-                        for source in matches
-                        if _is_directory(source)
-                        for entry in sorted(source.iterdir())
-                        if not entry.is_symlink() and entry.is_dir()
-                    ]
-                else:
-                    matches = [source / part for source in matches]
-            sources.extend(matches)
-        return sources
+    def _traverse(self, kind: str, directory: Path, files: list[Path]) -> None:
+        try:
+            with os.scandir(directory) as entries:
+                children = sorted(entries, key=lambda e: _byte_order(e.name))
+        except FileNotFoundError:
+            return
+        except OSError as error:
+            self._report("Error", kind, f"cannot list directory: {error}", directory)
+            return
+        for child in children:
+            if child.name.startswith("."):
+                continue
+            try:
+                if child.is_symlink():
+                    continue
+                if child.is_dir(follow_symlinks=False):
+                    self._traverse(kind, Path(child.path), files)
+                elif child.is_file(follow_symlinks=False) and child.name.endswith(
+                    ".json"
+                ):
+                    files.append(Path(child.path))
+            except FileNotFoundError:
+                continue
 
-
-def _is_directory(path: Path) -> bool:
-    """Accept directories and missing optional sources, reporting other failures."""
-    try:
-        metadata = path.stat()
-    except FileNotFoundError:
-        if path.is_symlink():
-            raise OSError(f"Broken directory symlink: {path}") from None
-        return False
-    if not stat.S_ISDIR(metadata.st_mode):
-        raise NotADirectoryError(path)
-    return True
-
-
-def _walk(directory: Path) -> list[Path]:
-    """Recurse in lexical order without following contributed symlinks."""
-    result = []
-    for path in sorted(directory.iterdir()):
-        if path.is_symlink():
-            continue
-        if path.is_dir():
-            result.extend(_walk(path))
-        elif path.is_file() and path.suffix == ".json":
-            result.append(path)
-    return result
-
-
-def _read(path: Path, model: type[Model]) -> Model:
-    """Parse one typed contribution with its file path attached to errors."""
-    try:
-        return model.model_validate(json.loads(path.read_bytes()))
-    except (OSError, ValueError) as error:
-        raise ValueError(f"Failed to read {path}: {error}") from error
+    def _load(self, kind: str, path: Path) -> JsonObject | None:
+        try:
+            descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(descriptor, "rb") as file:
+                data = file.read()
+        except FileNotFoundError:
+            return None
+        except OSError as error:
+            self._report("Error", kind, f"cannot read file: {error}", path)
+            return None
+        try:
+            value = json.loads(data)
+        except ValueError as error:
+            self._report("Error", kind, f"invalid JSON: {error}", path)
+            return None
+        try:
+            decoded = decode(kind, value)
+        except InvalidRecord as error:
+            self._report("Error", kind, str(error), path)
+            return None
+        if decoded.newer:
+            self._report("Warning", kind, "record of a newer minor version", path)
+        assert isinstance(value, dict)
+        return value
