@@ -1,8 +1,8 @@
 # System Runtime Specification
 
-The System Runtime Specification defines how the parts of a system describe which components they
-consist of and how healthy they are while the system runs. It is developed by the
-[Rugix Project](https://rugix.io), but does not depend on Rugix.
+The System Runtime Specification is a common format for describing a system's components and its
+health at runtime. It is developed by the [Rugix Project](https://rugix.io), but does not depend on
+Rugix.
 
 A device typically runs a system image, apps, and services that come from different teams and are
 updated independently. An update can remove a runtime that an installed app still needs, and a

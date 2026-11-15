@@ -2,12 +2,12 @@
 
 Version 0.2
 
-The System Runtime Specification defines how the parts of a system describe two things: which
-components they consist of, so that tools can check whether the components are compatible with
-each other, and how healthy they are while the system runs, so that tools can evaluate the health
-of the system and its functions. A _system_ is everything that makes up a device, such as its
-system image, its apps, and its hardware modules. The parts publish small records, and tools such
-as update controllers, diagnostic tools, and fleet-management agents read and evaluate them.
+The System Runtime Specification is a common format for describing a system's components and its
+health at runtime. A _system_ is everything that makes up a device, such as its system image, its
+apps, and its hardware modules. Each part publishes small records about itself. Tools such as
+update controllers, diagnostic tools, and fleet-management agents read the records to check
+whether the components are compatible with each other and to evaluate the health of the system and
+its functions.
 
 This document is the normative definition of the specification. The
 [README](README.md) gives an overview and links to implementations.
