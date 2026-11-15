@@ -408,17 +408,17 @@ fn check_ranges(healthy: &JsonValue, usable: &JsonValue) -> Result<(), String> {
     Ok(())
 }
 
-pub(crate) fn bound_value(bound: &JsonValue) -> f64 {
+fn bound_value(bound: &JsonValue) -> f64 {
     get(bound, "value")
         .and_then(JsonValue::as_f64)
         .unwrap_or(f64::NAN)
 }
 
-pub(crate) fn inclusive(bound: &JsonValue) -> bool {
+fn inclusive(bound: &JsonValue) -> bool {
     get(bound, "inclusive").and_then(JsonValue::as_bool) == Some(true)
 }
 
-pub(crate) fn check_directory_path(path: &str) -> Result<(), String> {
+fn check_directory_path(path: &str) -> Result<(), String> {
     if !path.starts_with('/') {
         return Err(format!("path is not absolute: {path:?}"));
     }

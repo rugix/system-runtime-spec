@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use anyver::{Version, VersionReq};
 use sidex::types::JsonValue;
 
-use crate::records::{decode_all, diagnostic, to_json};
+use crate::records::{decode_all, diagnostic};
 use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::component::*;
 
@@ -167,9 +167,4 @@ pub fn candidate_composition(
         }
     }
     (result, result_diagnostics)
-}
-
-/// Convert typed component declarations to the JSON values that checks take.
-pub fn declarations(components: &[ComponentDeclaration]) -> Vec<JsonValue> {
-    components.iter().map(to_json).collect()
 }

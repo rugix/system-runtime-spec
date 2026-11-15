@@ -43,7 +43,6 @@ export type Records = {
  */
 export type Decoded = {
   record: JsonObject;
-  newer: boolean;
   unsupported: boolean;
   unsupportedAttachments: Set<string>;
 };
@@ -82,18 +81,16 @@ export function parseSpecVersion(text: unknown): [bigint, bigint] | undefined {
   return major > U64_MAX || minor > U64_MAX ? undefined : [major, minor];
 }
 
-/** Check a record's version; return whether it is a newer minor version. */
-function checkVersion(kind: RecordKind, record: JsonObject): boolean {
-  if (!("specVersion" in record)) return false;
+/** Check a record's version; component declarations of newer minor versions are invalid. */
+function checkVersion(kind: RecordKind, record: JsonObject): void {
+  if (!("specVersion" in record)) return;
   const version = parseSpecVersion(record.specVersion);
   if (version === undefined) throw new InvalidRecord(`invalid specVersion ${JSON.stringify(record.specVersion)}`);
   const [major, minor] = version;
   if (major !== SUPPORTED_MAJOR) throw new InvalidRecord(`unsupported specVersion ${record.specVersion}`);
-  const newer = minor > SUPPORTED_MINOR;
-  if (newer && kind === "ComponentDeclaration") {
+  if (minor > SUPPORTED_MINOR && kind === "ComponentDeclaration") {
     throw new InvalidRecord(`component declaration of newer specVersion ${record.specVersion}`);
   }
-  return newer;
 }
 
 /** Replace an unknown input mode with `Counted`; return whether it was unknown. */
@@ -106,12 +103,12 @@ function unknownMode(entry: JsonObject): boolean {
 }
 
 /** Validate a record of a kind and determine its fallbacks. */
-export function decode(kind: RecordKind, value: unknown): Decoded {
+function decode(kind: RecordKind, value: unknown): Decoded {
   if (!isObject(value)) throw new InvalidRecord("record is not a JSON object");
   const record = clone(value) as JsonObject;
+  checkVersion(kind, record);
   const result: Decoded = {
     record,
-    newer: checkVersion(kind, record),
     unsupported: false,
     unsupportedAttachments: new Set(),
   };
@@ -185,9 +182,8 @@ function checkPositive(record: JsonObject, key: string): void {
   }
 }
 
-export function finite(value: unknown, what: string): number {
+function finite(value: unknown, what: string): void {
   if (typeof value !== "number" || !Number.isFinite(value)) throw new InvalidRecord(`${what} is not finite`);
-  return value;
 }
 
 function parse(parser: (text: string) => unknown, text: string): void {

@@ -369,7 +369,6 @@ dependencies = [
  "anyver",
  "rustix",
  "serde",
- "serde_json",
  "sidex",
  "tempfile",
  "thiserror",

@@ -42,7 +42,6 @@ _OVERRIDABLE = ("ComponentDeclaration", "HealthNode", "MetricDefinition")
 
 @dataclass
 class _Entry:
-    path: str
     level: int
     record: JsonObject
 
@@ -102,7 +101,7 @@ class _Reader:
         for path, level in files.values():
             record = self._load(kind, path)
             if record is not None:
-                entries.append(_Entry(str(path), level, record))
+                entries.append(_Entry(level, record))
         if kind in _OVERRIDABLE:
             highest: dict[tuple[str, str | None], int] = {}
             for entry in entries:
