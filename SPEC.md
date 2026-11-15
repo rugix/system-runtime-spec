@@ -120,7 +120,6 @@ follows:
 | --- | --- |
 | Health rule types ([Section 6.2](#62-health-graphs)) | The node's result is unknown, with the reason `unsupported`. |
 | Status states ([Section 6.4](#64-observed-nodes-and-status-records)) | The node's result is unknown, with the reason `unsupported`. |
-| Metric units ([Section 6.5](#65-metrics)) | Threshold nodes referencing the metric evaluate as unknown, with the reason `unsupported`, if the sample is fresh. |
 | Compatibility problems ([Section 5.5](#55-compatibility-reports)) | The problem is reported without further detail. |
 | Reasons ([Section 6.7](#67-evaluation-and-reports)) | The result is treated as having no reason. |
 
@@ -511,7 +510,7 @@ A `MetricDefinition` declares a metric:
 | `owner` | string, optional | Owner of the definition ([Section 3.3](#33-owners)). |
 | `label` | string, optional | Human-readable name of the metric. |
 | `components` | list of strings, optional | IDs of associated components ([Section 7](#7-links-between-components-and-health)). |
-| `unit` | unit | Unit of all samples and thresholds of the metric. |
+| `unit` | string | Unit of all samples and thresholds of the metric, as a UCUM code. |
 | `maxAgeMs` | unsigned 32-bit integer, optional | Upper limit for the age of samples. MUST be positive. |
 | `expectedTag` | string, optional | Tag that samples need to carry to be fresh. |
 
@@ -523,27 +522,44 @@ A `MetricSample` is evidence ([Section 6.3](#63-evidence)) with the following fu
 | `value` | number | Measured value in the metric's unit. |
 
 Values and range bounds are IEEE 754 binary64 numbers, encoded as JSON numbers. They MUST be
-finite. The units are:
+finite.
 
-| Unit | Meaning |
-| --- | --- |
-| `celsius` | Degrees Celsius. |
-| `bytes` | Bytes. |
-| `seconds` | Seconds. |
-| `ratio` | Dimensionless fraction, where 1 corresponds to 100 percent. |
-| `count` | Number of items or events. |
-| `bytes-per-second` | Bytes per second. |
-| `hertz` | Cycles per second. |
-| `volts` | Electric potential in volts. |
-| `amperes` | Electric current in amperes. |
-| `watts` | Power in watts. |
-| `revolutions-per-minute` | Revolutions per minute. |
+Units are codes of the [Unified Code for Units of Measure][ucum] (UCUM) in its case-sensitive
+form, which OpenTelemetry also uses. UCUM can express any unit, including derived units such as
+`By/s` and annotations in curly braces such as `{packet}/s`, which name what is counted. Writers
+MUST use a valid UCUM code and SHOULD use a base unit without a prefix, such as `s` and `By`, so
+that thresholds of different contributors compare without conversion. Dimensionless values use
+`1`. Common measurements use the following codes:
+
+| Measurement | Code | Unit |
+| --- | --- | --- |
+| Temperature | `Cel` | Degrees Celsius. |
+| Information | `By` | Bytes. |
+| Duration | `s` | Seconds. |
+| Fraction | `1` | Dimensionless; 1 corresponds to 100 percent. |
+| Number of items or events | `{item}`, such as `{process}` | Items, named by the annotation. |
+| Data rate | `By/s` | Bytes per second. |
+| Frequency | `Hz` | Hertz. |
+| Rotational speed | `{rev}/min` | Revolutions per minute. |
+| Electric potential | `V` | Volts. |
+| Electric current | `A` | Amperes. |
+| Power | `W` | Watts. |
+| Energy | `J` | Joules. |
+| Pressure | `Pa` | Pascals. |
+| Length | `m` | Meters. |
+| Signal power level | `dB[mW]` | Decibels relative to one milliwatt (dBm). |
+
+Units describe what was measured and do not affect health evaluation. Readers MUST NOT reject a
+metric because of a unit code they do not know.
 
 There MUST be at most one definition and at most one sample per metric ID. Samples without a
 definition are ignored, but MUST still be valid.
 
-> **Note:** Units describe what was measured. Tools choose how to display values, including
-> precision, prefixes, and conversions. A `ratio` is not restricted to the range from 0 to 1.
+> **Note:** Tools choose how to display values, including precision, prefixes, and conversions,
+> and display codes they do not know as written. A fraction with the unit `1` is not restricted to
+> the range from 0 to 1.
+
+[ucum]: https://ucum.org/ucum
 
 ### 6.6 Threshold Nodes
 
@@ -569,9 +585,7 @@ the usable range.
 
 The metric's sample is checked against the metric's definition and the rule: its owner against the
 definition's `owner`, its tag against the definition's `expectedTag`, and its age against the
-`maxAgeMs` of both. If the sample is fresh and the metric's unit is unknown to the evaluator, the
-node's answers are `unknown`/`unknown`, with the reason `unsupported`. Otherwise, if the sample is
-fresh, the node's answers are:
+`maxAgeMs` of both. If the sample is fresh, the node's answers are:
 
 - `yes`/`yes` if the value lies in the healthy range,
 - `yes`/`no` if it lies in the usable range but not in the healthy range, and
@@ -604,7 +618,7 @@ samples in a health context. It produces a `HealthReport` with a list `nodes` th
 | `details` | object, optional | Details of the fresh evidence. |
 
 The reasons are `missing`, `otherBoot`, `ownerMismatch`, `tagMismatch`, `future`, and `expired`
-for evidence that is not fresh, and `unsupported` for a rule type, state, or unit unknown to the
+for evidence that is not fresh, and `unsupported` for a rule type or state unknown to the
 evaluator ([Section 3.4](#34-evolution)). Results of aggregate nodes have no reason; their inputs
 explain them.
 
