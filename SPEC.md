@@ -1,6 +1,6 @@
 # System Runtime Specification
 
-Version 1.0
+Version 1.0 (draft)
 
 The System Runtime Specification is a common format for describing a system's components and its
 health at runtime. A _system_ is everything that makes up a device, such as its system image, its
@@ -104,17 +104,29 @@ parts define their consequences.
 
 Records come from many contributors, and one faulty record should not prevent the evaluation of
 the others. Readers, compatibility checkers, and health evaluators MUST skip invalid records and
-records they cannot read, and MUST report a _diagnostic_ for each:
+records they cannot read, and MUST report a _diagnostic_ with the severity `error` for each. They
+report diagnostics with the severity `warning` for records that they use despite a problem
+([Section 3.6](#36-evolution)). A diagnostic has the following fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `kind` | diagnostic kind | Kind of records concerned: `components`, `healthNodes`, `healthStatuses`, `metrics`, `metricSamples`, or `directories` for directory configurations. |
-| `message` | string | Description of the error. |
+| `severity` | severity | `error` if the records concerned were skipped, and `warning` otherwise. |
+| `kind` | diagnostic kind | Kind of records concerned: `components`, `healthNodes`, `healthStatuses`, `metrics`, `metricSamples`, or `directories`. |
+| `message` | string | Description of the problem. |
 | `path` | string, optional | Path of the file or directory concerned. |
 
-The components part and the health part define how diagnostics affect their results
-([Sections 5.4](#54-consistency) and [6.7](#67-evaluation-and-reports)). The messages of
-diagnostics and their order are not specified and differ between implementations.
+The kind of a diagnostic is the kind of the records it concerns, also for a directory of such
+records and for diagnostics added during evaluation. The kind `directories` is reserved for
+directory configurations themselves. The components part and the health part define how
+diagnostics affect their results ([Sections 5.4](#54-consistency) and
+[6.7](#67-evaluation-and-reports)). The messages of diagnostics and their order are not specified
+and differ between implementations.
+
+An invalid record is _identifiable_ if its file contains an I-JSON object with exactly one `id`
+member, and that member holds a valid ID ([Section 3.3](#33-identifiers)). Where this
+specification counts the records with one ID, such as to find conflicts, identifiable invalid
+records count too, so that skipping an invalid record does not hide a conflict. Invalid records
+never override other records ([Section 8.3](#83-reading)).
 
 ### 3.3 Identifiers
 
@@ -162,6 +174,14 @@ changes that readers of earlier minor versions of the same major version can saf
 - adding optional fields whose absence keeps the meaning of a record unchanged, and
 - adding values to the enumerations that this section lists, with the fallback defined here.
 
+Every record, in addition to the fields that this document lists for it, has an optional field
+`specVersion`, which holds the version of this specification that the record follows, such as
+`1.0`. A record without it follows version 1.0. Writers SHOULD set it. A record whose `specVersion`
+does not consist of a major and a minor version, or has a major version that the reader does not
+support, is invalid. If a record has a higher minor version than the reader supports, the reader
+uses it, applying the fallbacks of this section, and reports a diagnostic with the severity
+`warning`.
+
 Readers MUST ignore fields they do not know. Readers MUST treat values they do not know as
 follows:
 
@@ -173,13 +193,14 @@ follows:
 | Compatibility problems ([Section 5.5](#55-compatibility-reports)) | The problem is reported without further detail. |
 | Reasons ([Section 6.7](#67-evaluation-and-reports)) | The result is treated as having no reason. |
 | Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic concerns both parts. |
+| Diagnostic severities ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as an error. |
 
 > **Note:** The fallbacks are conservative. For example, a node that attaches to `system` with an
 > input mode added in a later minor version makes `system` unknown for older health evaluators.
 
 A change that readers cannot safely ignore requires a new major version. A new major version MUST
-use new standard directories ([Section 8.1](#81-directories)), so that readers
-of an earlier major version never misinterpret its records.
+use new standard directories ([Section 8.1](#81-directories)), so that readers of an earlier
+major version never misinterpret its records.
 
 ## 4. Versions and Version Requirements
 
@@ -368,7 +389,7 @@ because they contain an invalid version or version requirement, or a capability 
 both a version and a value, and adds a diagnostic for each. It considers every explicit and
 implicit capability of every remaining component. The composition is _consistent_ if and only if:
 
-- there are no diagnostics,
+- there are no diagnostics with the severity `error`,
 - no two components have the same ID,
 - no two components claim the same resource,
 - every requirement of every component matches at least one capability, and
@@ -386,7 +407,7 @@ kind:
 
 | Kind | Fields | Reported for |
 | --- | --- | --- |
-| `invalidRecord` | `message`, `path` (optional) | Each diagnostic, with its message and path. |
+| `invalidRecord` | `message`, `path` (optional) | Each diagnostic with the severity `error`, with its message and path. |
 | `duplicateComponent` | `id` | Each component ID that more than one component uses. |
 | `duplicateClaim` | `id`, `components` | Each resource that more than one component claims, with the claiming components in declaration order. |
 | `unsatisfiedRequirement` | `component`, `selector` | Each requirement that matches no capability. |
@@ -410,7 +431,8 @@ Two problems are _equal_ if they have the same kind and equal fields, apart from
 A _candidate composition_ is the composition that would result from an update. An update replaces
 the declarations of one or more owners at one level ([Section 8.1](#81-directories)), usually the
 lowest: it names the owners it replaces and supplies new declarations, each of which MUST have one
-of these owners. A new declaration that does not have a replaced owner is invalid. An update that
+of these owners. A compatibility checker skips a new declaration that does not have a replaced
+owner and adds a diagnostic for it. An update that
 installs a new contributor replaces an owner that has no declarations yet, and an update that
 removes a contributor supplies no declarations for its owner.
 
@@ -418,17 +440,22 @@ The candidate composition is built from the declarations that a reader read, bef
 overrides, each with its level ([Section 8.3](#83-reading)):
 
 1. Remove the declarations at the update's level that have a replaced owner.
-2. Append the new declarations, at the update's level, in the order that the update supplies them.
+2. Append the new declarations to the end of the list, with the update's level, in the order that
+   the update supplies them.
 3. Apply the overrides of [Section 8.3](#83-reading).
 
 The diagnostics of the candidate composition are the current diagnostics and those about the new
-declarations.
+declarations. The current diagnostics can concern files that the update replaces; problem equality
+([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them
+as existing problems.
 
 Checking the candidate composition finds broken requirements before the update takes place,
 because the remaining declarations keep their requirements. Declarations at higher levels stay in
 effect, as they will after the update. Declarations without level information, such as those of a
-snapshot ([Section 9.1](#91-snapshots)), all count as being at the update's level; a candidate
-composition built from them does not reflect overrides that stay in effect after the update.
+snapshot ([Section 9.1](#91-snapshots)), all count as being at the update's level. A candidate
+composition built from them does not reflect overrides that stay in effect after the update: it
+contains the new declaration where the override would apply, and an override with another owner
+appears as a duplicate component.
 
 > **Note:** Declarations without an owner are never removed. This suits facts about the device
 > itself, such as the revision of its board. A declaration that is meant to be replaced needs an
@@ -528,7 +555,12 @@ for functions that an operator monitors, but that do not affect updates.
 > contributor attaches its own nodes to it ([Section 6.8](#68-aggregate-nodes)):
 >
 > ```json
-> { "id": "system", "owner": "rugix.system", "rule": { "type": "aggregate" } }
+> {
+>   "specVersion": "1.0",
+>   "id": "system",
+>   "owner": "rugix.system",
+>   "rule": { "type": "aggregate" }
+> }
 > ```
 >
 > Without attached inputs, this node is healthy. If an app's records are not discovered, for
@@ -745,6 +777,7 @@ answers are:
 >
 > ```json
 > {
+>   "specVersion": "1.0",
 >   "id": "system.thermal",
 >   "rule": {
 >     "type": "threshold",
@@ -770,7 +803,7 @@ configurations ([Section 3.2](#32-diagnostics)). It proceeds as follows:
 2. If several nodes have the same ID, it evaluates none of them. The ID has one result, at the
    position of the first of these nodes, with the answers `unknown`/`unknown`, the reason
    `conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
-   to their ID are ignored.
+   to their ID are ignored. The evaluator adds a diagnostic with the severity `error` for the ID.
 3. It adds the attached inputs of the remaining aggregate nodes
    ([Section 6.8](#68-aggregate-nodes)).
 4. It gives every node on a cycle the answers `unknown`/`unknown` and the reason `cycle`. A node is
@@ -807,9 +840,10 @@ Other results of aggregate nodes have no reason; their inputs explain them.
 
 A skipped node or directory configuration can have provided inputs of other nodes, which then
 appear healthier than they are. A tool that makes a decision, such as whether to commit an update,
-SHOULD NOT base it on a report with diagnostics of the kinds `healthNodes` or `directories`, unless
-it is configured to. Skipped evidence and metric definitions need no such care, because they make
-the answers of the nodes that use them unknown.
+SHOULD NOT base it on a report with diagnostics of the severity `error` and the kinds `healthNodes`
+or `directories`, unless it is configured to. Skipped evidence and metric definitions need no such
+care, because they make the answers of the nodes that use them unknown, either as missing or, if
+they are identifiable, as conflicting ([Section 3.2](#32-diagnostics)).
 
 ### 6.8 Aggregate Nodes
 
@@ -852,10 +886,11 @@ that contributors can attach to nodes that are not always present.
 
 If an input or attachment has a mode unknown to the evaluator, the aggregate node's answers are
 `unknown`/`unknown`, with the reason `unsupported`. If a node is an input more than once, listed or
-attached, it counts as one input, at the position of its first occurrence, with the strongest of its
-modes: `mandatory` before `counted` before `optional`. An input of the rule that refers to no node
-has the answers `unknown`/`unknown`, and the evaluator adds a diagnostic for it; the input appears
-in the node's result, but has no result of its own.
+attached, it counts as one input, at the position of its first occurrence. Its mode is the mode of
+the first input of the rule that refers to it or, if the rule does not list it, the mode of its
+first attachment, so that the aggregate node's own rule decides how its inputs count. An input of
+the rule that refers to no node has the answers `unknown`/`unknown`, and the evaluator adds a
+diagnostic for it; the input appears in the node's result, but has no result of its own.
 
 Inputs with the modes `counted` and `mandatory` are the _counted inputs_. If `minHealthy` is
 omitted, it equals the number of counted inputs. If `minUsable` is omitted, it equals
@@ -889,6 +924,7 @@ be met.
 >
 > ```json
 > {
+>   "specVersion": "1.0",
 >   "id": "telemetry",
 >   "owner": "rugix.apps.telemetry",
 >   "partOf": [{ "node": "system" }],
@@ -980,8 +1016,8 @@ writers ([Section 11](#11-security-considerations)).
 To read the records of one kind, a reader:
 
 1. reads the directory configurations ([Section 8.4](#84-directory-configurations)) like any other
-   records and appends their directories for that kind to the standard directories, in the order in
-   which it read the configurations,
+   records and appends their directories for that kind to the standard directories, which come in
+   the order `/usr/lib`, `/etc`, `/run`, in the order in which it read the configurations,
 2. visits the directories in order and traverses each depth-first: it visits the entries of a
    directory in the order of the bytes of their names and descends into a subdirectory when it
    visits it,
@@ -1003,9 +1039,10 @@ report a diagnostic ([Section 3.2](#32-diagnostics)).
 Component declarations, health nodes, and metric definitions override records of the same kind
 with the same ID from lower levels: of the records with one ID, a reader keeps only those from the
 highest level, at their own positions. Records with the same ID that remain, and evidence with the
-same ID, are subject to the rules of their part. A file of such a kind that does not contain a valid
-record, but contains a JSON object whose `id` field holds an ID that a valid record of a higher
-level overrides, is skipped without a diagnostic, so that an operator can replace a faulty record.
+same ID, are subject to the rules of their part. An identifiable invalid record of such a kind
+([Section 3.2](#32-diagnostics)) whose ID a valid record of a higher level overrides is skipped
+without a diagnostic, so that an operator can replace a faulty record. Invalid records do not
+override other records.
 Directory configurations have no IDs and cannot be overridden.
 
 > **Note:** To change a threshold, an operator copies its node to `/etc/system-runtime/health/nodes`
@@ -1073,9 +1110,9 @@ A `RuntimeSnapshot` contains the records read from a system:
 
 A present list of records contains all records of its kind that the writer read, after overrides
 ([Section 8.3](#83-reading)), and is empty if there are none. An omitted list means that the
-snapshot does not include records of its kind. The lists `healthNodes`, `healthStatuses`,
-`metrics`, and `metricSamples` MUST either all be present or all be omitted. The list
-`diagnostics` MUST contain the diagnostics that the writer's reader reported about the included
+snapshot does not include records of its kind. The lists `healthNodes`, `healthStatuses`, `metrics`,
+and `metricSamples` MUST either all be present or all be omitted. The list `diagnostics` MUST
+contain the diagnostics of both severities that the writer's reader reported about the included
 kinds of records and about directory configurations; it is omitted if there are none.
 
 Snapshots MUST contain the original records. In particular, transport MUST NOT change observation

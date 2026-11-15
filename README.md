@@ -22,6 +22,7 @@ For example, an app that needs Docker Compose 2.20 or later declares:
 
 ```json
 {
+  "specVersion": "1.0",
   "id": "app.telemetry",
   "version": "2.1.0",
   "requires": [{ "id": "docker.compose", "version": ">=2.20,<3" }]
