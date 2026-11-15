@@ -298,8 +298,8 @@ _consistent_ if and only if:
 Several components MAY provide the same capability.
 
 A composition is invalid if a declaration contains an invalid version or version requirement, or a
-capability or selector with both a version and a value. A compatibility checker MUST report an
-error for an invalid composition instead of a compatibility report.
+capability or selector with both a version and a value. For an invalid composition, a
+compatibility checker MUST report an error and MUST NOT produce a compatibility report.
 
 ### 5.5 Compatibility Reports
 
@@ -608,7 +608,8 @@ for evidence that is not fresh, and `unsupported` for a rule type, state, or uni
 evaluator ([Section 3.4](#34-evolution)). Results of aggregate nodes have no reason; their inputs
 explain them.
 
-A graph is invalid, and a health evaluator MUST report an error instead of a report, if:
+A graph is invalid if any of the following holds. For an invalid graph, a health evaluator MUST
+report an error and MUST NOT produce a health report.
 
 - two nodes have the same ID,
 - an aggregate node refers to a node that does not exist, refers to a node more than once, marks an
@@ -830,7 +831,8 @@ and `metricSamples` are optional.
 
 Snapshots MUST contain the original records. In particular, transport MUST NOT change observation
 times or validity durations. A health snapshot MUST contain the definition of every metric that a
-threshold node refers to. Lists without records are empty; optional lists MAY be omitted instead.
+threshold node refers to. Lists without records are empty. Optional lists without records MAY be
+omitted.
 
 The `specVersion` of a snapshot consists of the major and minor version of this specification, such
 as `0.2`. A receiver MUST NOT interpret a snapshot unless it supports its version: from version 1.0
