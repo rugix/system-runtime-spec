@@ -3,7 +3,7 @@
 from collections import Counter
 from collections.abc import Sequence
 
-from ._version import Version, matches_requirement, parse_requirement
+from ._version import Comparator, Version, matches_requirement, parse_requirement
 from .models.component import (
     CapabilityDeclaration,
     CapabilitySelectorDeclaration,
@@ -24,9 +24,7 @@ def check_components(components: Sequence[ComponentDeclaration]) -> Compatibilit
     """
     provided: list[tuple[str, CapabilityDeclaration, Version | None]] = []
     selectors: list[
-        tuple[
-            str, bool, CapabilitySelectorDeclaration, list[tuple[str, Version]] | None
-        ]
+        tuple[str, bool, CapabilitySelectorDeclaration, list[Comparator] | None]
     ] = []
     claims: dict[str, list[str]] = {}
     for component in components:
