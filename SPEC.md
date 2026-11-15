@@ -465,9 +465,9 @@ before it applied overrides, each with its level ([Section 8.3](#83-reading)):
 
 The diagnostics of the candidate composition are the current diagnostics that steps 1 and 3 keep,
 and those about the new declarations. The kept diagnostics can concern files that the update
-replaces, for example, an invalid record without a readable owner. Diagnostic equality ([Section
-5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them as existing
-ones.
+replaces, for example, an invalid record without a readable owner. Diagnostic equality
+([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them
+as existing ones.
 
 Checking the candidate composition finds broken requirements before the update takes place, because
 the remaining declarations keep their requirements. Declarations at higher levels stay in effect, as
@@ -784,12 +784,11 @@ the usable range.
 
 If the metric has no definition, the node's answers are `unknown`/`unknown`, with the reason
 `missing`. If the metric has several definitions or several samples, or if the rule has a `unit`
-that differs from the definition's unit, the node's answers are `unknown`/`unknown`, with the
-reason `conflict`, and the evaluator adds a diagnostic with the severity `warning`. Otherwise, the
-metric's sample is checked against the metric's definition and
-the rule: its owner against the definition's `owner`, its tag against the definition's
-`expectedTag`, and its age against the `maxAgeMs` of both. If the sample is fresh, the node's
-answers are:
+that differs from the definition's unit, the node's answers are `unknown`/`unknown`, with the reason
+`conflict`, and the evaluator adds a diagnostic with the severity `warning`. Otherwise, the metric's
+sample is checked against the metric's definition and the rule: its owner against the definition's
+`owner`, its tag against the definition's `expectedTag`, and its age against the `maxAgeMs` of both.
+If the sample is fresh, the node's answers are:
 
 - `yes`/`yes` if the value lies in the healthy range,
 - `yes`/`no` if it lies in the usable range but not in the healthy range, and
@@ -1061,14 +1060,13 @@ directory and reading them. If a directory path exists but is not a directory or
 symlink, or if a file cannot be read or does not contain a valid record, a reader MUST skip it and
 report a diagnostic with the severity `error` ([Section 3.2](#32-diagnostics)).
 
-Component declarations, health nodes, and metric definitions override records of the same kind
-with the same ID from lower levels: of the records with one ID, a reader keeps only those from the
+Component declarations, health nodes, and metric definitions override records of the same kind with
+the same ID from lower levels: of the records with one ID, a reader keeps only those from the
 highest level, at their own positions. Records with the same ID that remain, and evidence with the
 same ID, are subject to the rules of their part. An identifiable invalid record of such a kind
 ([Section 3.2](#32-diagnostics)) whose ID a valid record of a higher level overrides is skipped
 without a diagnostic, so that an operator can replace a faulty record. Invalid records do not
-override other records.
-Directory configurations have no IDs and cannot be overridden.
+override other records. Directory configurations have no IDs and cannot be overridden.
 
 > **Note:** To change a threshold, an operator copies its node to `/etc/system-runtime/health/nodes`
 > and changes the ranges. To disable a check, an operator overrides its node with an aggregate node
