@@ -338,21 +338,19 @@ class _Evaluation:
         if not definitions:
             self._set(result, _UNKNOWN, "Missing")
             return
-        if len(definitions) > 1:
-            self._diagnose(
-                "Warning", "MetricDefinition", f"several definitions of {metric!r}"
-            )
-        if len(samples) > 1:
-            self._diagnose("Warning", "MetricSample", f"several samples of {metric!r}")
         definition = definitions[0].record
-        mismatch = "unit" in rule and rule["unit"] != definition["unit"]
-        if mismatch:
-            self._diagnose(
-                "Warning",
-                "HealthNode",
-                f"unit of {node['id']!r} differs from {metric!r}",
+        conflicts = []
+        if len(definitions) > 1:
+            conflicts.append(("MetricDefinition", f"several definitions of {metric!r}"))
+        if len(samples) > 1:
+            conflicts.append(("MetricSample", f"several samples of {metric!r}"))
+        if "unit" in rule and rule["unit"] != definition["unit"]:
+            conflicts.append(
+                ("HealthNode", f"unit of {node['id']!r} differs from {metric!r}")
             )
-        if len(definitions) > 1 or len(samples) > 1 or mismatch:
+        if conflicts:
+            for kind, message in conflicts:
+                self._diagnose("Warning", kind, message)
             self._set(result, _UNKNOWN, "Conflict")
             return
         if not samples:

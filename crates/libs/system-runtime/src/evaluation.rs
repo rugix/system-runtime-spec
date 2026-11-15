@@ -468,33 +468,34 @@ impl<'a> Evaluation<'a> {
             result.reason = Some(Reason::Missing);
             return;
         }
+        let definition = self.metrics[&metric][0].value.clone();
+        let mut conflicts = Vec::new();
         if definitions > 1 {
-            self.diagnose(
-                Severity::Warning,
+            conflicts.push((
                 RecordKind::MetricDefinition,
                 format!("several definitions of {metric:?}"),
-            );
+            ));
         }
         if samples > 1 {
-            self.diagnose(
-                Severity::Warning,
+            conflicts.push((
                 RecordKind::MetricSample,
                 format!("several samples of {metric:?}"),
-            );
+            ));
         }
-        let definition = self.metrics[&metric][0].value.clone();
-        let mismatch = rule
+        if rule
             .unit
             .as_ref()
-            .is_some_and(|unit| *unit != definition.unit);
-        if mismatch {
-            self.diagnose(
-                Severity::Warning,
+            .is_some_and(|unit| *unit != definition.unit)
+        {
+            conflicts.push((
                 RecordKind::HealthNode,
                 format!("unit of {id:?} differs from {metric:?}"),
-            );
+            ));
         }
-        if definitions > 1 || samples > 1 || mismatch {
+        if !conflicts.is_empty() {
+            for (kind, message) in conflicts {
+                self.diagnose(Severity::Warning, kind, message);
+            }
             result.reason = Some(Reason::Conflict);
             return;
         }

@@ -20,7 +20,12 @@ the generated Pydantic models in `system_runtime_spec.models`.
 ## Read and Check a System
 
 ```python
-from system_runtime_spec import check_components, current_context, evaluate_health, read_records
+from system_runtime_spec import (
+    check_components,
+    current_context,
+    evaluate_health,
+    read_records,
+)
 
 records = read_records("/")
 compatibility = check_components(records.components, records.diagnostics)

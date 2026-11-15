@@ -75,7 +75,11 @@ pub fn read_records(root: impl AsRef<Path>) -> Records {
         }
         lists.insert(field, reader.read(kind, &directories));
     }
-    let mut take = |field: &str| lists.remove(field).unwrap_or_default();
+    let mut take = |field: &str| {
+        lists
+            .remove(field)
+            .expect("records of every kind were read")
+    };
     Records {
         components: take("components"),
         health_nodes: take("healthNodes"),

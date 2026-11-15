@@ -58,11 +58,10 @@ export function checkComponents(
     }
   }
   const problems: CompatibilityProblem[] = [];
-  for (const id of [...ids.keys()].sort(byteOrder)) {
-    if ((ids.get(id) ?? 0) > 1) problems.push({ problem: "DuplicateComponent", id });
+  for (const [id, count] of [...ids].sort(([a], [b]) => byteOrder(a, b))) {
+    if (count > 1) problems.push({ problem: "DuplicateComponent", id });
   }
-  for (const id of [...claims.keys()].sort(byteOrder)) {
-    const owners = claims.get(id) ?? [];
+  for (const [id, owners] of [...claims].sort(([a], [b]) => byteOrder(a, b))) {
     if (owners.length > 1) problems.push({ problem: "DuplicateClaim", id, components: owners });
   }
   for (const [component, conflict, selector, requirement] of selectors) {

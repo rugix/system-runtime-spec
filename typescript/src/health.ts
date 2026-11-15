@@ -270,14 +270,15 @@ class Evaluation {
       result.reason = "Missing";
       return;
     }
-    if (definitions.length > 1) this.diagnose("Warning", "MetricDefinition", `several definitions of ${JSON.stringify(metric)}`);
-    if (samples.length > 1) this.diagnose("Warning", "MetricSample", `several samples of ${JSON.stringify(metric)}`);
     const definition = definitions[0].record;
-    const mismatch = rule.unit !== undefined && rule.unit !== definition.unit;
-    if (mismatch) {
-      this.diagnose("Warning", "HealthNode", `unit of ${JSON.stringify(node.id)} differs from ${JSON.stringify(metric)}`);
+    const conflicts: [RecordKind, string][] = [];
+    if (definitions.length > 1) conflicts.push(["MetricDefinition", `several definitions of ${JSON.stringify(metric)}`]);
+    if (samples.length > 1) conflicts.push(["MetricSample", `several samples of ${JSON.stringify(metric)}`]);
+    if (rule.unit !== undefined && rule.unit !== definition.unit) {
+      conflicts.push(["HealthNode", `unit of ${JSON.stringify(node.id)} differs from ${JSON.stringify(metric)}`]);
     }
-    if (definitions.length > 1 || samples.length > 1 || mismatch) {
+    if (conflicts.length > 0) {
+      for (const [kind, message] of conflicts) this.diagnose("Warning", kind, message);
       result.reason = "Conflict";
       return;
     }
@@ -299,7 +300,7 @@ class Evaluation {
   }
 
   private aggregate(result: HealthNodeResult, rule: JsonObject): void {
-    const inputs = (this.inputs.get(result.id) ?? []).map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
+    const inputs = (this.inputs.get(result.id) as [string, InputMode][]).map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
     const counted = inputs.filter(([mode]) => mode !== "Optional").map(([, answers]) => answers);
     const withMode = (wanted: InputMode) => inputs.filter(([mode]) => mode === wanted).map(([, answers]) => answers);
     const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : int(rule.minHealthy);
