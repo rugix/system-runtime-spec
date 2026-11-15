@@ -84,12 +84,13 @@ Writers MUST produce [I-JSON][rfc7493] messages: they are encoded in UTF-8, no o
 members with the same name, and no string contains an unpaired surrogate or a noncharacter. Writers
 MUST omit optional fields that are not set and MUST NOT encode them as `null`.
 
-All integers in records are unsigned 64-bit integers, such as boot-time clock values. Writers MUST
-encode an integer as a JSON number without a fraction or an exponent if it is at most 2⁵³ − 1, and
-otherwise as a string of decimal digits without leading zeros, so that JavaScript implementations
-can process it without losing precision. Readers MUST accept both encodings for every integer, and
-a JSON number with an integral value, such as `1.0`, is that integer. Negative values, values with
-a fraction, and values greater than 2⁶⁴ − 1 are invalid.
+Fields that this document defines as integers hold unsigned 64-bit integers, such as boot-time clock
+values; other numbers, such as metric values, are not integers in this sense. Writers MUST encode an
+integer as a JSON number without a fraction or an exponent if it is at most 2⁵³ − 1, and otherwise
+as a string of decimal digits without leading zeros, so that JavaScript implementations can process
+it without losing precision. Readers MUST accept both encodings for every integer, and a JSON number
+with an integral value, such as `1.0`, is that integer. Negative values, values with a fraction, and
+values greater than 2⁶⁴ − 1 are invalid.
 
 Readers MAY reject records that violate the other rules for writers in this section, but need not
 detect such violations; standard JSON parsers do not. Writers that follow these rules produce
@@ -147,13 +148,13 @@ image or an app, and that replaces or removes the record as a whole.
 Owners do not scope IDs: records with different owners MUST have distinct IDs within their
 namespace. Records without an owner are valid.
 
-An update of a contributor replaces all component declarations, health nodes, and metric
-definitions of its owner, including overrides in `/etc` ([Section 8.3](#83-reading)). A writer that
-performs an update MUST ensure that, once the updated records take effect, no such records of the
-replaced owner from before the update remain in the directories that readers read. A rollback
-restores the records of the system it returns to.
-[Section 5.6](#56-candidate-compositions) defines how compatibility checkers predict the result of
-an update, and [Section 6.3](#63-evidence) how owners constrain evidence.
+An update of a contributor replaces all component declarations, health nodes, and metric definitions
+of its owner, including overrides in `/etc` ([Section 8.3](#83-reading)). A writer that performs an
+update MUST ensure that, once the updated records take effect, no such records of the replaced owner
+from before the update remain in the directories that readers read. A writer that rolls back an
+update SHOULD restore the records that the update removed. [Section 5.6](#56-candidate-compositions)
+defines how compatibility checkers predict the result of an update, and [Section 6.3](#63-evidence)
+how owners constrain evidence.
 
 > **Note:** A system image might use the owner `rugix.system`, and an app named `telemetry` the
 > owner `rugix.apps.telemetry`. Owner names are conventions of the tools that use them; readers do
@@ -957,10 +958,13 @@ The reasons are:
 
 Other results of aggregate nodes have no reason; their inputs explain them.
 
-A skipped record can make nodes appear healthier than they are, for example, a skipped node that
-was an input of others. A consumer that makes a decision, such as whether to commit an update,
-SHOULD NOT base it on a report with diagnostics of the severity `error`, unless it is configured
-to.
+A skipped node or directory configuration can have provided inputs of other nodes, which then
+appear healthier than they are. A consumer that makes a decision, such as whether to commit an
+update, SHOULD NOT base it on a report with diagnostics of the severity `error` and the kinds
+`healthNodes` or `directories`, unless it is configured to. Skipped evidence and metric definitions
+make the nodes that use them unknown, unless a writer published another record with the same ID,
+which [Sections 6.4](#64-observed-nodes-and-status-records) and [6.5](#65-metrics) forbid. A
+consumer can also be configured to require a report without any error diagnostics.
 
 ## 7. Links Between Components and Health
 
@@ -1129,8 +1133,8 @@ times or validity durations.
 The `specVersion` of a snapshot is the version of this specification that the snapshot's own fields
 follow, such as `1.0` ([Section 3.6](#36-evolution)). The records in it keep their own versions. A
 reader MUST NOT interpret a snapshot unless it supports its version. A reader supports the versions
-with its own major version, and applies the fallbacks of [Section 3.6](#36-evolution) to
-newer minor versions.
+with its own major version, and applies the fallbacks of [Section 3.6](#36-evolution) to newer minor
+versions.
 
 ### 9.2 Clock Correlation
 
