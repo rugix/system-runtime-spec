@@ -58,10 +58,11 @@ record ThresholdRule {
 record AggregationRule {
     /// Dependencies with distinct node IDs.
     inputs: [AggregationInput],
-    /// Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.
+    /// Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;
+    /// omitted means the healthy count.
     required?: u32,
-    /// Desired healthy input count, including mandatory inputs; omitted means all inputs.
-    /// Must satisfy 1 <= required <= healthy <= inputs length.
+    /// Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all
+    /// non-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.
     healthy?: u32,
 }
 
@@ -71,6 +72,9 @@ record AggregationInput {
     node: HealthNodeId,
     /// Whether this dependency must meet minimum and desired criteria; omitted means false.
     required?: bool,
+    /// Whether this dependency only affects desired criteria; omitted means false.
+    /// Must not be combined with required.
+    optional?: bool,
 }
 
 /// Reported status of one observed node within a boot.

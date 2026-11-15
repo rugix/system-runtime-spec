@@ -51,8 +51,8 @@ class AggregationRule(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     inputs: list[AggregationInput] = pydantic.Field(description="Dependencies with distinct node IDs.")
-    required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.")
-    healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy input count, including mandatory inputs; omitted means all inputs.\nMust satisfy 1 <= required <= healthy <= inputs length.")
+    required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.")
+    healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.")
 
 
 class AggregationInput(_sidex.Model):
@@ -61,6 +61,7 @@ class AggregationInput(_sidex.Model):
 
     node: HealthNodeId = pydantic.Field(description="Referenced health node ID.")
     required: _sidex.Bool | None = pydantic.Field(default=None, description="Whether this dependency must meet minimum and desired criteria; omitted means false.")
+    optional: _sidex.Bool | None = pydantic.Field(default=None, description="Whether this dependency only affects desired criteria; omitted means false.\nMust not be combined with required.")
 
 
 class HealthStatus(_sidex.Model):
@@ -149,8 +150,8 @@ class HealthRule_Aggregate(_sidex.Model):
 
     rule: Literal["aggregate"] = "aggregate"
     inputs: list[AggregationInput] = pydantic.Field(description="Dependencies with distinct node IDs.")
-    required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.")
-    healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy input count, including mandatory inputs; omitted means all inputs.\nMust satisfy 1 <= required <= healthy <= inputs length.")
+    required: _sidex.U32 | None = pydantic.Field(default=None, description="Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.")
+    healthy: _sidex.U32 | None = pydantic.Field(default=None, description="Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.")
     def payload(self) -> "AggregationRule":
         return AggregationRule(inputs=self.inputs, required=self.required, healthy=self.healthy)
 

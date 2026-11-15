@@ -2060,14 +2060,14 @@ pub mod health {
     pub struct AggregationRule {
         #[doc = "Dependencies with distinct node IDs.\n"]
         pub inputs: ::std::vec::Vec<AggregationInput>,
-        #[doc = "Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.\n"]
+        #[doc = "Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.\n"]
         pub required: ::std::option::Option<u32>,
-        #[doc = "Desired healthy input count, including mandatory inputs; omitted means all inputs.\nMust satisfy 1 <= required <= healthy <= inputs length.\n"]
+        #[doc = "Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.\n"]
         pub healthy: ::std::option::Option<u32>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for AggregationRule {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("inputs" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < AggregationInput , > > ,) . with_docs ("Dependencies with distinct node IDs.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Desired healthy input count, including mandatory inputs; omitted means all inputs.\nMust satisfy 1 <= required <= healthy <= inputs length.\n") . optional ()]))) . with_docs ("Minimum and desired health targets.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("inputs" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < AggregationInput , > > ,) . with_docs ("Dependencies with distinct node IDs.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;\nomitted means the healthy count.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all\nnon-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.\n") . optional ()]))) . with_docs ("Minimum and desired health targets.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for AggregationRule {
@@ -2158,10 +2158,12 @@ pub mod health {
         pub node: HealthNodeId,
         #[doc = "Whether this dependency must meet minimum and desired criteria; omitted means false.\n"]
         pub required: ::std::option::Option<bool>,
+        #[doc = "Whether this dependency only affects desired criteria; omitted means false.\nMust not be combined with required.\n"]
+        pub optional: ::std::option::Option<bool>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for AggregationInput {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationInput" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("node" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("Referenced health node ID.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < bool > ,) . with_docs ("Whether this dependency must meet minimum and desired criteria; omitted means false.\n") . optional ()]))) . with_docs ("One dependency of an aggregate health node.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationInput" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("node" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("Referenced health node ID.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < bool > ,) . with_docs ("Whether this dependency must meet minimum and desired criteria; omitted means false.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("optional" , :: sidex :: shape :: shape_of :: < bool > ,) . with_docs ("Whether this dependency only affects desired criteria; omitted means false.\nMust not be combined with required.\n") . optional ()]))) . with_docs ("One dependency of an aggregate health node.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for AggregationInput {
@@ -2182,6 +2184,10 @@ pub mod health {
                     .required
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
+                2usize => self
+                    .optional
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -2194,6 +2200,7 @@ pub mod health {
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
             let mut __field_0 = ::std::option::Option::<HealthNodeId>::None;
             let mut __field_1 = ::std::option::Option::<bool>::None;
+            let mut __field_2 = ::std::option::Option::<bool>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -2205,6 +2212,10 @@ pub mod health {
                         __field_1 =
                             ::std::option::Option::Some(<bool as ::sidex::Decode>::decode(decoder)?)
                     }
+                    2usize => {
+                        __field_2 =
+                            ::std::option::Option::Some(<bool as ::sidex::Decode>::decode(decoder)?)
+                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -2212,6 +2223,7 @@ pub mod health {
             ::std::result::Result::Ok(Self {
                 node: __field_0.ok_or_else(|| ::sidex::DecodeError::new("missing field `node`"))?,
                 required: __field_1,
+                optional: __field_2,
             })
         }
     }

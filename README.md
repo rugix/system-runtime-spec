@@ -409,11 +409,17 @@ not extend its lifetime, and wall-clock changes do not affect freshness.
 
 An aggregate declares `inputs`, an optional minimum `required` count of healthy
 or degraded inputs, and an optional desired `healthy` count. Each input is a
-record with a referenced `node` ID and an optional `required` flag, which
-defaults to false. Node IDs must be distinct. An omitted `healthy` count means
-all inputs, and an omitted `required` count equals the `healthy` count, so an
-aggregate without counts requires all inputs to be healthy. The resolved counts
-must satisfy `1 <= required <= healthy <= inputs.length`.
+record with a referenced `node` ID and optional `required` and `optional` flags,
+which default to false. An input must not set both flags. Node IDs must be
+distinct.
+
+An optional input only affects the desired criteria: the aggregate is healthy
+only if every optional input is healthy, but an optional input never makes the
+aggregate unhealthy or unknown. The counts apply to the non-optional inputs. An
+omitted `healthy` count means all non-optional inputs, and an omitted `required`
+count equals the `healthy` count, so an aggregate without counts requires all
+non-optional inputs to be healthy. The resolved counts must satisfy
+`1 <= required <= healthy <= N`, where `N` is the number of non-optional inputs.
 
 Existing declarations must convert string inputs such as `"storage"` to
 `{"node": "storage"}`, even when no input is individually required.
@@ -459,7 +465,25 @@ database and at least one worker; full health requires all three to be healthy.
 Healthy workers cannot compensate for an unhealthy database. A degraded database
 prevents full health even if the desired healthy count is otherwise satisfied.
 
-Evaluation counts three kinds of input evidence:
+An input with `optional: true` suits a function whose failure the aggregate can
+tolerate. For example, a telemetry service that buffers data locally remains
+usable while its upload fails:
+
+```json
+{
+  "id": "telemetry",
+  "rule": {
+    "rule": "aggregate",
+    "inputs": [
+      {"node": "database"},
+      {"node": "plc"},
+      {"node": "upload", "optional": true}
+    ]
+  }
+}
+```
+
+Evaluation counts three kinds of evidence among the non-optional inputs:
 
 | Count | Inputs Included |
 | --- | --- |
@@ -471,7 +495,7 @@ Apply these rules in order to determine an aggregate's state:
 
 1. If any mandatory input is unhealthy or `P < required`, the state is `unhealthy`.
 2. If any mandatory input is unknown or `M < required`, the state is `unknown`.
-3. If every mandatory input is healthy and `H >= healthy`, the state is `healthy`.
+3. If every mandatory and every optional input is healthy and `H >= healthy`, the state is `healthy`.
 4. Otherwise, the state is `degraded`.
 
 A confirmed failure takes precedence over uncertainty. An unknown mandatory
@@ -498,7 +522,8 @@ the mandatory flags belong to the aggregate definition.
 
 #### Graph Validation
 
-Missing input nodes, duplicate node IDs or referenced input IDs, invalid thresholds, cycles,
+Missing input nodes, duplicate node IDs or referenced input IDs, inputs that are both
+required and optional, invalid thresholds, cycles,
 duplicate statuses, statuses supplied for aggregate or threshold nodes, and zero `maxAgeMs`
 values are evaluation errors. Statuses without a current node are ignored after
 validation. An invalid graph or status prevents evaluation of the whole graph.

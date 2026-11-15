@@ -75,8 +75,11 @@ def evaluate_health(
             evidence.validate(rule)
             remaining[node.id] = 0
         else:
+            if any(input.required and input.optional for input in rule.inputs):
+                raise ValueError(f"Input both required and optional for {node.id!r}")
             required, healthy = _counts(rule)
-            if not 1 <= required <= healthy <= len(rule.inputs):
+            counted = sum(not input.optional for input in rule.inputs)
+            if not 1 <= required <= healthy <= counted:
                 raise ValueError(f"Invalid thresholds for {node.id!r}")
             if len({input.node for input in rule.inputs}) != len(rule.inputs):
                 raise ValueError(f"Duplicate input for {node.id!r}")
@@ -97,7 +100,12 @@ def evaluate_health(
             results[id] = evidence.evaluate(node, context)
         else:
             required, desired = _counts(node.rule)
-            inputs = [results[input.node] for input in node.rule.inputs]
+            inputs = [
+                results[input.node] for input in node.rule.inputs if not input.optional
+            ]
+            optional = [
+                results[input.node] for input in node.rule.inputs if input.optional
+            ]
             mandatory = [
                 results[input.node] for input in node.rule.inputs if input.required
             ]
@@ -118,7 +126,7 @@ def evaluate_health(
             ):
                 state = "unknown"
             elif healthy >= desired and all(
-                input.state.root == "healthy" for input in mandatory
+                input.state.root == "healthy" for input in mandatory + optional
             ):
                 state = "healthy"
             else:
@@ -139,8 +147,9 @@ def evaluate_health(
 
 
 def _counts(rule: HealthRule_Aggregate) -> tuple[int, int]:
-    """Resolve the minimum and desired counts, defaulting to all inputs healthy."""
-    healthy = len(rule.inputs) if rule.healthy is None else rule.healthy
+    """Resolve the minimum and desired counts, defaulting to all non-optional inputs."""
+    counted = sum(not input.optional for input in rule.inputs)
+    healthy = counted if rule.healthy is None else rule.healthy
     required = healthy if rule.required is None else rule.required
     return required, healthy
 
