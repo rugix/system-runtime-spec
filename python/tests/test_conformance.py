@@ -71,6 +71,7 @@ def test_candidates(case: dict[str, Any]) -> None:
         case["replace"],
         case["new"],
     )
+    assert components == case["candidate"]
     assert brief(check_components(components, candidate_diagnostics)) == case["report"]
 
 

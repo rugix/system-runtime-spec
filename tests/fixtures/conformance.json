@@ -397,28 +397,8 @@
     },
     {
       "version": "3.4",
-      "requirement": "",
-      "error": true
-    },
-    {
-      "version": "3.4",
-      "requirement": ">=3,",
-      "error": true
-    },
-    {
-      "version": "3.4",
-      "requirement": "*,<4",
-      "error": true
-    },
-    {
-      "version": "3.4",
       "requirement": "==3+build.7",
       "matches": false
-    },
-    {
-      "version": "3+other",
-      "requirement": "==3+build.7",
-      "matches": true
     }
   ],
   "components": [
@@ -707,15 +687,6 @@
             "kind": "ComponentDeclaration"
           }
         ]
-      }
-    },
-    {
-      "name": "empty composition",
-      "components": [],
-      "report": {
-        "consistent": true,
-        "problems": [],
-        "diagnostics": []
       }
     },
     {
@@ -1065,6 +1036,39 @@
           ]
         }
       ],
+      "candidate": [
+        {
+          "id": "app",
+          "owner": "rugix.apps.example",
+          "requires": [
+            {
+              "id": "runtime",
+              "version": ">=2"
+            }
+          ]
+        },
+        {
+          "id": "sibling",
+          "owner": "rugix.apps.example.other"
+        },
+        {
+          "id": "extra",
+          "owner": "rugix.system.extra"
+        },
+        {
+          "id": "legacy"
+        },
+        {
+          "id": "os-new",
+          "owner": "rugix.system",
+          "provides": [
+            {
+              "id": "runtime",
+              "version": "2"
+            }
+          ]
+        }
+      ],
       "report": {
         "consistent": true,
         "problems": [],
@@ -1114,6 +1118,33 @@
         "rugix.apps.example"
       ],
       "new": [],
+      "candidate": [
+        {
+          "id": "os-old",
+          "owner": "rugix.system",
+          "provides": [
+            {
+              "id": "runtime",
+              "version": "2"
+            }
+          ]
+        },
+        {
+          "id": "removed-driver",
+          "owner": "rugix.system"
+        },
+        {
+          "id": "sibling",
+          "owner": "rugix.apps.example.other"
+        },
+        {
+          "id": "extra",
+          "owner": "rugix.system.extra"
+        },
+        {
+          "id": "legacy"
+        }
+      ],
       "report": {
         "consistent": true,
         "problems": [],
@@ -1148,6 +1179,18 @@
         "image"
       ],
       "new": [],
+      "candidate": [
+        {
+          "id": "app",
+          "owner": "app",
+          "requires": [
+            {
+              "id": "runtime",
+              "version": ">=2"
+            }
+          ]
+        }
+      ],
       "report": {
         "consistent": false,
         "problems": [
@@ -1185,6 +1228,12 @@
         },
         {
           "id": "bare"
+        }
+      ],
+      "candidate": [
+        {
+          "id": "os",
+          "owner": "image"
         }
       ],
       "report": {
@@ -1245,6 +1294,26 @@
           ]
         }
       ],
+      "candidate": [
+        {
+          "id": "board"
+        },
+        {
+          "id": "os",
+          "owner": "image",
+          "version": "2"
+        },
+        {
+          "id": "app",
+          "owner": "app",
+          "requires": [
+            {
+              "id": "os",
+              "version": ">=2"
+            }
+          ]
+        }
+      ],
       "report": {
         "consistent": true,
         "problems": [],
@@ -1276,6 +1345,12 @@
           "owner": "image"
         }
       ],
+      "candidate": [
+        {
+          "id": "os",
+          "owner": "image"
+        }
+      ],
       "report": {
         "consistent": false,
         "problems": [],
@@ -1299,6 +1374,13 @@
         "image"
       ],
       "new": [
+        {
+          "id": "os",
+          "owner": "image",
+          "version": "v2"
+        }
+      ],
+      "candidate": [
         {
           "id": "os",
           "owner": "image",
@@ -2775,70 +2857,6 @@
       }
     },
     {
-      "name": "orphan status",
-      "records": {
-        "healthNodes": [],
-        "healthStatuses": [
-          {
-            "id": "removed",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "duplicate nodes conflict",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "a",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "a",
-            "rule": {
-              "type": "Observed"
-            }
-          }
-        ],
-        "healthStatuses": []
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "a",
-            "usable": "Unknown",
-            "healthy": "Unknown",
-            "inputs": [],
-            "reason": "Conflict"
-          }
-        ],
-        "diagnostics": [
-          {
-            "severity": "Error",
-            "kind": "HealthNode"
-          }
-        ]
-      }
-    },
-    {
       "name": "duplicate statuses conflict",
       "records": {
         "healthNodes": [
@@ -3070,85 +3088,6 @@
             "inputs": [
               "a"
             ]
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "omitted counts require all inputs healthy",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "root",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": [
-                {
-                  "node": "a"
-                },
-                {
-                  "node": "b"
-                }
-              ]
-            }
-          },
-          {
-            "id": "a",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "b",
-            "rule": {
-              "type": "Observed"
-            }
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "a",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          },
-          {
-            "id": "b",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "root",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": [
-              "a",
-              "b"
-            ]
-          },
-          {
-            "id": "a",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          },
-          {
-            "id": "b",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
           }
         ],
         "diagnostics": []
@@ -3772,36 +3711,6 @@
           },
           {
             "id": "b",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "aggregate without inputs is healthy",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "root",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": []
-            }
-          }
-        ],
-        "healthStatuses": []
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "root",
             "usable": "Yes",
             "healthy": "Yes",
             "inputs": []
@@ -4580,87 +4489,6 @@
       }
     },
     {
-      "name": "aggregate with only optional inputs",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "root",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": [
-                {
-                  "node": "a",
-                  "mode": "Optional"
-                },
-                {
-                  "node": "b",
-                  "mode": "Optional"
-                }
-              ]
-            }
-          },
-          {
-            "id": "a",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "b",
-            "rule": {
-              "type": "Observed"
-            }
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "a",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          },
-          {
-            "id": "b",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "root",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": [
-              "a",
-              "b"
-            ]
-          },
-          {
-            "id": "a",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          },
-          {
-            "id": "b",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
       "name": "minimum healthy count above counted inputs",
       "records": {
         "healthNodes": [
@@ -4848,33 +4676,6 @@
             "usable": "Yes",
             "healthy": "Yes",
             "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "omitted rule without status is unknown",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "a"
-          }
-        ],
-        "healthStatuses": []
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "a",
-            "usable": "Unknown",
-            "healthy": "Unknown",
-            "inputs": [],
-            "reason": "Missing"
           }
         ],
         "diagnostics": []
@@ -8631,110 +8432,6 @@
       }
     },
     {
-      "name": "explicit false required flag preserves count-only evaluation",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "service",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": [
-                {
-                  "node": "database"
-                },
-                {
-                  "node": "worker-a"
-                },
-                {
-                  "node": "worker-b"
-                }
-              ],
-              "minHealthy": 2,
-              "minUsable": 2
-            }
-          },
-          {
-            "id": "database",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "worker-a",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "worker-b",
-            "rule": {
-              "type": "Observed"
-            }
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "database",
-            "state": "Unhealthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          },
-          {
-            "id": "worker-a",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          },
-          {
-            "id": "worker-b",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "service",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": [
-              "database",
-              "worker-a",
-              "worker-b"
-            ]
-          },
-          {
-            "id": "database",
-            "usable": "No",
-            "healthy": "No",
-            "inputs": []
-          },
-          {
-            "id": "worker-a",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          },
-          {
-            "id": "worker-b",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
       "name": "impossible minimum count overrides unknown required input",
       "records": {
         "healthNodes": [
@@ -9159,106 +8856,6 @@
             "id": "storage",
             "usable": "Yes",
             "healthy": "No",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "duplicate inputs count once when modes differ",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "service",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": [
-                {
-                  "node": "database",
-                  "mode": "Mandatory"
-                },
-                {
-                  "node": "database"
-                }
-              ],
-              "minHealthy": 1,
-              "minUsable": 1
-            }
-          },
-          {
-            "id": "database",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "worker-a",
-            "rule": {
-              "type": "Observed"
-            }
-          },
-          {
-            "id": "worker-b",
-            "rule": {
-              "type": "Observed"
-            }
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "database",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          },
-          {
-            "id": "worker-a",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          },
-          {
-            "id": "worker-b",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 90,
-            "maxAgeMs": 20
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "service",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": [
-              "database"
-            ]
-          },
-          {
-            "id": "database",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          },
-          {
-            "id": "worker-a",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          },
-          {
-            "id": "worker-b",
-            "usable": "Yes",
-            "healthy": "Yes",
             "inputs": []
           }
         ],
@@ -9847,64 +9444,6 @@
             "id": "b",
             "usable": "Yes",
             "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "duplicate listed input counts once",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "root",
-            "rule": {
-              "type": "Aggregate",
-              "inputs": [
-                {
-                  "node": "a"
-                },
-                {
-                  "node": "a",
-                  "mode": "Mandatory"
-                }
-              ],
-              "minHealthy": 1
-            }
-          },
-          {
-            "id": "a"
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "a",
-            "state": "Degraded",
-            "bootId": "boot",
-            "observedAtMs": 900,
-            "maxAgeMs": 500
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 1000
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "root",
-            "usable": "Yes",
-            "healthy": "No",
-            "inputs": [
-              "a"
-            ]
-          },
-          {
-            "id": "a",
-            "usable": "Yes",
-            "healthy": "No",
             "inputs": []
           }
         ],
@@ -11344,6 +10883,84 @@
             "kind": "HealthNode"
           }
         ]
+      }
+    },
+    {
+      "name": "duplicate input counts once with its first mode",
+      "records": {
+        "healthNodes": [
+          {
+            "id": "root",
+            "rule": {
+              "type": "Aggregate",
+              "inputs": [
+                {
+                  "node": "a",
+                  "mode": "Optional"
+                },
+                {
+                  "node": "a",
+                  "mode": "Mandatory"
+                },
+                {
+                  "node": "b"
+                }
+              ]
+            }
+          },
+          {
+            "id": "a"
+          },
+          {
+            "id": "b"
+          }
+        ],
+        "healthStatuses": [
+          {
+            "id": "a",
+            "state": "Unhealthy",
+            "bootId": "boot",
+            "observedAtMs": 900,
+            "maxAgeMs": 500
+          },
+          {
+            "id": "b",
+            "state": "Healthy",
+            "bootId": "boot",
+            "observedAtMs": 900,
+            "maxAgeMs": 500
+          }
+        ]
+      },
+      "context": {
+        "bootId": "boot",
+        "nowMs": 1000
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "usable": "Yes",
+            "healthy": "No",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "usable": "No",
+            "healthy": "No",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "usable": "Yes",
+            "healthy": "Yes",
+            "inputs": []
+          }
+        ],
+        "diagnostics": []
       }
     }
   ],

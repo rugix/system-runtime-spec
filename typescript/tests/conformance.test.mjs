@@ -40,6 +40,7 @@ for (const example of cases.candidates) {
     const [components, diagnostics] = candidateComposition(
       example.components, example.diagnostics ?? [], example.replace, example.new,
     );
+    assert.deepEqual(components, example.candidate);
     assert.deepEqual(brief(checkComponents(components, diagnostics)), example.report);
   });
 }

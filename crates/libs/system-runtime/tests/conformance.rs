@@ -135,6 +135,7 @@ fn candidates() {
             &owners,
             &list(&case, "new"),
         );
+        assert_eq!(components, list(&case, "candidate"), "{}", name(&case));
         let report = check_components(&components, &candidate_diagnostics);
         assert_eq!(
             &brief(&report),
