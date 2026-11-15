@@ -114,13 +114,13 @@ that cannot be read, and MUST report a _diagnostic_ for each. A diagnostic has t
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `severity` | severity | `error` if the results may not reflect the records concerned, for example, because they were skipped, and `warning` if the results account for the problem. |
-| `kind` | diagnostic kind | Kind of records concerned: `components`, `healthNodes`, `healthStatuses`, `metrics`, `metricSamples`, or `directories`. |
+| `severity` | severity | `Error` if the results may not reflect the records concerned, for example, because they were skipped, and `Warning` if the results account for the problem. |
+| `kind` | diagnostic kind | Kind of records concerned: `ComponentDeclaration`, `HealthNode`, `HealthStatus`, `MetricDefinition`, `MetricSample`, or `DirectoryConfig`. |
 | `message` | string | Description of the problem. |
 | `path` | string, optional | Path of the file or directory concerned. |
 
 The kind of a diagnostic is the kind of the records it concerns, also for a directory of such
-records and for diagnostics added during evaluation. The kind `directories` is reserved for
+records and for diagnostics added during evaluation. The kind `DirectoryConfig` is reserved for
 directory configurations themselves. The components part and the health part define how
 diagnostics affect their results ([Sections 5.4](#54-consistency) and
 [6.8](#68-evaluation-and-reports)). The messages of diagnostics and their order are not specified
@@ -194,16 +194,16 @@ A record whose `specVersion` does not have this form, or has a major version tha
 not support, is invalid. A component declaration with a higher minor version than the reader
 supports is invalid as well, because a matching feature that the reader does not know could make
 it match too much. For other records with a higher minor version, the reader uses them, applying
-the fallbacks of this section, and reports a diagnostic with the severity `warning`.
+the fallbacks of this section, and reports a diagnostic with the severity `Warning`.
 
 Readers MUST ignore fields they do not know. Readers MUST treat values they do not know as
 follows:
 
 | Enumeration | Fallback |
 | --- | --- |
-| Health rule types ([Section 6.2](#62-health-graphs)) | The node's result is unknown, with the reason `unsupported`. |
-| Status states ([Section 6.4](#64-observed-nodes-and-status-records)) | The node's result is unknown, with the reason `unsupported`. |
-| Input modes ([Section 6.7](#67-aggregate-nodes)) | The aggregate node's result is unknown, with the reason `unsupported`. |
+| Health rule types ([Section 6.2](#62-health-graphs)) | The node's result is unknown, with the reason `Unsupported`. |
+| Status states ([Section 6.4](#64-observed-nodes-and-status-records)) | The node's result is unknown, with the reason `Unsupported`. |
+| Input modes ([Section 6.7](#67-aggregate-nodes)) | The aggregate node's result is unknown, with the reason `Unsupported`. |
 | Compatibility problems ([Section 5.5](#55-compatibility-reports)) | The problem is reported without further detail. |
 | Reasons ([Section 6.8](#68-evaluation-and-reports)) | The result is treated as having no reason. |
 | Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic concerns both parts. |
@@ -402,11 +402,11 @@ A compatibility checker evaluates a composition, which is a list of component de
 with the diagnostics about component declarations and directory configurations
 ([Section 3.2](#32-diagnostics)). It skips declarations that are not valid records, for example,
 because they contain an invalid version or version requirement, or a capability or selector with
-both a version and a value, and adds a diagnostic with the severity `error` for each. It considers
+both a version and a value, and adds a diagnostic with the severity `Error` for each. It considers
 every explicit and implicit capability of every remaining component. The composition is _consistent_
 if and only if:
 
-- there are no diagnostics with the severity `error`,
+- there are no diagnostics with the severity `Error`,
 - no two components have the same ID,
 - no two components claim the same resource,
 - every requirement of every component matches at least one capability, and
@@ -424,13 +424,13 @@ declarations and directory configurations. Each problem has a `problem` field na
 
 | Kind | Fields | Reported for |
 | --- | --- | --- |
-| `duplicateComponent` | `id` | Each component ID that more than one component uses. |
-| `duplicateClaim` | `id`, `components` | Each resource that more than one component claims, with the claiming components in declaration order. |
-| `unsatisfiedRequirement` | `component`, `selector` | Each requirement that matches no capability. |
-| `conflict` | `component`, `selector`, `provider`, `capability` | Each pair of a conflict and a capability it matches. |
+| `DuplicateComponent` | `id` | Each component ID that more than one component uses. |
+| `DuplicateClaim` | `id`, `components` | Each resource that more than one component claims, with the claiming components in declaration order. |
+| `UnsatisfiedRequirement` | `component`, `selector` | Each requirement that matches no capability. |
+| `Conflict` | `component`, `selector`, `provider`, `capability` | Each pair of a conflict and a capability it matches. |
 
 The report is consistent if and only if it contains no problems and no diagnostics with the
-severity `error`. Problems MUST appear in this order:
+severity `Error`. Problems MUST appear in this order:
 
 1. Duplicate components, sorted by ID.
 2. Duplicate claims, sorted by resource ID.
@@ -448,7 +448,7 @@ _equal_ if they have equal fields, apart from their messages.
 A _candidate composition_ is the composition that would result from an update. An update replaces
 all declarations of one or more owners ([Section 3.4](#34-owners)): it names these owners and
 supplies new declarations, each of which MUST have one of them. A compatibility checker skips a new
-declaration that does not have a replaced owner and adds a diagnostic with the severity `error` for
+declaration that does not have a replaced owner and adds a diagnostic with the severity `Error` for
 it. An update that installs a new contributor replaces an owner that has no declarations yet, and
 an update that removes a contributor supplies no declarations for its owner.
 
@@ -490,37 +490,37 @@ two questions about each node:
 - **Usable:** Are the minimum criteria met?
 - **Healthy:** Are the desired criteria met?
 
-Each answer is `yes`, `no`, or `unknown`. The answer `unknown` means that the available evidence
+Each answer is `Yes`, `No`, or `Unknown`. The answer `Unknown` means that the available evidence
 does not determine whether the criteria are met. The answers are related: a node that is healthy
 is usable, and a node that is not usable is not healthy. Therefore, exactly six combinations are
 possible:
 
 | Usable | Healthy | Meaning |
 | --- | --- | --- |
-| `yes` | `yes` | The desired criteria are met. |
-| `yes` | `no` | The node is usable, but the desired criteria are not met. |
-| `yes` | `unknown` | The node is usable, but whether the desired criteria are met is unknown. |
-| `unknown` | `no` | The desired criteria are not met, and whether the node is usable is unknown. |
-| `unknown` | `unknown` | Whether the node is usable is unknown. |
-| `no` | `no` | The node is not usable. |
+| `Yes` | `Yes` | The desired criteria are met. |
+| `Yes` | `No` | The node is usable, but the desired criteria are not met. |
+| `Yes` | `Unknown` | The node is usable, but whether the desired criteria are met is unknown. |
+| `Unknown` | `No` | The desired criteria are not met, and whether the node is usable is unknown. |
+| `Unknown` | `Unknown` | Whether the node is usable is unknown. |
+| `No` | `No` | The node is not usable. |
 
 For display and for publishing, the combinations are summarized as four _health states_:
 
 | State | Answers |
 | --- | --- |
-| `healthy` | Healthy `yes`. |
-| `degraded` | Usable `yes` and healthy `no` or `unknown`. |
-| `unhealthy` | Usable `no`. |
-| `unknown` | Usable `unknown`. |
+| `Healthy` | Healthy `Yes`. |
+| `Degraded` | Usable `Yes` and healthy `No` or `Unknown`. |
+| `Unhealthy` | Usable `No`. |
+| `Unknown` | Usable `Unknown`. |
 
 A status record ([Section 6.4](#64-observed-nodes-and-status-records)) reports one of these states,
-which corresponds to the answers `yes`/`yes`, `yes`/`no`, `no`/`no`, or `unknown`/`unknown`.
+which corresponds to the answers `Yes`/`Yes`, `Yes`/`No`, `No`/`No`, or `Unknown`/`Unknown`.
 
 > **Note:** A consumer that makes a decision, such as an update controller deciding whether to
-> commit an update, chooses the node and the answer it requires. Requiring the healthy answer `yes`
+> commit an update, chooses the node and the answer it requires. Requiring the healthy answer `Yes`
 > demands the desired criteria, including those of optional inputs
-> ([Section 6.7](#67-aggregate-nodes)). Requiring the usable answer `yes` demands the minimum
-> criteria. The answer `unknown` satisfies neither.
+> ([Section 6.7](#67-aggregate-nodes)). Requiring the usable answer `Yes` demands the minimum
+> criteria. The answer `Unknown` satisfies neither.
 
 ### 6.2 Health Graphs
 
@@ -538,26 +538,26 @@ A _health graph_ is a set of health nodes. Each node is described by a `HealthNo
 
 A rule has a `type` field and the fields of its type:
 
-- `observed`: The node takes its answers from a status record
+- `Observed`: The node takes its answers from a status record
   ([Section 6.4](#64-observed-nodes-and-status-records)).
-- `threshold`: The node derives its answers from a metric sample
+- `Threshold`: The node derives its answers from a metric sample
   ([Section 6.6](#66-threshold-nodes)).
-- `aggregate`: The node derives its answers from other nodes
+- `Aggregate`: The node derives its answers from other nodes
   ([Section 6.7](#67-aggregate-nodes)).
 
 A node without a `rule` is an observed node without constraints. A node whose rule type is unknown
-to the evaluator has the answers `unknown`/`unknown`, with the reason `unsupported`.
+to the evaluator has the answers `Unknown`/`Unknown`, with the reason `Unsupported`.
 
 The inputs of aggregate nodes, including attached inputs, form directed edges from each aggregate
 node to its inputs. The graph SHOULD be acyclic; nodes on a cycle are not evaluated
 ([Section 6.8](#68-evaluation-and-reports)). Nodes that are no input of any other node are
 _roots_.
 
-The node with the ID `system` represents the whole system. Consumers that need the health of the
-whole system, such as an update controller deciding whether to commit an update, SHOULD use this
-node unless they are configured to use another one. A consumer that uses a node that does not exist
-SHOULD treat it as having the answers `unknown`/`unknown`. A graph MAY have further roots, for
-example, for functions that an operator monitors, but that do not affect updates.
+The node with the ID `system` represents the whole system. It is a convenience: contributors
+attach their nodes to it, and tools show it as the overall health of a device. A consumer that
+makes a decision, such as whether to commit an update, bases it on a node that is defined for that
+decision and covers what the decision depends on. A consumer that uses a node that does not exist
+SHOULD treat it as having the answers `Unknown`/`Unknown`. A graph MAY have further roots.
 
 > **Example:** The system image defines the node `system` as an aggregate node, and each
 > contributor attaches its own nodes to it ([Section 6.7](#67-aggregate-nodes)):
@@ -567,7 +567,7 @@ example, for functions that an operator monitors, but that do not affect updates
 >   "specVersion": "1.0",
 >   "id": "system",
 >   "owner": "rugix.system",
->   "rule": { "type": "aggregate" }
+>   "rule": { "type": "Aggregate" }
 > }
 > ```
 >
@@ -576,6 +576,21 @@ example, for functions that an operator monitors, but that do not affect updates
 > without a diagnostic. A system image that requires particular contributors lists their nodes as
 > inputs. A minimum count ([Section 6.7](#67-aggregate-nodes)) can detect too few inputs, but does
 > not establish which contributors are present.
+
+> **Example:** An integrator decides that an update can be committed once the network and the
+> telemetry app are usable, defines a node for this decision, and configures the update controller
+> to require its usable answer `Yes`:
+>
+> ```json
+> {
+>   "specVersion": "1.0",
+>   "id": "device.commit",
+>   "rule": {
+>     "type": "Aggregate",
+>     "inputs": [{ "node": "system.network" }, { "node": "telemetry" }]
+>   }
+> }
+> ```
 
 ### 6.3 Evidence
 
@@ -609,18 +624,18 @@ A health evaluator evaluates evidence in a _health context_, which consists of t
 `bootId`, a string, and the current boot-time clock value in milliseconds, `nowMs`, an integer.
 Evidence is _fresh_ if all of the following hold, checked in this order:
 
-1. It exists. Otherwise, the reason is `missing`.
-2. Its `bootId` equals the context's `bootId`. Otherwise, the reason is `otherBoot`.
+1. It exists. Otherwise, the reason is `Missing`.
+2. Its `bootId` equals the context's `bootId`. Otherwise, the reason is `OtherBoot`.
 3. If the record it is checked against has an `owner`, its `owner` is equal. Otherwise, the reason
-   is `ownerMismatch`.
+   is `OwnerMismatch`.
 4. If the record it is checked against has an `expectedTag`, its `tag` is equal. Otherwise, the
-   reason is `tagMismatch`.
-5. Its `observedAtMs` is at most `nowMs`. Otherwise, the reason is `future`.
+   reason is `TagMismatch`.
+5. Its `observedAtMs` is at most `nowMs`. Otherwise, the reason is `Future`.
 6. Its age, `nowMs` minus `observedAtMs`, is less than its `maxAgeMs` and less than every
-   `maxAgeMs` of the records it is checked against. Otherwise, the reason is `expired`.
+   `maxAgeMs` of the records it is checked against. Otherwise, the reason is `Expired`.
 
 The first condition that does not hold determines the reason. Evidence that is not fresh is not
-used, and the node's answers are `unknown`/`unknown` with that reason. Only fresh evidence is
+used, and the node's answers are `Unknown`/`Unknown` with that reason. Only fresh evidence is
 interpreted: if it is fresh, the node's result carries its `message` and `details`, and the rules of
 the node's type determine the answers.
 
@@ -649,24 +664,24 @@ A `HealthStatus` is evidence ([Section 6.3](#63-evidence)) with the following fu
 | Field | Type | Description |
 | --- | --- | --- |
 | `id` | string | ID of the observed node. |
-| `state` | health state | Result of the check: `healthy`, `degraded`, `unhealthy`, or `unknown`. |
+| `state` | health state | Result of the check: `Healthy`, `Degraded`, `Unhealthy`, or `Unknown`. |
 
 Writers MUST NOT publish two status records for the same node. If several status records refer to
-an observed node, its answers are `unknown`/`unknown`, with the reason `conflict`, and the evaluator
-adds a diagnostic with the severity `warning`. Status records that refer to no observed node are
+an observed node, its answers are `Unknown`/`Unknown`, with the reason `Conflict`, and the evaluator
+adds a diagnostic with the severity `Warning`. Status records that refer to no observed node are
 ignored.
 
 Otherwise, the status record of an observed node is checked against the node: its owner against
 the node's `owner`, its tag against the rule's `expectedTag`, and its age against the rule's
 `maxAgeMs`. If the status record is fresh, the node's answers correspond to its `state` as defined
 in [Section 6.1](#61-health-answers). If the state is unknown to the evaluator, the node's answers
-are `unknown`/`unknown`, with the reason `unsupported`.
+are `Unknown`/`Unknown`, with the reason `Unsupported`.
 
-> **Note:** A check reports `degraded` when it is usable but not fully healthy, for example, a
-> disk check that sees little free space. It reports `unknown` when it cannot reach a conclusion,
+> **Note:** A check reports `Degraded` when it is usable but not fully healthy, for example, a
+> disk check that sees little free space. It reports `Unknown` when it cannot reach a conclusion,
 > for example, because a dependency of the check itself is unavailable.
 
-> **Note:** A status record cannot express the answers `yes`/`unknown` and `unknown`/`no`, so it
+> **Note:** A status record cannot express the answers `Yes`/`Unknown` and `Unknown`/`No`, so it
 > cannot relay every result of an evaluation. A system that passes on the health of other
 > systems, such as a gateway for attached devices, passes on a separate snapshot for each system
 > ([Section 9](#9-transport)), so that their answers are evaluated from the original records in
@@ -770,17 +785,17 @@ A range MUST NOT be empty: if it has both bounds, the lower value MUST NOT excee
 and if both values are equal, both bounds MUST be inclusive. The healthy range MUST be a subset of
 the usable range.
 
-If the metric has no definition, the node's answers are `unknown`/`unknown`, with the reason
-`missing`. If the metric has several definitions or several samples, or if the rule has a `unit`
-that differs from the definition's unit, the node's answers are `unknown`/`unknown`, with the reason
-`conflict`, and the evaluator adds a diagnostic with the severity `warning`. Otherwise, the metric's
+If the metric has no definition, the node's answers are `Unknown`/`Unknown`, with the reason
+`Missing`. If the metric has several definitions or several samples, or if the rule has a `unit`
+that differs from the definition's unit, the node's answers are `Unknown`/`Unknown`, with the reason
+`Conflict`, and the evaluator adds a diagnostic with the severity `Warning`. Otherwise, the metric's
 sample is checked against the metric's definition and the rule: its owner against the definition's
 `owner`, its tag against the definition's `expectedTag`, and its age against the `maxAgeMs` of both.
 If the sample is fresh, the node's answers are:
 
-- `yes`/`yes` if the value lies in the healthy range,
-- `yes`/`no` if it lies in the usable range but not in the healthy range, and
-- `no`/`no` otherwise.
+- `Yes`/`Yes` if the value lies in the healthy range,
+- `Yes`/`No` if it lies in the usable range but not in the healthy range, and
+- `No`/`No` otherwise.
 
 > **Example:** This threshold node over a CPU temperature is healthy at 75 °C, usable but not
 > healthy at 90 °C, and not usable above 90 °C:
@@ -790,7 +805,7 @@ If the sample is fresh, the node's answers are:
 >   "specVersion": "1.0",
 >   "id": "system.thermal",
 >   "rule": {
->     "type": "threshold",
+>     "type": "Threshold",
 >     "metric": "system.cpu-temperature",
 >     "unit": "Cel",
 >     "healthy": { "upper": { "value": 75, "inclusive": true } },
@@ -818,14 +833,14 @@ Each input has the following fields:
 | Field | Type | Description |
 | --- | --- | --- |
 | `node` | string | ID of the input node. |
-| `mode` | input mode, optional | How the input affects the node's answers. Defaults to `counted`. |
+| `mode` | input mode, optional | How the input affects the node's answers. Defaults to `Counted`. |
 
 The input modes are:
 
-- `counted`: The input counts toward `minUsable` and `minHealthy`.
-- `mandatory`: The input counts, and the node is only usable if the input is usable and only
+- `Counted`: The input counts toward `minUsable` and `minHealthy`.
+- `Mandatory`: The input counts, and the node is only usable if the input is usable and only
   healthy if the input is healthy.
-- `optional`: The input does not count and does not affect the minimum criteria. The node is only
+- `Optional`: The input does not count and does not affect the minimum criteria. The node is only
   healthy if the input is healthy.
 
 A node also becomes an input of an aggregate node by attaching itself to it. Each entry of a node's
@@ -834,7 +849,7 @@ A node also becomes an input of an aggregate node by attaching itself to it. Eac
 | Field | Type | Description |
 | --- | --- | --- |
 | `node` | string | ID of the aggregate node. |
-| `mode` | input mode, optional | Mode of the input. Defaults to `counted`. |
+| `mode` | input mode, optional | Mode of the input. Defaults to `Counted`. |
 
 If the aggregate node exists, the attaching node is one of its inputs, with the mode of the
 attachment. Attached inputs follow the inputs of the rule, in the order of the definitions of the
@@ -842,23 +857,23 @@ attaching nodes. Attachments to nodes that do not exist or are no aggregate node
 that contributors can attach to nodes that are not always present.
 
 If an input or attachment has a mode unknown to the evaluator, the aggregate node's answers are
-`unknown`/`unknown`, with the reason `unsupported`. If a node is an input more than once, listed or
+`Unknown`/`Unknown`, with the reason `Unsupported`. If a node is an input more than once, listed or
 attached, it counts as one input, at the position of its first occurrence. Its mode is the mode of
 the first input of the rule that refers to it or, if the rule does not list it, the mode of its
 first attachment, so that the aggregate node's own rule decides how its inputs count. An input of
-the rule that refers to no node has the answers `unknown`/`unknown`, and the evaluator adds a
-diagnostic with the severity `warning` for it; the input appears in the node's result, but has no
+the rule that refers to no node has the answers `Unknown`/`Unknown`, and the evaluator adds a
+diagnostic with the severity `Warning` for it; the input appears in the node's result, but has no
 result of its own.
 
-Inputs with the modes `counted` and `mandatory` are the _counted inputs_. If `minHealthy` is
+Inputs with the modes `Counted` and `Mandatory` are the _counted inputs_. If `minHealthy` is
 omitted, it equals the number of counted inputs. If `minUsable` is omitted, it equals
 `minHealthy`.
 
-The answers combine in three-valued logic. For a list of answers, their _conjunction_ is `no` if
-any answer is `no`, otherwise `unknown` if any answer is `unknown`, and `yes` otherwise; the
-conjunction of no answers is `yes`. For a count _k_ over a list of answers, the _count answer_ is
-`yes` if at least _k_ answers are `yes`, `no` if fewer than _k_ answers are `yes` or `unknown`, and
-`unknown` otherwise.
+The answers combine in three-valued logic. For a list of answers, their _conjunction_ is `No` if
+any answer is `No`, otherwise `Unknown` if any answer is `Unknown`, and `Yes` otherwise; the
+conjunction of no answers is `Yes`. For a count _k_ over a list of answers, the _count answer_ is
+`Yes` if at least _k_ answers are `Yes`, `No` if fewer than _k_ answers are `Yes` or `Unknown`, and
+`Unknown` otherwise.
 
 The answers of an aggregate node are:
 
@@ -887,11 +902,11 @@ be met.
 >   "owner": "rugix.apps.telemetry",
 >   "partOf": [{ "node": "system" }],
 >   "rule": {
->     "type": "aggregate",
+>     "type": "Aggregate",
 >     "inputs": [
 >       { "node": "telemetry.database" },
 >       { "node": "telemetry.machine" },
->       { "node": "telemetry.upload", "mode": "optional" }
+>       { "node": "telemetry.upload", "mode": "Optional" }
 >     ]
 >   }
 > }
@@ -899,18 +914,18 @@ be met.
 >
 > Without counts, both counted inputs must be usable for the app to be usable, and all inputs must
 > be healthy for it to be healthy. If the upload's status record expires, the app's answers are
-> `yes`/`unknown`. If the database is not usable, they are `no`/`no`. While the app is installed,
+> `Yes`/`Unknown`. If the database is not usable, they are `No`/`No`. While the app is installed,
 > the whole system is only healthy if the app is; when the app is removed, its attachment is
 > removed with it.
 
 > **Example:** With three interchangeable workers, `"minUsable": 2` keeps a service usable while
 > one worker is down, and the omitted `minHealthy` requires all three workers for full health. If
-> one worker is not usable and another is unknown, the service's usable answer is `unknown`,
-> because whether two workers are usable depends on the unknown one; its healthy answer is `no`,
+> one worker is not usable and another is unknown, the service's usable answer is `Unknown`,
+> because whether two workers are usable depends on the unknown one; its healthy answer is `No`,
 > because fewer than three workers can be healthy.
 
 > **Note:** The summarized states of [Section 6.1](#61-health-answers) follow from the answers.
-> For example, the usable answer `yes` with the healthy answer `no` or `unknown` is `degraded`.
+> For example, the usable answer `Yes` with the healthy answer `No` or `Unknown` is `Degraded`.
 
 ### 6.8 Evaluation and Reports
 
@@ -919,14 +934,14 @@ samples in a health context, together with the diagnostics about these records a
 configurations ([Section 3.2](#32-diagnostics)). It proceeds as follows:
 
 1. It skips invalid records, for example, nodes with an empty range or evidence with a `maxAgeMs`
-   of zero, and adds a diagnostic with the severity `error` for each.
+   of zero, and adds a diagnostic with the severity `Error` for each.
 2. If several nodes have the same ID, it evaluates none of them. The ID has one result, at the
-   position of the first of these nodes, with the answers `unknown`/`unknown`, the reason
-   `conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
-   to their ID are ignored. The evaluator adds a diagnostic with the severity `error` for the ID.
+   position of the first of these nodes, with the answers `Unknown`/`Unknown`, the reason
+   `Conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
+   to their ID are ignored. The evaluator adds a diagnostic with the severity `Error` for the ID.
 3. It adds the attached inputs of the remaining aggregate nodes
    ([Section 6.7](#67-aggregate-nodes)).
-4. It gives every node on a cycle the answers `unknown`/`unknown` and the reason `cycle`. A node is
+4. It gives every node on a cycle the answers `Unknown`/`Unknown` and the reason `Cycle`. A node is
    on a cycle if it is an input of itself, directly or through other aggregate nodes.
 5. It determines the answers of every other node by the rules of its type.
 
@@ -939,8 +954,8 @@ A `HealthNodeResult` has the following fields:
 | --- | --- | --- |
 | `id` | string | ID of the node. |
 | `owner` | string, optional | Owner of the node. |
-| `usable` | answer | Whether the minimum criteria are met: `yes`, `no`, or `unknown`. |
-| `healthy` | answer | Whether the desired criteria are met: `yes`, `no`, or `unknown`. |
+| `usable` | answer | Whether the minimum criteria are met: `Yes`, `No`, or `Unknown`. |
+| `healthy` | answer | Whether the desired criteria are met: `Yes`, `No`, or `Unknown`. |
 | `inputs` | list of strings | IDs of the inputs of an aggregate node ([Section 6.7](#67-aggregate-nodes)); empty for other nodes. |
 | `reason` | reason, optional | Why the node's evidence was not used or its rule was not applied. |
 | `message` | string, optional | Message of the fresh evidence. |
@@ -948,20 +963,20 @@ A `HealthNodeResult` has the following fields:
 
 The reasons are:
 
-- `missing`, `otherBoot`, `ownerMismatch`, `tagMismatch`, `future`, and `expired` for evidence
-  that is not fresh ([Section 6.3](#63-evidence)), and `missing` also for a metric without a
+- `Missing`, `OtherBoot`, `OwnerMismatch`, `TagMismatch`, `Future`, and `Expired` for evidence
+  that is not fresh ([Section 6.3](#63-evidence)), and `Missing` also for a metric without a
   definition,
-- `conflict` for records that contradict each other, such as two nodes with the same ID,
-- `cycle` for a node on a cycle, and
-- `unsupported` for a rule type, state, or input mode unknown to the evaluator
+- `Conflict` for records that contradict each other, such as two nodes with the same ID,
+- `Cycle` for a node on a cycle, and
+- `Unsupported` for a rule type, state, or input mode unknown to the evaluator
   ([Section 3.6](#36-evolution)).
 
 Other results of aggregate nodes have no reason; their inputs explain them.
 
 A skipped node or directory configuration can have provided inputs of other nodes, which then
 appear healthier than they are. A consumer that makes a decision, such as whether to commit an
-update, SHOULD NOT base it on a report with diagnostics of the severity `error` and the kinds
-`healthNodes` or `directories`, unless it is configured to. Skipped evidence and metric definitions
+update, SHOULD NOT base it on a report with diagnostics of the severity `Error` and the kinds
+`HealthNode` or `DirectoryConfig`, unless it is configured to. Skipped evidence and metric definitions
 make the nodes that use them unknown, unless a writer published another record with the same ID,
 which [Sections 6.4](#64-observed-nodes-and-status-records) and [6.5](#65-metrics) forbid. A
 consumer can also be configured to require a report without any error diagnostics.
@@ -1041,7 +1056,7 @@ names and descending into a subdirectory when it visits it. While doing so, the 
 A reader MUST skip directories that do not exist, and entries that disappear between listing a
 directory and reading them. If a directory path exists but is not a directory or is a broken
 symlink, if a directory cannot be listed, or if a file cannot be read or does not contain a valid
-record, a reader MUST skip it and report a diagnostic with the severity `error`
+record, a reader MUST skip it and report a diagnostic with the severity `Error`
 ([Section 3.2](#32-diagnostics)). A path whose existence cannot be determined is reported in the
 same way.
 
@@ -1060,7 +1075,7 @@ override other records. Directory configurations have no IDs and cannot be overr
 > To change a threshold, an operator copies its node to `/etc/system-runtime/health/nodes` and
 > changes the ranges. To disable a check, an operator overrides its node with an aggregate node
 > without inputs, such as `{"id": "telemetry.upload", "owner": "rugix.apps.telemetry", "rule":
-> {"type": "aggregate"}}`, which is healthy as long as no other node attaches to it.
+> {"type": "Aggregate"}}`, which is healthy as long as no other node attaches to it.
 
 A directory MAY be a symlink. A reader MUST resolve each directory to its physical location before
 traversing it, so that changing the symlink during traversal cannot mix files of two
