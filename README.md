@@ -175,7 +175,7 @@ order, with each provider's implicit capability preceding its explicit ones.
 
 #### Versions and Requirements
 
-Versions follow Rugix's version format (`anyver` 0.1): one or more numeric, dot-separated
+Versions follow Rugix's version format (`anyver` 0.3): one or more numeric, dot-separated
 release components, an optional `-` prerelease, and optional `+` build metadata.
 Release components and numeric prerelease identifiers must fit in an unsigned
 64-bit integer. Prerelease and build identifiers are nonempty, dot-separated
@@ -183,13 +183,34 @@ ASCII letters, digits, or hyphens. Leading zeroes are accepted.
 
 Trailing zero release components and build metadata do not affect comparison.
 Prereleases precede releases; numeric prerelease identifiers precede text
-identifiers, which compare by ASCII order. A shorter prerelease prefix precedes
-a longer one.
+identifiers, which compare lexicographically by ASCII code. A shorter prerelease
+prefix precedes a longer one.
 
 Requirements are comma-separated conjunctions of `=`, `==`, `!=`, `>`, `>=`,
 `<`, or `<=` comparators. A bare version means equality; a sole `*` matches all
-versions. Outer whitespace is ignored. Prereleases use the same comparisons
-without implicit exclusion. SemVer shorthand such as `^` and `~` is not accepted.
+versions. Outer whitespace is ignored.
+
+A comparator's version without a prerelease names a _line_: all versions whose
+release components, padded with zeros, start with the comparator's release
+components, including their prereleases. The line `3` contains `3.0-rc.1`, `3`,
+and `3.5.1`; the line `3.0` contains `3.0.5` but not `3.1`. Comparators refer to
+the start or the end of the line:
+
+- `>=3` matches from the start of the line `3`, including `3.0-rc.1`.
+- `<4` matches before the start of the line `4`, excluding `4.0-rc.1`.
+- `>3` matches after the end of the line `3`, so it matches `4.0-rc.1` but not
+  `3.1`; `>3.0` matches `3.1`.
+- `<=3` matches up to the end of the line `3`, such as `3.9`.
+- `3.*` or `==3.*` matches the line `3`, and `!=3.*` matches every other
+  version. Wildcards require `=`, `==`, or `!=` and a version without a
+  prerelease or build metadata.
+- `==` and `!=` without a wildcard compare exact versions, so `==3` matches
+  `3.0` but not `3.0-rc.1` or `3.0.1`.
+
+A requirement like `>=3,<4` therefore matches the whole line `3`, including
+`3.0-rc.1`, but not `4.0-rc.1`. A comparator's version with a prerelease, such
+as `>=3-rc.2` or `<4-rc.2`, compares in the version order. SemVer shorthand
+such as `^` and `~` is not accepted.
 
 ### Metrics and Thresholds
 

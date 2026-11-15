@@ -2,7 +2,7 @@
 
 type Identifier = bigint | string;
 type Version = { release: bigint[]; prerelease: Identifier[] };
-export type Requirement = { operator: string; version: Version }[];
+export type Requirement = { operator: string; version: Version; wildcard: boolean }[];
 
 const grammar = /^([0-9]+(?:\.[0-9]+)*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const max = (1n << 64n) - 1n;
@@ -21,39 +21,72 @@ export function parseVersion(text: string): Version {
   return { release, prerelease };
 }
 
-/** Parse comma-separated comparators, with a single wildcard allowed. */
+/** Parse comma-separated comparators, or `*` alone for any version. */
 export function parseRequirement(text: string): Requirement {
   if (text.trim() === "*") return [];
   return text.split(",").map((part) => {
-    const match = /^(==|!=|>=|<=|=|>|<)?\s*(.+)$/.exec(part.trim());
+    const match = /^(==|!=|>=|<=|=|>|<)?\s*(.+?)(\.\*)?$/.exec(part.trim());
     if (!match) throw new Error(`Invalid version requirement: ${text}`);
-    return { operator: match[1] ?? "=", version: parseVersion(match[2]) };
+    const operator = match[1] ?? "=";
+    const version = parseVersion(match[2]);
+    const wildcard = match[3] !== undefined;
+    if (wildcard && (!["=", "==", "!="].includes(operator) || version.prerelease.length > 0 || match[2].includes("+"))) {
+      throw new Error(`Invalid wildcard comparator: ${text}`);
+    }
+    return { operator, version, wildcard };
   });
 }
 
-/** Match all comparators, including prereleases without implicit exclusions. */
+/** Match all comparators; a version without a prerelease names a line of versions. */
 export function matchesRequirement(requirement: Requirement, version: Version): boolean {
-  return requirement.every(({ operator, version: target }) => {
-    const comparison = compare(version, target);
+  return requirement.every(({ operator, version: target, wildcard }) => {
+    if (wildcard) {
+      const inLine = compareLine(version, target) === 0;
+      return operator === "!=" ? !inLine : inLine;
+    }
+    if (["=", "==", "!="].includes(operator) || target.prerelease.length > 0) {
+      const comparison = compare(version, target);
+      switch (operator) {
+        case "=": case "==": return comparison === 0;
+        case "!=": return comparison !== 0;
+        case ">": return comparison > 0;
+        case ">=": return comparison >= 0;
+        case "<": return comparison < 0;
+        case "<=": return comparison <= 0;
+        default: throw new Error("Invalid comparator operator");
+      }
+    }
+    const start = compareRelease(version.release, target.release);
     switch (operator) {
-      case "=": case "==": return comparison === 0;
-      case "!=": return comparison !== 0;
-      case ">": return comparison > 0;
-      case ">=": return comparison >= 0;
-      case "<": return comparison < 0;
-      case "<=": return comparison <= 0;
+      case ">=": return start >= 0;
+      case "<": return start < 0;
+      case ">": return compareLine(version, target) > 0;
+      case "<=": return compareLine(version, target) <= 0;
       default: throw new Error("Invalid comparator operator");
     }
   });
 }
 
-/** Compare normalized release numbers, then SemVer-style prerelease identifiers. */
-function compare(left: Version, right: Version): number {
-  for (let i = 0; i < Math.max(left.release.length, right.release.length); i++) {
-    const a = left.release[i] ?? 0n;
-    const b = right.release[i] ?? 0n;
+/** Compare release numbers, ignoring trailing zeros and prereleases. */
+function compareRelease(left: bigint[], right: bigint[]): number {
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    const a = left[i] ?? 0n;
+    const b = right[i] ?? 0n;
     if (a !== b) return a > b ? 1 : -1;
   }
+  return 0;
+}
+
+/** Compare a version with the line of `target`, at the precision it spells. */
+function compareLine(version: Version, target: Version): number {
+  const prefix = target.release.map((_, i) => version.release[i] ?? 0n);
+  return compareRelease(prefix, target.release);
+}
+
+/** Compare normalized release numbers, then SemVer-style prerelease identifiers. */
+function compare(left: Version, right: Version): number {
+  const release = compareRelease(left.release, right.release);
+  if (release !== 0) return release;
   if (!left.prerelease.length || !right.prerelease.length) {
     return Number(!left.prerelease.length) - Number(!right.prerelease.length);
   }

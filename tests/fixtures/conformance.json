@@ -18,7 +18,7 @@
     {
       "version": "1-rc.1",
       "requirement": "<1",
-      "matches": true
+      "matches": false
     },
     {
       "version": "1-2",
@@ -43,7 +43,7 @@
     {
       "version": "1.2.3.4",
       "requirement": ">1.2.3",
-      "matches": true
+      "matches": false
     },
     {
       "version": "1.2",
@@ -78,7 +78,7 @@
     {
       "version": "1-rc.1",
       "requirement": ">=1-rc.1,<1",
-      "matches": true
+      "matches": false
     },
     {
       "version": " 1.0 ",
@@ -108,6 +108,156 @@
     {
       "version": "0",
       "requirement": "0.0",
+      "matches": true
+    },
+    {
+      "version": "4.0-rc.1",
+      "requirement": ">=3,<4",
+      "matches": false
+    },
+    {
+      "version": "3.5-beta",
+      "requirement": ">=3,<4",
+      "matches": true
+    },
+    {
+      "version": "4-0",
+      "requirement": "<4",
+      "matches": false
+    },
+    {
+      "version": "4-rc.1",
+      "requirement": "<4.0.0",
+      "matches": false
+    },
+    {
+      "version": "4-rc.1",
+      "requirement": "<4-rc.2",
+      "matches": true
+    },
+    {
+      "version": "4.0-rc.1",
+      "requirement": "<=4",
+      "matches": true
+    },
+    {
+      "version": "4.0-rc.1",
+      "requirement": ">=4",
+      "matches": true
+    },
+    {
+      "version": "3.0-rc.1",
+      "requirement": ">=3,<4",
+      "matches": true
+    },
+    {
+      "version": "3.0.0-rc.1",
+      "requirement": ">=3.0.0",
+      "matches": true
+    },
+    {
+      "version": "3.0-rc.1",
+      "requirement": "<3",
+      "matches": false
+    },
+    {
+      "version": "3.1",
+      "requirement": ">3",
+      "matches": false
+    },
+    {
+      "version": "4.0-rc.1",
+      "requirement": ">3",
+      "matches": true
+    },
+    {
+      "version": "3.1",
+      "requirement": ">3.0",
+      "matches": true
+    },
+    {
+      "version": "3.0.5",
+      "requirement": ">3.0",
+      "matches": false
+    },
+    {
+      "version": "3.9",
+      "requirement": "<=3",
+      "matches": true
+    },
+    {
+      "version": "3.1",
+      "requirement": "<=3.0",
+      "matches": false
+    },
+    {
+      "version": "4.0-rc.1",
+      "requirement": "<=3",
+      "matches": false
+    },
+    {
+      "version": "3.0-rc.1",
+      "requirement": "==3",
+      "matches": false
+    },
+    {
+      "version": "3.0.1",
+      "requirement": "==3",
+      "matches": false
+    },
+    {
+      "version": "3-rc.1",
+      "requirement": ">=3-rc.2",
+      "matches": false
+    },
+    {
+      "version": "4-rc.2",
+      "requirement": "<=4-rc.1",
+      "matches": false
+    },
+    {
+      "version": "3.0-rc.1",
+      "requirement": "3.*",
+      "matches": true
+    },
+    {
+      "version": "3.5.1",
+      "requirement": "==3.*",
+      "matches": true
+    },
+    {
+      "version": "4.0-rc.1",
+      "requirement": "3.*",
+      "matches": false
+    },
+    {
+      "version": "2024.6.30",
+      "requirement": "2024.6.*",
+      "matches": true
+    },
+    {
+      "version": "3",
+      "requirement": "3.0.*",
+      "matches": true
+    },
+    {
+      "version": "3.1",
+      "requirement": "3.0.*",
+      "matches": false
+    },
+    {
+      "version": "3.2",
+      "requirement": "!=3.*",
+      "matches": false
+    },
+    {
+      "version": "4.0",
+      "requirement": "!=3.*",
+      "matches": true
+    },
+    {
+      "version": "3.2-rc.1",
+      "requirement": "3.*,>=3.2",
       "matches": true
     },
     {
@@ -178,6 +328,36 @@
     {
       "version": "1",
       "requirement": ">=",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": ">=3.*",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "<3.*",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "3-rc.1.*",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "3.*.*",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": "3+build.*",
+      "error": true
+    },
+    {
+      "version": "1",
+      "requirement": ".*",
       "error": true
     }
   ],
