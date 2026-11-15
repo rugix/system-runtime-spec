@@ -79,10 +79,11 @@ case contradicts this document, the document applies, and the test case is wrong
 
 ### 3.1 Encoding
 
-Records are JSON texts ([RFC 8259][rfc8259]) that consist of one object. Field names use camelCase.
-Writers MUST produce [I-JSON][rfc7493] messages: they are encoded in UTF-8, no object has two
-members with the same name, and no string contains an unpaired surrogate or a noncharacter. Writers
-MUST omit optional fields that are not set and MUST NOT encode them as `null`.
+Records are JSON texts ([RFC 8259][rfc8259]) that consist of one object. Field names use camelCase,
+and enumeration values use PascalCase. Writers MUST produce [I-JSON][rfc7493] messages: they are
+encoded in UTF-8, no object has two members with the same name, and no string contains an unpaired
+surrogate or a noncharacter. Writers MUST omit optional fields that are not set and MUST NOT encode
+them as `null`.
 
 Fields that this document defines as integers hold unsigned 64-bit integers, such as boot-time clock
 values; other numbers, such as metric values, are not integers in this sense. Writers MUST encode an
@@ -206,7 +207,7 @@ follows:
 | Input modes ([Section 6.7](#67-aggregate-nodes)) | The aggregate node's result is unknown, with the reason `Unsupported`. |
 | Compatibility problems ([Section 5.5](#55-compatibility-reports)) | The problem is reported without further detail. |
 | Reasons ([Section 6.8](#68-evaluation-and-reports)) | The result is treated as having no reason. |
-| Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic concerns both parts. |
+| Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as of the kind `DirectoryConfig`. |
 | Diagnostic severities ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as an error. |
 
 > **Note:** The fallbacks are conservative. For example, a node that attaches to `system` with an
@@ -555,9 +556,9 @@ _roots_.
 
 The node with the ID `system` represents the whole system. It is a convenience: contributors
 attach their nodes to it, and tools show it as the overall health of a device. A consumer that
-makes a decision, such as whether to commit an update, bases it on a node that is defined for that
-decision and covers what the decision depends on. A consumer that uses a node that does not exist
-SHOULD treat it as having the answers `Unknown`/`Unknown`. A graph MAY have further roots.
+makes a decision, such as whether to commit an update, SHOULD base it on a node that is defined for
+that decision and covers what the decision depends on. A consumer that uses a node that does not
+exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
 
 > **Example:** The system image defines the node `system` as an aggregate node, and each
 > contributor attaches its own nodes to it ([Section 6.7](#67-aggregate-nodes)):
