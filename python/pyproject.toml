@@ -22,11 +22,11 @@ Issues = "https://github.com/rugix/system-runtime-spec/issues"
 dev = ["pytest>=8", "ruff>=0.11", "mypy>=1.15"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["system_runtime"]
+packages = ["system_runtime_spec"]
 
 [tool.ruff]
 target-version = "py312"
-extend-exclude = ["system_runtime/models"]
+extend-exclude = ["system_runtime_spec/models"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

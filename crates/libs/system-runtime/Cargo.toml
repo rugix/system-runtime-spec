@@ -8,9 +8,6 @@ license.workspace = true
 repository.workspace = true
 include = ["src/**", "Cargo.toml", "README.md", "LICENSE-*"]
 
-[lib]
-name = "system_runtime"
-
 [dependencies]
 anyver.workspace = true
 sidex.workspace = true

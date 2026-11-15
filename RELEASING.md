@@ -2,7 +2,7 @@
 
 The Rust crate, Python distribution, and npm package share the name
 `system-runtime-spec` and one release version. Rust and Python users import
-`system_runtime`; TypeScript users import `system-runtime-spec`.
+`system_runtime_spec`; TypeScript users import `system-runtime-spec`.
 
 Pushing a stable version tag, such as `v0.1.0`, runs the Release workflow. It checks
 that all package versions and the tag agree, runs the full CI checks, verifies the

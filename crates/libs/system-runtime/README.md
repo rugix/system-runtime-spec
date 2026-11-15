@@ -13,7 +13,7 @@ Add the crate from crates.io to your project's `Cargo.toml`:
 system-runtime-spec = "0.1"
 ```
 
-The package is named `system-runtime-spec`; import the crate as `system_runtime`.
+The package is named `system-runtime-spec`; import the crate as `system_runtime_spec`.
 Specification models live under `types`; helpers are accessed through their
 `compatibility`, `evaluation`, `discovery`, `clock`, and `snapshot` modules.
 
@@ -25,13 +25,13 @@ contains components, health nodes and statuses, and optional value definitions
 and observations.
 
 ```rust
-use system_runtime::{
+use system_runtime_spec::{
     compatibility::check_components,
     discovery::RuntimeDirectories,
     evaluation::{current_context, evaluate_health_with_values},
 };
 
-fn main() -> Result<(), system_runtime::Error> {
+fn main() -> Result<(), system_runtime_spec::Error> {
     let snapshot = RuntimeDirectories::standard("/").load()?;
     let compatibility = check_components(&snapshot.components)?;
     let health = evaluate_health_with_values(
@@ -64,9 +64,9 @@ Use extension files as described in the
 or extend the sources in code:
 
 ```rust
-use system_runtime::{discovery::RuntimeDirectories, types::filesystem::DirectoryConfig};
+use system_runtime_spec::{discovery::RuntimeDirectories, types::filesystem::DirectoryConfig};
 
-fn main() -> Result<(), system_runtime::Error> {
+fn main() -> Result<(), system_runtime_spec::Error> {
     let mut directories = RuntimeDirectories::standard("/");
     directories.extend(&DirectoryConfig {
         components: Some(vec!["/opt/example/components".into()]),
@@ -93,14 +93,14 @@ An owner groups records owned by a system image, app, or other contributor.
 Other records retain their requirements and references.
 
 ```rust
-use system_runtime::{
+use system_runtime_spec::{
     compatibility::check_components,
     discovery::RuntimeDirectories,
     snapshot::without_owner,
     types::component::ComponentDeclaration,
 };
 
-fn main() -> Result<(), system_runtime::Error> {
+fn main() -> Result<(), system_runtime_spec::Error> {
     let current = RuntimeDirectories::standard("/").load()?;
     let mut candidate = without_owner(&current, "rugix.system");
     candidate.components.push(ComponentDeclaration {
@@ -129,7 +129,7 @@ Add `serde_json = "1"` under `[dependencies]` for this JSON round trip. Collect
 records first, then sample the observed system's clock:
 
 ```rust
-use system_runtime::{
+use system_runtime_spec::{
     clock::{current_clock_sample, status_timestamp},
     discovery::RuntimeDirectories,
     types::health::HealthSnapshot,

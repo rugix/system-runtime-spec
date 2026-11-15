@@ -1,12 +1,14 @@
 use serde::Deserialize;
 use sidex::types::Timestamp;
-use system_runtime::clock::status_timestamp;
-use system_runtime::compatibility::check_components;
-use system_runtime::evaluation::evaluate_health;
-use system_runtime::snapshot::without_owner;
-use system_runtime::types::component::ComponentDeclaration;
-use system_runtime::types::filesystem::RuntimeSnapshot;
-use system_runtime::types::health::{HealthClockSample, HealthSnapshot, HealthState, HealthStatus};
+use system_runtime_spec::clock::status_timestamp;
+use system_runtime_spec::compatibility::check_components;
+use system_runtime_spec::evaluation::evaluate_health;
+use system_runtime_spec::snapshot::without_owner;
+use system_runtime_spec::types::component::ComponentDeclaration;
+use system_runtime_spec::types::filesystem::RuntimeSnapshot;
+use system_runtime_spec::types::health::{
+    HealthClockSample, HealthSnapshot, HealthState, HealthStatus,
+};
 
 #[derive(Deserialize)]
 struct Fixtures {
@@ -119,7 +121,7 @@ fn health_transport() {
 #[cfg(target_os = "linux")]
 #[test]
 fn current_clock_sample() {
-    let clock = system_runtime::clock::current_clock_sample().unwrap();
+    let clock = system_runtime_spec::clock::current_clock_sample().unwrap();
     assert!(!clock.context.boot_id.is_empty());
     let encoded = sidex::formats::json::to_string(&clock).unwrap();
     assert_eq!(
