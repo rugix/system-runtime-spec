@@ -110,10 +110,11 @@ report diagnostics with the severity `warning` for records that they use despite
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `severity` | severity | `error` if the records concerned were skipped, and `warning` otherwise. |
+| `severity` | severity | `error` if the records concerned were skipped or not evaluated, and `warning` otherwise. |
 | `kind` | diagnostic kind | Kind of records concerned: `components`, `healthNodes`, `healthStatuses`, `metrics`, `metricSamples`, or `directories`. |
 | `message` | string | Description of the problem. |
 | `path` | string, optional | Path of the file or directory concerned. |
+| `recordId` | string, optional | ID of the identifiable invalid record that the diagnostic reports. |
 
 The kind of a diagnostic is the kind of the records it concerns, also for a directory of such
 records and for diagnostics added during evaluation. The kind `directories` is reserved for
@@ -122,11 +123,14 @@ diagnostics affect their results ([Sections 5.4](#54-consistency) and
 [6.7](#67-evaluation-and-reports)). The messages of diagnostics and their order are not specified
 and differ between implementations.
 
-An invalid record is _identifiable_ if its file contains an I-JSON object with exactly one `id`
-member, and that member holds a valid ID ([Section 3.3](#33-identifiers)). Where this
-specification counts the records with one ID, such as to find conflicts, identifiable invalid
-records count too, so that skipping an invalid record does not hide a conflict. Invalid records
-never override other records ([Section 8.3](#83-reading)).
+An invalid record is _identifiable_ if its file contains an I-JSON object whose `id` member holds
+a valid ID ([Section 3.3](#33-identifiers)). The diagnostic of an identifiable invalid record has
+the severity `error` and carries its ID in `recordId`; other diagnostics have no `recordId`. Where
+this specification counts the records with one ID, such as to find conflicts, each diagnostic with
+a `recordId` counts as one record of its kind with that ID, so that skipping an invalid record does
+not hide a conflict. Invalid records never override other records, and an identifiable invalid
+record that a valid record of a higher level overrides is skipped without a diagnostic
+([Section 8.3](#83-reading)).
 
 ### 3.3 Identifiers
 
@@ -176,9 +180,18 @@ changes that readers of earlier minor versions of the same major version can saf
 
 Every record, in addition to the fields that this document lists for it, has an optional field
 `specVersion`, which holds the version of this specification that the record follows, such as
-`1.0`. A record without it follows version 1.0. Writers SHOULD set it. A record whose `specVersion`
-does not consist of a major and a minor version, or has a major version that the reader does not
-support, is invalid. If a record has a higher minor version than the reader supports, the reader
+`1.0`. A record without it follows version 1.0. Writers SHOULD set it. Specification versions,
+here and in snapshots ([Section 9.1](#91-snapshots)), have the following form, where both numbers
+fit into an unsigned 32-bit integer and compare numerically:
+
+```text
+spec-version = number "." number
+number       = "0" | nonzero { digit }
+nonzero      = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+```
+
+A record whose `specVersion` does not have this form, or has a major version that the reader does
+not support, is invalid. If a record has a higher minor version than the reader supports, the reader
 uses it, applying the fallbacks of this section, and reports a diagnostic with the severity
 `warning`.
 
@@ -198,9 +211,10 @@ follows:
 > **Note:** The fallbacks are conservative. For example, a node that attaches to `system` with an
 > input mode added in a later minor version makes `system` unknown for older health evaluators.
 
-A change that readers cannot safely ignore requires a new major version. A new major version MUST
-use new standard directories ([Section 8.1](#81-directories)), so that readers of an earlier
-major version never misinterpret its records.
+A change that readers cannot safely ignore requires a new major version. Records of a new major
+version can appear next to records of earlier ones, but readers of earlier major versions report
+them as invalid. A new major version therefore MUST use new standard directories ([Section
+8.1](#81-directories)), so that readers of an earlier major version never misinterpret its records.
 
 ## 4. Versions and Version Requirements
 
@@ -386,7 +400,8 @@ A compatibility checker evaluates a composition, which is a list of component de
 together with the diagnostics about component declarations and directory configurations
 ([Section 3.2](#32-diagnostics)). It skips declarations that are not valid records, for example,
 because they contain an invalid version or version requirement, or a capability or selector with
-both a version and a value, and adds a diagnostic for each. It considers every explicit and
+both a version and a value, and adds a diagnostic with the severity `error` for each. It
+considers every explicit and
 implicit capability of every remaining component. The composition is _consistent_ if and only if:
 
 - there are no diagnostics with the severity `error`,
@@ -402,29 +417,28 @@ constraints ([Section 10](#10-limitations)).
 ### 5.5 Compatibility Reports
 
 A compatibility checker produces a `CompatibilityReport` with the fields `consistent`, a boolean,
-and `problems`, a list of all violated constraints. Each problem has a `problem` field naming its
-kind:
+`problems`, a list of all violated constraints, and `diagnostics`, the diagnostics about component
+declarations and directory configurations. Each problem has a `problem` field naming its kind:
 
 | Kind | Fields | Reported for |
 | --- | --- | --- |
-| `invalidRecord` | `message`, `path` (optional) | Each diagnostic with the severity `error`, with its message and path. |
 | `duplicateComponent` | `id` | Each component ID that more than one component uses. |
 | `duplicateClaim` | `id`, `components` | Each resource that more than one component claims, with the claiming components in declaration order. |
 | `unsatisfiedRequirement` | `component`, `selector` | Each requirement that matches no capability. |
 | `conflict` | `component`, `selector`, `provider`, `capability` | Each pair of a conflict and a capability it matches. |
 
-The report is consistent if and only if it contains no problems. Problems MUST appear in this
-order:
+The report is consistent if and only if it contains no problems and no diagnostics with the
+severity `error`. Problems MUST appear in this order:
 
-1. Invalid records, in an order that this specification does not define.
-2. Duplicate components, sorted by ID.
-3. Duplicate claims, sorted by resource ID.
-4. Unsatisfied requirements and conflicts, in the order of the component declarations. Within a
+1. Duplicate components, sorted by ID.
+2. Duplicate claims, sorted by resource ID.
+3. Unsatisfied requirements and conflicts, in the order of the component declarations. Within a
    component, requirements precede conflicts, each in declaration order. A conflict that matches
    several capabilities produces one problem per capability, in the order of the providing
    components, with each component's implicit capability before its explicit ones.
 
-Two problems are _equal_ if they have the same kind and equal fields, apart from messages.
+Two problems are _equal_ if they have the same kind and equal fields. Two diagnostics are _equal_
+if they have equal fields, apart from their messages.
 
 ### 5.6 Candidate Compositions
 
@@ -432,7 +446,7 @@ A _candidate composition_ is the composition that would result from an update. A
 the declarations of one or more owners at one level ([Section 8.1](#81-directories)), usually the
 lowest: it names the owners it replaces and supplies new declarations, each of which MUST have one
 of these owners. A compatibility checker skips a new declaration that does not have a replaced
-owner and adds a diagnostic for it. An update that
+owner and adds a diagnostic with the severity `error` for it. An update that
 installs a new contributor replaces an owner that has no declarations yet, and an update that
 removes a contributor supplies no declarations for its owner.
 
@@ -445,9 +459,9 @@ overrides, each with its level ([Section 8.3](#83-reading)):
 3. Apply the overrides of [Section 8.3](#83-reading).
 
 The diagnostics of the candidate composition are the current diagnostics and those about the new
-declarations. The current diagnostics can concern files that the update replaces; problem equality
-([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them
-as existing problems.
+declarations. The current diagnostics can concern files that the update replaces; diagnostic
+equality ([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can
+recognize them as existing ones.
 
 Checking the candidate composition finds broken requirements before the update takes place,
 because the remaining declarations keep their requirements. Declarations at higher levels stay in
@@ -463,8 +477,9 @@ appears as a duplicate component.
 
 > **Note:** If the current composition is already inconsistent, every candidate composition that
 > keeps the existing problems is inconsistent too, including an update that fixes another problem.
-> A tool can accept a candidate composition whose problems all equal problems of the current
-> composition, so that existing problems do not block updates that do not make them worse.
+> A tool can accept a candidate composition whose problems and error diagnostics all equal those
+> of the current composition, so that existing problems do not block updates that do not make them
+> worse.
 
 ## 6. Health
 
@@ -643,8 +658,9 @@ A `HealthStatus` is evidence ([Section 6.3](#63-evidence)) with the following fu
 | `state` | health state | Result of the check: `healthy`, `degraded`, `unhealthy`, or `unknown`. |
 
 Writers MUST NOT publish two status records for the same node. If several status records refer to
-an observed node, its answers are `unknown`/`unknown`, with the reason `conflict`. Status records
-that refer to no observed node are ignored.
+an observed node, its answers are `unknown`/`unknown`, with the reason `conflict`, and the evaluator
+adds a diagnostic with the severity `warning`. Status records that refer to no observed node are
+ignored.
 
 Otherwise, the status record of an observed node is checked against the node: its owner against
 the node's `owner`, its tag against the rule's `expectedTag`, and its age against the rule's
@@ -763,7 +779,8 @@ the usable range.
 If the metric has no definition, the node's answers are `unknown`/`unknown`, with the reason
 `missing`. If the metric has several definitions or several samples, or if the rule has a `unit`
 that differs from the definition's unit, the node's answers are `unknown`/`unknown`, with the
-reason `conflict`. Otherwise, the metric's sample is checked against the metric's definition and
+reason `conflict`, and the evaluator adds a diagnostic with the severity `warning`. Otherwise, the
+metric's sample is checked against the metric's definition and
 the rule: its owner against the definition's `owner`, its tag against the definition's
 `expectedTag`, and its age against the `maxAgeMs` of both. If the sample is fresh, the node's
 answers are:
@@ -799,7 +816,7 @@ samples in a health context, together with the diagnostics about these records a
 configurations ([Section 3.2](#32-diagnostics)). It proceeds as follows:
 
 1. It skips invalid records, for example, nodes with an empty range or evidence with a `maxAgeMs`
-   of zero, and adds a diagnostic for each.
+   of zero, and adds a diagnostic with the severity `error` for each.
 2. If several nodes have the same ID, it evaluates none of them. The ID has one result, at the
    position of the first of these nodes, with the answers `unknown`/`unknown`, the reason
    `conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
@@ -890,7 +907,8 @@ attached, it counts as one input, at the position of its first occurrence. Its m
 the first input of the rule that refers to it or, if the rule does not list it, the mode of its
 first attachment, so that the aggregate node's own rule decides how its inputs count. An input of
 the rule that refers to no node has the answers `unknown`/`unknown`, and the evaluator adds a
-diagnostic for it; the input appears in the node's result, but has no result of its own.
+diagnostic with the severity `warning` for it; the input appears in the node's result, but has no
+result of its own.
 
 Inputs with the modes `counted` and `mandatory` are the _counted inputs_. If `minHealthy` is
 omitted, it equals the number of counted inputs. If `minUsable` is omitted, it equals
@@ -1034,7 +1052,7 @@ reader reaches through directories of several levels has the highest of these le
 A reader MUST skip directories that do not exist, and entries that disappear between listing a
 directory and reading them. If a directory path exists but is not a directory or is a broken
 symlink, or if a file cannot be read or does not contain a valid record, a reader MUST skip it and
-report a diagnostic ([Section 3.2](#32-diagnostics)).
+report a diagnostic with the severity `error` ([Section 3.2](#32-diagnostics)).
 
 Component declarations, health nodes, and metric definitions override records of the same kind
 with the same ID from lower levels: of the records with one ID, a reader keeps only those from the
@@ -1118,10 +1136,11 @@ kinds of records and about directory configurations; it is omitted if there are 
 Snapshots MUST contain the original records. In particular, transport MUST NOT change observation
 times or validity durations.
 
-The `specVersion` of a snapshot consists of the major and minor version of this specification, such
-as `1.0`. A receiver MUST NOT interpret a snapshot unless it supports its version. A receiver
-supports the versions with its own major version, and applies the fallbacks of
-[Section 3.6](#36-evolution) to newer minor versions.
+The `specVersion` of a snapshot is the version of this specification that the snapshot's own fields
+follow, such as `1.0` ([Section 3.6](#36-evolution)). The records in it keep their own versions. A
+receiver MUST NOT interpret a snapshot unless it supports its version. A receiver supports the
+versions with its own major version, and applies the fallbacks of [Section 3.6](#36-evolution) to
+newer minor versions.
 
 ### 9.2 Clock Correlation
 
