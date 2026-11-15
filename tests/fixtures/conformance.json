@@ -1828,7 +1828,7 @@
       }
     },
     {
-      "name": "large clock values",
+      "name": "large clock metrics",
       "nodes": [
         {
           "id": "a",
@@ -4085,7 +4085,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4102,7 +4102,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4110,7 +4110,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4144,7 +4144,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4161,7 +4161,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4169,7 +4169,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4203,7 +4203,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4220,7 +4220,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4228,7 +4228,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4262,7 +4262,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4279,7 +4279,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4287,7 +4287,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4321,7 +4321,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4338,7 +4338,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4346,7 +4346,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4380,7 +4380,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4397,7 +4397,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4405,7 +4405,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4439,7 +4439,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4456,7 +4456,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4464,7 +4464,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4500,7 +4500,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4517,7 +4517,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4525,7 +4525,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [],
+      "metricSamples": [],
       "context": {
         "bootId": "boot",
         "nowMs": 100
@@ -4537,7 +4537,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Missing value observation"
+            "message": "Missing metric sample"
           }
         ]
       }
@@ -4550,7 +4550,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4567,7 +4567,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4575,7 +4575,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4597,7 +4597,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value has expired"
+            "message": "Metric sample has expired"
           }
         ]
       }
@@ -4610,7 +4610,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4627,7 +4627,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4635,7 +4635,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4657,7 +4657,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value belongs to another boot"
+            "message": "Metric sample belongs to another boot"
           }
         ]
       }
@@ -4670,7 +4670,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4687,7 +4687,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4695,7 +4695,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4717,7 +4717,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value is in the future"
+            "message": "Metric sample is in the future"
           }
         ]
       }
@@ -4730,7 +4730,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4747,7 +4747,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4755,7 +4755,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "other",
@@ -4777,7 +4777,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value owner does not match"
+            "message": "Metric sample owner does not match"
           }
         ]
       }
@@ -4790,7 +4790,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4807,7 +4807,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4815,7 +4815,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4837,7 +4837,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value tag does not match"
+            "message": "Metric sample tag does not match"
           }
         ]
       }
@@ -4850,7 +4850,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4867,7 +4867,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4876,7 +4876,7 @@
           "maxAgeMs": 5
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4898,7 +4898,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value has expired"
+            "message": "Metric sample has expired"
           }
         ]
       }
@@ -4911,7 +4911,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4929,7 +4929,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4937,7 +4937,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4959,7 +4959,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value has expired"
+            "message": "Metric sample has expired"
           }
         ]
       }
@@ -4972,7 +4972,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -4989,7 +4989,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -4997,7 +4997,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5031,7 +5031,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5048,7 +5048,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5056,7 +5056,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5090,7 +5090,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "lower": {
                 "value": 104857600,
@@ -5107,7 +5107,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5115,7 +5115,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5149,7 +5149,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "lower": {
                 "value": 4.8,
@@ -5174,7 +5174,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5182,7 +5182,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5216,14 +5216,14 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {},
             "usable": {}
           }
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5231,7 +5231,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5258,14 +5258,14 @@
       }
     },
     {
-      "name": "missing value definition is invalid",
+      "name": "missing metric definition is invalid",
       "nodes": [
         {
           "id": "thermal",
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5282,8 +5282,8 @@
         }
       ],
       "statuses": [],
-      "values": [],
-      "valueObservations": [
+      "metrics": [],
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5301,14 +5301,14 @@
       "error": true
     },
     {
-      "name": "duplicate value definitions are invalid",
+      "name": "duplicate metric definitions are invalid",
       "nodes": [
         {
           "id": "thermal",
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5325,7 +5325,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5339,7 +5339,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5357,14 +5357,14 @@
       "error": true
     },
     {
-      "name": "duplicate value observations are invalid",
+      "name": "duplicate metric samples are invalid",
       "nodes": [
         {
           "id": "thermal",
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5381,7 +5381,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5389,7 +5389,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5416,14 +5416,14 @@
       "error": true
     },
     {
-      "name": "zero maxAgeMs in values is invalid",
+      "name": "zero maxAgeMs in metrics is invalid",
       "nodes": [
         {
           "id": "thermal",
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5440,7 +5440,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5449,7 +5449,7 @@
           "maxAgeMs": 0
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5467,14 +5467,14 @@
       "error": true
     },
     {
-      "name": "zero maxAgeMs in valueObservations is invalid",
+      "name": "zero maxAgeMs in metricSamples is invalid",
       "nodes": [
         {
           "id": "thermal",
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5491,7 +5491,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5499,7 +5499,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5524,7 +5524,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5542,7 +5542,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5550,7 +5550,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5575,7 +5575,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "lower": {
                 "value": 80,
@@ -5591,7 +5591,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5599,7 +5599,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5624,7 +5624,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "lower": {
                 "value": 75,
@@ -5640,7 +5640,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5648,7 +5648,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5673,7 +5673,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 95,
@@ -5690,7 +5690,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5698,7 +5698,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5723,7 +5723,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {},
             "usable": {
               "upper": {
@@ -5735,7 +5735,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5743,7 +5743,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5768,7 +5768,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 90,
@@ -5785,7 +5785,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5793,7 +5793,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5818,7 +5818,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5843,7 +5843,7 @@
           "maxAgeMs": 10
         }
       ],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5851,7 +5851,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5876,7 +5876,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5906,7 +5906,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5914,7 +5914,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -5955,7 +5955,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -5975,7 +5975,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 70,
@@ -5992,7 +5992,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6000,7 +6000,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6040,7 +6040,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -6057,7 +6057,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6065,7 +6065,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6090,7 +6090,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": "NaN",
@@ -6107,7 +6107,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6115,7 +6115,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6140,7 +6140,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -6157,7 +6157,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6165,7 +6165,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6190,7 +6190,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": "Infinity",
@@ -6207,7 +6207,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6215,7 +6215,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6240,7 +6240,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -6257,7 +6257,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6265,7 +6265,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6290,7 +6290,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": "-Infinity",
@@ -6307,7 +6307,7 @@
         }
       ],
       "statuses": [],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6315,7 +6315,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6480,7 +6480,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -6505,7 +6505,7 @@
           "maxAgeMs": 20
         }
       ],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -6513,7 +6513,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [],
+      "metricSamples": [],
       "context": {
         "bootId": "boot",
         "nowMs": 100
@@ -6538,7 +6538,7 @@
             "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Missing value observation"
+            "message": "Missing metric sample"
           }
         ]
       }
@@ -7621,7 +7621,7 @@
           "owner": "policy",
           "rule": {
             "type": "threshold",
-            "value": "cpu.temperature",
+            "metric": "cpu.temperature",
             "healthy": {
               "upper": {
                 "value": 75,
@@ -7652,7 +7652,7 @@
           "maxAgeMs": 20
         }
       ],
-      "values": [
+      "metrics": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",
@@ -7660,7 +7660,7 @@
           "expectedTag": "v1"
         }
       ],
-      "valueObservations": [
+      "metricSamples": [
         {
           "id": "cpu.temperature",
           "owner": "sensor",

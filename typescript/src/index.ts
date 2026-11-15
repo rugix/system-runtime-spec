@@ -2,7 +2,7 @@
 
 export * as component from "./generated/component.js";
 export * as filesystem from "./generated/filesystem.js";
-export * as value from "./generated/value.js";
+export * as metric from "./generated/metric.js";
 export * as health from "./generated/health.js";
 export { checkComponents } from "./components.js";
 export { evaluateHealth } from "./health.js";

@@ -1,9 +1,9 @@
 //! Named health observations, numeric thresholds, and aggregation rules.
 
-import value::ValueDefinition
-import value::ValueId
-import value::ValueObservation
-import value::ValueRange
+import metric::MetricDefinition
+import metric::MetricId
+import metric::MetricRange
+import metric::MetricSample
 
 /// Identifier of a health graph node, serialized as a string.
 #[rust(derive(Eq, PartialOrd, Ord, Hash))]
@@ -28,7 +28,7 @@ record HealthNode {
 variant HealthRule {
     /// Health is supplied by an external status record.
     Observed: ObservationRule,
-    /// Health is derived from a fresh numeric observation.
+    /// Health is derived from a fresh metric sample.
     Threshold: ThresholdRule,
     /// Health is evaluated from other nodes.
     Aggregate: AggregationRule,
@@ -42,15 +42,15 @@ record ObservationRule {
     expected_tag?: string,
 }
 
-/// Desired and minimum ranges for one runtime value.
+/// Desired and minimum ranges for one metric.
 record ThresholdRule {
-    /// Value definition supplying the unit, identity, and freshness constraints.
-    value: ValueId,
+    /// Metric definition supplying the unit, identity, and freshness constraints.
+    metric: MetricId,
     /// Desired range; must be a subset of the usable range.
-    healthy: ValueRange,
+    healthy: MetricRange,
     /// Minimum range for usability.
-    usable: ValueRange,
-    /// Optional consumer limit on observation age, in milliseconds; must be positive.
+    usable: MetricRange,
+    /// Optional consumer limit on sample age, in milliseconds; must be positive.
     max_age_ms?: u32,
 }
 
@@ -135,10 +135,10 @@ record HealthSnapshot {
     nodes: [HealthNode],
     /// Original status records; observation times and validity are preserved.
     statuses: [HealthStatus],
-    /// Value definitions used by threshold nodes or displayed independently.
-    values?: [ValueDefinition],
-    /// Original measurements; observation times and validity are preserved.
-    value_observations?: [ValueObservation],
+    /// Metric definitions used by threshold nodes or displayed independently.
+    metrics?: [MetricDefinition],
+    /// Original metric samples; sample times and validity are preserved.
+    metric_samples?: [MetricSample],
 }
 
 /// Evaluated graph, in declaration order.

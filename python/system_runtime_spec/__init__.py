@@ -4,7 +4,7 @@ from .clock import current_clock_sample, status_timestamp
 from .components import check_components
 from .filesystem import RuntimeDirectories
 from .health import current_context, evaluate_health
-from .models import component, filesystem, health, value
+from .models import component, filesystem, health, metric
 from .snapshot import without_owner
 
 __all__ = [
@@ -17,6 +17,6 @@ __all__ = [
     "evaluate_health",
     "filesystem",
     "health",
-    "value",
+    "metric",
     "without_owner",
 ]

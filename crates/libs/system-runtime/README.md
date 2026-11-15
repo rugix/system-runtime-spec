@@ -21,24 +21,24 @@ Specification models live under `types`; helpers are accessed through their
 
 `RuntimeDirectories::standard("/")` loads the specification's standard
 directories and extension configurations. The returned `RuntimeSnapshot`
-contains components, health nodes and statuses, and optional value definitions
-and observations.
+contains components, health nodes and statuses, and optional metric definitions
+and samples.
 
 ```rust
 use system_runtime_spec::{
     compatibility::check_components,
     discovery::RuntimeDirectories,
-    evaluation::{current_context, evaluate_health_with_values},
+    evaluation::{current_context, evaluate_health_with_metrics},
 };
 
 fn main() -> Result<(), system_runtime_spec::Error> {
     let snapshot = RuntimeDirectories::standard("/").load()?;
     let compatibility = check_components(&snapshot.components)?;
-    let health = evaluate_health_with_values(
+    let health = evaluate_health_with_metrics(
         &snapshot.health_nodes,
         &snapshot.health_statuses,
-        snapshot.values.as_deref().unwrap_or_default(),
-        snapshot.value_observations.as_deref().unwrap_or_default(),
+        snapshot.metrics.as_deref().unwrap_or_default(),
+        snapshot.metric_samples.as_deref().unwrap_or_default(),
         &current_context()?,
     )?;
     println!("{compatibility:?}\n{health:?}");
@@ -52,9 +52,9 @@ For records from another system, supply that system's `HealthContext`.
 Invalid declarations and discovery failures return `Error`; a valid but
 incompatible composition returns a report with `consistent: false`.
 
-The `evaluate_health_with_values` function handles numeric threshold nodes as
+The `evaluate_health_with_metrics` function handles numeric threshold nodes as
 well as observed and aggregate nodes. Use `evaluate_health` for graphs without
-values. The [value and threshold reference](https://github.com/rugix/system-runtime-spec#runtime-values-and-thresholds)
+metrics. The [metric and threshold reference](https://github.com/rugix/system-runtime-spec#metrics-and-thresholds)
 describes units, ranges, and evidence freshness.
 
 ## Add Directories
@@ -72,8 +72,8 @@ fn main() -> Result<(), system_runtime_spec::Error> {
         components: Some(vec!["/opt/example/components".into()]),
         health_nodes: None,
         health_statuses: None,
-        values: None,
-        value_observations: None,
+        metrics: None,
+        metric_samples: None,
     });
     let snapshot = directories.load()?;
     println!("{snapshot:?}");
@@ -141,8 +141,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         clock: current_clock_sample()?,
         nodes: records.health_nodes,
         statuses: records.health_statuses,
-        values: records.values,
-        value_observations: records.value_observations,
+        metrics: records.metrics,
+        metric_samples: records.metric_samples,
     };
     let payload = serde_json::to_string(&snapshot)?;
     let received: HealthSnapshot = serde_json::from_str(&payload)?;
@@ -164,7 +164,7 @@ capture time. Obtain current evidence before making an update decision.
 
 ## Models
 
-Generated models live in `types::component`, `types::health`, `types::value`, and
+Generated models live in `types::component`, `types::health`, `types::metric`, and
 `types::filesystem`. Health node IDs use the distinct
 `types::health::HealthNodeId` type: construct one with
 `HealthNodeId::from("database")` and read its string with `as_str()`.

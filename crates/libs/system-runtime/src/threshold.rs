@@ -6,37 +6,37 @@ use crate::Error;
 use crate::types::health::{
     HealthContext, HealthNode, HealthNodeResult, HealthState, ThresholdRule,
 };
-use crate::types::value::{ValueDefinition, ValueId, ValueObservation, ValueRange};
+use crate::types::metric::{MetricDefinition, MetricId, MetricRange, MetricSample};
 
 /// Validated definitions and measurements shared by threshold nodes.
-pub(crate) struct ValueEvidence<'a> {
-    definitions: BTreeMap<&'a ValueId, &'a ValueDefinition>,
-    observations: BTreeMap<&'a ValueId, &'a ValueObservation>,
+pub(crate) struct MetricEvidence<'a> {
+    definitions: BTreeMap<&'a MetricId, &'a MetricDefinition>,
+    observations: BTreeMap<&'a MetricId, &'a MetricSample>,
 }
 
-impl<'a> ValueEvidence<'a> {
+impl<'a> MetricEvidence<'a> {
     /// Validate all contributions, including measurements without a current definition.
     pub(crate) fn new(
-        definitions: &'a [ValueDefinition],
-        observations: &'a [ValueObservation],
+        definitions: &'a [MetricDefinition],
+        observations: &'a [MetricSample],
     ) -> Result<Self, Error> {
         let by_id: BTreeMap<_, _> = definitions.iter().map(|v| (&v.id, v)).collect();
         let samples: BTreeMap<_, _> = observations.iter().map(|v| (&v.id, v)).collect();
         if by_id.len() != definitions.len() {
-            return Err(Error::Invalid("duplicate value ID".into()));
+            return Err(Error::Invalid("duplicate metric ID".into()));
         }
         if samples.len() != observations.len() {
-            return Err(Error::Invalid("duplicate value observation ID".into()));
+            return Err(Error::Invalid("duplicate metric sample ID".into()));
         }
         for definition in definitions {
             if definition.max_age_ms == Some(0) {
-                return Err(Error::Invalid("value has zero maxAgeMs".into()));
+                return Err(Error::Invalid("metric has zero maxAgeMs".into()));
             }
         }
         for observation in observations {
             validate_number(&observation.value)?;
             if observation.max_age_ms == 0 {
-                return Err(Error::Invalid("value observation has zero maxAgeMs".into()));
+                return Err(Error::Invalid("metric sample has zero maxAgeMs".into()));
             }
         }
         Ok(Self {
@@ -47,8 +47,8 @@ impl<'a> ValueEvidence<'a> {
 
     /// Ensure a threshold references a value and has nested, nonempty ranges.
     pub(crate) fn validate(&self, rule: &ThresholdRule) -> Result<(), Error> {
-        if !self.definitions.contains_key(&rule.value) {
-            return Err(Error::Invalid(format!("missing value {:?}", rule.value)));
+        if !self.definitions.contains_key(&rule.metric) {
+            return Err(Error::Invalid(format!("missing metric {:?}", rule.metric)));
         }
         if rule.max_age_ms == Some(0) {
             return Err(Error::Invalid("threshold has zero maxAgeMs".into()));
@@ -85,18 +85,20 @@ impl<'a> ValueEvidence<'a> {
         rule: &ThresholdRule,
         context: &HealthContext,
     ) -> HealthNodeResult {
-        let definition = self.definitions[&rule.value];
-        let observation = self.observations.get(&rule.value).copied();
+        let definition = self.definitions[&rule.metric];
+        let observation = self.observations.get(&rule.metric).copied();
         let reason = match observation {
-            None => Some("Missing value observation"),
-            Some(v) if v.boot_id != context.boot_id => Some("Value belongs to another boot"),
+            None => Some("Missing metric sample"),
+            Some(v) if v.boot_id != context.boot_id => {
+                Some("Metric sample belongs to another boot")
+            }
             Some(v)
                 if definition
                     .owner
                     .as_ref()
                     .is_some_and(|o| v.owner.as_ref() != Some(o)) =>
             {
-                Some("Value owner does not match")
+                Some("Metric sample owner does not match")
             }
             Some(v)
                 if definition
@@ -104,9 +106,9 @@ impl<'a> ValueEvidence<'a> {
                     .as_ref()
                     .is_some_and(|t| v.tag.as_ref() != Some(t)) =>
             {
-                Some("Value tag does not match")
+                Some("Metric sample tag does not match")
             }
-            Some(v) if v.observed_at_ms > context.now_ms => Some("Value is in the future"),
+            Some(v) if v.observed_at_ms > context.now_ms => Some("Metric sample is in the future"),
             Some(v)
                 if context.now_ms - v.observed_at_ms
                     >= u64::from(
@@ -115,7 +117,7 @@ impl<'a> ValueEvidence<'a> {
                             .min(rule.max_age_ms.unwrap_or(v.max_age_ms)),
                     ) =>
             {
-                Some("Value has expired")
+                Some("Metric sample has expired")
             }
             Some(_) => None,
         };
@@ -155,7 +157,7 @@ fn validate_number(value: &f64) -> Result<(), Error> {
 }
 
 /// Check endpoint finiteness and reject reversed or empty intervals.
-fn validate_range(range: &ValueRange) -> Result<(), Error> {
+fn validate_range(range: &MetricRange) -> Result<(), Error> {
     for bound in [&range.lower, &range.upper].into_iter().flatten() {
         validate_number(&bound.value)?;
     }
@@ -169,7 +171,7 @@ fn validate_range(range: &ValueRange) -> Result<(), Error> {
 }
 
 /// Test both endpoints with their declared inclusion rules.
-fn contains(range: &ValueRange, value: &f64) -> bool {
+fn contains(range: &MetricRange, value: &f64) -> bool {
     range
         .lower
         .as_ref()

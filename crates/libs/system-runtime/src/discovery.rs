@@ -23,10 +23,10 @@ pub struct RuntimeDirectories {
     pub health_nodes: Vec<PathBuf>,
     /// Runtime health status directories.
     pub health_statuses: Vec<PathBuf>,
-    /// Value definition directories.
-    pub values: Vec<PathBuf>,
-    /// Runtime value observation directories.
-    pub value_observations: Vec<PathBuf>,
+    /// Metric definition directories.
+    pub metrics: Vec<PathBuf>,
+    /// Runtime metric sample directories.
+    pub metric_samples: Vec<PathBuf>,
     /// Directories containing extension configuration files.
     pub configuration: Vec<PathBuf>,
 }
@@ -39,8 +39,8 @@ impl RuntimeDirectories {
             components: Vec::new(),
             health_nodes: Vec::new(),
             health_statuses: Vec::new(),
-            values: Vec::new(),
-            value_observations: Vec::new(),
+            metrics: Vec::new(),
+            metric_samples: Vec::new(),
             configuration: Vec::new(),
         }
     }
@@ -56,10 +56,10 @@ impl RuntimeDirectories {
                 .map(|prefix| PathBuf::from(format!("{prefix}/health/nodes")))
                 .into(),
             health_statuses: vec!["/run/system-runtime/health/status".into()],
-            values: PREFIXES
-                .map(|prefix| PathBuf::from(format!("{prefix}/values/definitions")))
+            metrics: PREFIXES
+                .map(|prefix| PathBuf::from(format!("{prefix}/metrics/definitions")))
                 .into(),
-            value_observations: vec!["/run/system-runtime/values/observations".into()],
+            metric_samples: vec!["/run/system-runtime/metrics/samples".into()],
             configuration: PREFIXES
                 .map(|prefix| PathBuf::from(format!("{prefix}/directories")))
                 .into(),
@@ -74,15 +74,10 @@ impl RuntimeDirectories {
             .extend(config.health_nodes.iter().flatten().map(PathBuf::from));
         self.health_statuses
             .extend(config.health_statuses.iter().flatten().map(PathBuf::from));
-        self.values
-            .extend(config.values.iter().flatten().map(PathBuf::from));
-        self.value_observations.extend(
-            config
-                .value_observations
-                .iter()
-                .flatten()
-                .map(PathBuf::from),
-        );
+        self.metrics
+            .extend(config.metrics.iter().flatten().map(PathBuf::from));
+        self.metric_samples
+            .extend(config.metric_samples.iter().flatten().map(PathBuf::from));
     }
 
     /// Reload extension configurations and collect regular JSON files.
@@ -96,19 +91,19 @@ impl RuntimeDirectories {
         for path in self.files(&self.configuration)? {
             effective.extend(&read::<DirectoryConfig>(&path)?);
         }
-        let values = effective
-            .files(&effective.values)?
+        let metrics = effective
+            .files(&effective.metrics)?
             .iter()
             .map(|p| read(p))
             .collect::<Result<Vec<_>, _>>()?;
         let observations = effective
-            .files(&effective.value_observations)?
+            .files(&effective.metric_samples)?
             .iter()
             .map(|p| read(p))
             .collect::<Result<Vec<_>, _>>()?;
         Ok(RuntimeSnapshot {
-            values: (!values.is_empty()).then_some(values),
-            value_observations: (!observations.is_empty()).then_some(observations),
+            metrics: (!metrics.is_empty()).then_some(metrics),
+            metric_samples: (!observations.is_empty()).then_some(observations),
             components: effective
                 .files(&effective.components)?
                 .iter()

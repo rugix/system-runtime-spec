@@ -3,35 +3,35 @@
 import type { builtins } from "@sidex/types";
 
 import type { HealthContext, HealthNode, HealthNodeResult, ThresholdRule } from "./generated/health.js";
-import { ValueDefinition, ValueObservation } from "./generated/value.js";
-import type { ValueId, ValueRange } from "./generated/value.js";
+import { MetricDefinition, MetricSample } from "./generated/metric.js";
+import type { MetricId, MetricRange } from "./generated/metric.js";
 
 /** Validated definitions and measurements shared by threshold nodes. */
-export class ValueEvidence {
-  private definitions = new Map<ValueId, ValueDefinition>();
-  private observations = new Map<ValueId, ValueObservation>();
+export class MetricEvidence {
+  private definitions = new Map<MetricId, MetricDefinition>();
+  private observations = new Map<MetricId, MetricSample>();
 
-  constructor(definitions: readonly ValueDefinition[], observations: readonly ValueObservation[]) {
+  constructor(definitions: readonly MetricDefinition[], observations: readonly MetricSample[]) {
     for (const definition of definitions) {
-      const check = ValueDefinition.check(definition);
+      const check = MetricDefinition.check(definition);
       if (check.isErr()) throw new Error(check.toString());
-      if (this.definitions.has(definition.id)) throw new Error("Duplicate value ID");
+      if (this.definitions.has(definition.id)) throw new Error("Duplicate metric ID");
       if (definition.maxAgeMs === 0) throw new Error("Value has zero maxAgeMs");
       this.definitions.set(definition.id, definition);
     }
     for (const observation of observations) {
-      const check = ValueObservation.check(observation);
+      const check = MetricSample.check(observation);
       if (check.isErr()) throw new Error(check.toString());
-      if (this.observations.has(observation.id)) throw new Error("Duplicate value observation ID");
-      if (observation.maxAgeMs === 0) throw new Error("Value observation has zero maxAgeMs");
+      if (this.observations.has(observation.id)) throw new Error("Duplicate metric sample ID");
+      if (observation.maxAgeMs === 0) throw new Error("Metric sample has zero maxAgeMs");
       number(observation.value);
       this.observations.set(observation.id, observation);
     }
   }
 
-  /** Require a value definition and nested, nonempty ranges. */
+  /** Require a metric definition and nested, nonempty ranges. */
   validate(rule: ThresholdRule): void {
-    if (!this.definitions.has(rule.value)) throw new Error(`Missing value ${rule.value}`);
+    if (!this.definitions.has(rule.metric)) throw new Error(`Missing metric ${rule.metric}`);
     if (rule.maxAgeMs === 0) throw new Error("Threshold has zero maxAgeMs");
     for (const range of [rule.healthy, rule.usable]) {
       for (const bound of [range.lower, range.upper]) {
@@ -60,17 +60,17 @@ export class ValueEvidence {
 
   /** Check value identity and freshness before applying the policy. */
   evaluate(node: HealthNode, rule: ThresholdRule, context: HealthContext): HealthNodeResult {
-    const definition = this.definitions.get(rule.value)!;
-    const sample = this.observations.get(rule.value);
+    const definition = this.definitions.get(rule.metric)!;
+    const sample = this.observations.get(rule.metric);
     let reason: string | undefined;
-    if (!sample) reason = "Missing value observation";
-    else if (sample.bootId !== context.bootId) reason = "Value belongs to another boot";
-    else if (definition.owner !== undefined && sample.owner !== definition.owner) reason = "Value owner does not match";
-    else if (definition.expectedTag !== undefined && sample.tag !== definition.expectedTag) reason = "Value tag does not match";
-    else if (BigInt(sample.observedAtMs) > BigInt(context.nowMs)) reason = "Value is in the future";
+    if (!sample) reason = "Missing metric sample";
+    else if (sample.bootId !== context.bootId) reason = "Metric sample belongs to another boot";
+    else if (definition.owner !== undefined && sample.owner !== definition.owner) reason = "Metric sample owner does not match";
+    else if (definition.expectedTag !== undefined && sample.tag !== definition.expectedTag) reason = "Metric sample tag does not match";
+    else if (BigInt(sample.observedAtMs) > BigInt(context.nowMs)) reason = "Metric sample is in the future";
     else if (BigInt(context.nowMs) - BigInt(sample.observedAtMs) >= BigInt(Math.min(
       sample.maxAgeMs, definition.maxAgeMs ?? sample.maxAgeMs, rule.maxAgeMs ?? sample.maxAgeMs,
-    ))) reason = "Value has expired";
+    ))) reason = "Metric sample has expired";
     if (reason !== undefined) return {
       id: node.id, state: "unknown", inputs: [], message: reason,
     };
@@ -93,7 +93,7 @@ function number(value: builtins.F64): number {
 }
 
 /** Compare both endpoints, including their declared equality behavior. */
-function contains(range: ValueRange, value: builtins.F64): boolean {
+function contains(range: MetricRange, value: builtins.F64): boolean {
   const measured = number(value);
   return (range.lower === undefined || measured > number(range.lower.value)
       || (measured === number(range.lower.value) && range.lower.inclusive))

@@ -5,7 +5,7 @@ import * as __sidex_types from "@sidex/types";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
-import * as __schema_value from "./value.js";
+import * as __schema_metric from "./metric.js";
 /**
  * Identifier of a health graph node, serialized as a string.
  */
@@ -60,24 +60,24 @@ export const ObservationRule = {
     ...__sidex_types.checker<ObservationRule>((): __sidex_types.Check => __sidex_types.record([["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
 };
 /**
- * Desired and minimum ranges for one runtime value.
+ * Desired and minimum ranges for one metric.
  */
  export type ThresholdRule = { /**
-                                            * Value definition supplying the unit, identity, and freshness constraints.
+                                            * Metric definition supplying the unit, identity, and freshness constraints.
                                             */
-                                                        "value": __schema_value.ValueId, /**
+                                                        "metric": __schema_metric.MetricId, /**
                                             * Desired range; must be a subset of the usable range.
                                             */
-                                                        "healthy": __schema_value.ValueRange, /**
+                                                        "healthy": __schema_metric.MetricRange, /**
                                             * Minimum range for usability.
                                             */
-                                                        "usable": __schema_value.ValueRange, /**
-                                            * Optional consumer limit on observation age, in milliseconds; must be positive.
+                                                        "usable": __schema_metric.MetricRange, /**
+                                            * Optional consumer limit on sample age, in milliseconds; must be positive.
                                             */
                                                         "maxAgeMs"?: __sidex_types.builtins.U32 };
 
 export const ThresholdRule = {
-    ...__sidex_types.checker<ThresholdRule>((): __sidex_types.Check => __sidex_types.record([["value", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueId), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueRange), false], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueRange), false], ["maxAgeMs", __sidex_types.builtin("u32"), true]], [])),
+    ...__sidex_types.checker<ThresholdRule>((): __sidex_types.Check => __sidex_types.record([["metric", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricId), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricRange), false], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricRange), false], ["maxAgeMs", __sidex_types.builtin("u32"), true]], [])),
 };
 /**
  * Minimum and desired health targets.
@@ -197,15 +197,15 @@ export const HealthClockSample = {
                                             * Original status records; observation times and validity are preserved.
                                             */
                                                         "statuses": HealthStatus[], /**
-                                            * Value definitions used by threshold nodes or displayed independently.
+                                            * Metric definitions used by threshold nodes or displayed independently.
                                             */
-                                                        "values"?: __schema_value.ValueDefinition[], /**
-                                            * Original measurements; observation times and validity are preserved.
+                                                        "metrics"?: __schema_metric.MetricDefinition[], /**
+                                            * Original metric samples; sample times and validity are preserved.
                                             */
-                                                        "valueObservations"?: __schema_value.ValueObservation[] };
+                                                        "metricSamples"?: __schema_metric.MetricSample[] };
 
 export const HealthSnapshot = {
-    ...__sidex_types.checker<HealthSnapshot>((): __sidex_types.Check => __sidex_types.record([["clock", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthClockSample), false], ["nodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNode)), false], ["statuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthStatus)), false], ["values", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueDefinition)), true], ["valueObservations", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueObservation)), true]], [])),
+    ...__sidex_types.checker<HealthSnapshot>((): __sidex_types.Check => __sidex_types.record([["clock", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthClockSample), false], ["nodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNode)), false], ["statuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthStatus)), false], ["metrics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricDefinition)), true], ["metricSamples", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricSample)), true]], [])),
 };
 /**
  * Evaluated graph, in declaration order.

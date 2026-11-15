@@ -42,7 +42,7 @@ def test_owner_update(case):
 
 @pytest.mark.parametrize("case", CASES["timestamps"], ids=lambda case: case["name"])
 def test_timestamp_correlation(case):
-    """Map large boot-time values to UTC without renewing evidence."""
+    """Map large boot-time metrics to UTC without renewing evidence."""
     status = HealthStatus.model_validate(case["status"])
     clock = HealthClockSample.model_validate(case["clock"])
     expected = datetime.fromisoformat(case["expected"]) if case["expected"] else None
@@ -57,8 +57,8 @@ def test_health_transport():
         clock=clock,
         nodes=source.health_nodes,
         statuses=source.health_statuses,
-        values=source.values,
-        value_observations=source.value_observations,
+        metrics=source.metrics,
+        metric_samples=source.metric_samples,
     )
     received = HealthSnapshot.model_validate_json(snapshot.model_dump_json())
     assert received == snapshot

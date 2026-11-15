@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "system_runtime.value.ValueDefinition",
+  "$id": "system_runtime.metric.MetricDefinition",
   "type": "object",
-  "description": "A named measurement, independent of any health policy.",
+  "description": "A named numeric measurement, independent of any health policy; samples carry no history.",
   "properties": {
     "id": {
-      "$ref": "#/$defs/system_runtime.value.ValueId"
+      "$ref": "#/$defs/system_runtime.metric.MetricId"
     },
     "owner": {
       "type": "string"
@@ -20,7 +20,7 @@
       }
     },
     "unit": {
-      "$ref": "#/$defs/system_runtime.value.ValueUnit"
+      "$ref": "#/$defs/system_runtime.metric.MetricUnit"
     },
     "maxAgeMs": {
       "type": "integer",
@@ -38,11 +38,11 @@
   ],
   "unevaluatedProperties": false,
   "$defs": {
-    "system_runtime.value.ValueId": {
+    "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a runtime value, unique independently of health node IDs."
+      "description": "Identifier of a metric, unique independently of health node IDs."
     },
-    "system_runtime.value.ValueUnit": {
+    "system_runtime.metric.MetricUnit": {
       "enum": [
         "celsius",
         "bytes",

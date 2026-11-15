@@ -5,7 +5,7 @@ import * as __sidex_types from "@sidex/types";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
-import * as __schema_value from "./value.js";
+import * as __schema_metric from "./metric.js";
 /**
  * A participant in a system composition.
  */

@@ -10,7 +10,7 @@ import pydantic_core  # noqa: F401
 from . import _sidex  # noqa: F401
 
 if TYPE_CHECKING:
-    from . import value as _schema_value  # noqa: F401
+    from . import metric as _schema_metric  # noqa: F401
 
 
 # Identifier of a health graph node, serialized as a string.
@@ -37,13 +37,13 @@ class ObservationRule(_sidex.Model):
 
 
 class ThresholdRule(_sidex.Model):
-    """Desired and minimum ranges for one runtime value."""
+    """Desired and minimum ranges for one metric."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    value: _schema_value.ValueId = pydantic.Field(description="Value definition supplying the unit, identity, and freshness constraints.")
-    healthy: _schema_value.ValueRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
-    usable: _schema_value.ValueRange = pydantic.Field(description="Minimum range for usability.")
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on observation age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    metric: _schema_metric.MetricId = pydantic.Field(description="Metric definition supplying the unit, identity, and freshness constraints.")
+    healthy: _schema_metric.MetricRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
+    usable: _schema_metric.MetricRange = pydantic.Field(description="Minimum range for usability.")
+    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on sample age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
 
 
 class AggregationRule(_sidex.Model):
@@ -101,8 +101,8 @@ class HealthSnapshot(_sidex.Model):
     clock: HealthClockSample = pydantic.Field(description="Clock correlation sampled after collecting the records.")
     nodes: list[HealthNode] = pydantic.Field(description="Health definitions, including their owners.")
     statuses: list[HealthStatus] = pydantic.Field(description="Original status records; observation times and validity are preserved.")
-    values: list[_schema_value.ValueDefinition] | None = pydantic.Field(default=None, description="Value definitions used by threshold nodes or displayed independently.")
-    value_observations: list[_schema_value.ValueObservation] | None = pydantic.Field(default=None, description="Original measurements; observation times and validity are preserved.", validation_alias="valueObservations", serialization_alias="valueObservations")
+    metrics: list[_schema_metric.MetricDefinition] | None = pydantic.Field(default=None, description="Metric definitions used by threshold nodes or displayed independently.")
+    metric_samples: list[_schema_metric.MetricSample] | None = pydantic.Field(default=None, description="Original metric samples; sample times and validity are preserved.", validation_alias="metricSamples", serialization_alias="metricSamples")
 
 
 class HealthReport(_sidex.Model):
@@ -137,12 +137,12 @@ class HealthRule_Threshold(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     type: Literal["threshold"] = "threshold"
-    value: _schema_value.ValueId = pydantic.Field(description="Value definition supplying the unit, identity, and freshness constraints.")
-    healthy: _schema_value.ValueRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
-    usable: _schema_value.ValueRange = pydantic.Field(description="Minimum range for usability.")
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on observation age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    metric: _schema_metric.MetricId = pydantic.Field(description="Metric definition supplying the unit, identity, and freshness constraints.")
+    healthy: _schema_metric.MetricRange = pydantic.Field(description="Desired range; must be a subset of the usable range.")
+    usable: _schema_metric.MetricRange = pydantic.Field(description="Minimum range for usability.")
+    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on sample age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     def payload(self) -> "ThresholdRule":
-        return ThresholdRule(value=self.value, healthy=self.healthy, usable=self.usable, max_age_ms=self.max_age_ms)
+        return ThresholdRule(metric=self.metric, healthy=self.healthy, usable=self.usable, max_age_ms=self.max_age_ms)
 
 
 class HealthRule_Aggregate(_sidex.Model):

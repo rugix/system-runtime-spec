@@ -80,14 +80,14 @@
             "type": {
               "const": "threshold"
             },
-            "value": {
-              "$ref": "#/$defs/system_runtime.value.ValueId"
+            "metric": {
+              "$ref": "#/$defs/system_runtime.metric.MetricId"
             },
             "healthy": {
-              "$ref": "#/$defs/system_runtime.value.ValueRange"
+              "$ref": "#/$defs/system_runtime.metric.MetricRange"
             },
             "usable": {
-              "$ref": "#/$defs/system_runtime.value.ValueRange"
+              "$ref": "#/$defs/system_runtime.metric.MetricRange"
             },
             "maxAgeMs": {
               "type": "integer",
@@ -98,7 +98,7 @@
           },
           "required": [
             "type",
-            "value",
+            "metric",
             "healthy",
             "usable"
           ]
@@ -135,9 +135,9 @@
         }
       ]
     },
-    "system_runtime.value.ValueBound": {
+    "system_runtime.metric.MetricBound": {
       "type": "object",
-      "description": "One endpoint of a numeric range, in the referenced value's unit.",
+      "description": "One endpoint of a numeric range, in the referenced metric's unit.",
       "properties": {
         "value": {
           "type": [
@@ -156,19 +156,19 @@
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.value.ValueId": {
+    "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a runtime value, unique independently of health node IDs."
+      "description": "Identifier of a metric, unique independently of health node IDs."
     },
-    "system_runtime.value.ValueRange": {
+    "system_runtime.metric.MetricRange": {
       "type": "object",
       "description": "A nonempty interval; omitted endpoints are unbounded.",
       "properties": {
         "lower": {
-          "$ref": "#/$defs/system_runtime.value.ValueBound"
+          "$ref": "#/$defs/system_runtime.metric.MetricBound"
         },
         "upper": {
-          "$ref": "#/$defs/system_runtime.value.ValueBound"
+          "$ref": "#/$defs/system_runtime.metric.MetricBound"
         }
       },
       "required": [],

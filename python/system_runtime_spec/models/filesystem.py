@@ -12,7 +12,7 @@ from . import _sidex  # noqa: F401
 if TYPE_CHECKING:
     from . import component as _schema_component  # noqa: F401
     from . import health as _schema_health  # noqa: F401
-    from . import value as _schema_value  # noqa: F401
+    from . import metric as _schema_metric  # noqa: F401
 
 
 class DirectoryConfig(_sidex.Model):
@@ -24,8 +24,8 @@ class DirectoryConfig(_sidex.Model):
     components: list[str] | None = pydantic.Field(default=None, description="Additional component declaration directories.")
     health_nodes: list[str] | None = pydantic.Field(default=None, description="Additional health definition directories.", validation_alias="healthNodes", serialization_alias="healthNodes")
     health_statuses: list[str] | None = pydantic.Field(default=None, description="Additional health status directories.", validation_alias="healthStatuses", serialization_alias="healthStatuses")
-    values: list[str] | None = pydantic.Field(default=None, description="Additional value definition directories.")
-    value_observations: list[str] | None = pydantic.Field(default=None, description="Additional value observation directories.", validation_alias="valueObservations", serialization_alias="valueObservations")
+    metrics: list[str] | None = pydantic.Field(default=None, description="Additional metric definition directories.")
+    metric_samples: list[str] | None = pydantic.Field(default=None, description="Additional metric sample directories.", validation_alias="metricSamples", serialization_alias="metricSamples")
 
 
 class RuntimeSnapshot(_sidex.Model):
@@ -35,5 +35,5 @@ class RuntimeSnapshot(_sidex.Model):
     components: list[_schema_component.ComponentDeclaration] = pydantic.Field(description="Component declarations.")
     health_nodes: list[_schema_health.HealthNode] = pydantic.Field(description="Health definitions.", validation_alias="healthNodes", serialization_alias="healthNodes")
     health_statuses: list[_schema_health.HealthStatus] = pydantic.Field(description="Published health status records.", validation_alias="healthStatuses", serialization_alias="healthStatuses")
-    values: list[_schema_value.ValueDefinition] | None = pydantic.Field(default=None, description="Numeric value definitions.")
-    value_observations: list[_schema_value.ValueObservation] | None = pydantic.Field(default=None, description="Published value observations.", validation_alias="valueObservations", serialization_alias="valueObservations")
+    metrics: list[_schema_metric.MetricDefinition] | None = pydantic.Field(default=None, description="Numeric metric definitions.")
+    metric_samples: list[_schema_metric.MetricSample] | None = pydantic.Field(default=None, description="Published metric samples.", validation_alias="metricSamples", serialization_alias="metricSamples")

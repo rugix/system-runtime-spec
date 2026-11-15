@@ -102,7 +102,7 @@
             "maxAgeMs": 2000
           }
         ],
-        "values": [
+        "metrics": [
           {
             "id": "free",
             "owner": "rugix.system",
@@ -113,7 +113,7 @@
             "unit": "ratio"
           }
         ],
-        "valueObservations": [
+        "metricSamples": [
           {
             "id": "free",
             "owner": "rugix.system",
@@ -196,13 +196,13 @@
             "maxAgeMs": 2000
           }
         ],
-        "values": [
+        "metrics": [
           {
             "id": "charge",
             "unit": "ratio"
           }
         ],
-        "valueObservations": []
+        "metricSamples": []
       },
       "replacement": {
         "id": "os-new",

@@ -3,9 +3,9 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use crate::Error;
-use crate::threshold::ValueEvidence;
+use crate::threshold::MetricEvidence;
 use crate::types::health::*;
-use crate::types::value::{ValueDefinition, ValueObservation};
+use crate::types::metric::{MetricDefinition, MetricSample};
 
 /// Read the Linux boot identifier and CLOCK_BOOTTIME in milliseconds.
 #[cfg(target_os = "linux")]
@@ -28,19 +28,19 @@ pub fn evaluate_health(
     statuses: &[HealthStatus],
     context: &HealthContext,
 ) -> Result<HealthReport, Error> {
-    evaluate_health_with_values(nodes, statuses, &[], &[], context)
+    evaluate_health_with_metrics(nodes, statuses, &[], &[], context)
 }
 
 /// Validate numeric evidence and evaluate observed, threshold, and aggregate nodes.
 #[tracing::instrument(level = "debug", skip_all)]
-pub fn evaluate_health_with_values(
+pub fn evaluate_health_with_metrics(
     nodes: &[HealthNode],
     statuses: &[HealthStatus],
-    values: &[ValueDefinition],
-    value_observations: &[ValueObservation],
+    metrics: &[MetricDefinition],
+    metric_samples: &[MetricSample],
     context: &HealthContext,
 ) -> Result<HealthReport, Error> {
-    let evidence = ValueEvidence::new(values, value_observations)?;
+    let evidence = MetricEvidence::new(metrics, metric_samples)?;
     let indices: BTreeMap<_, _> = nodes
         .iter()
         .enumerate()

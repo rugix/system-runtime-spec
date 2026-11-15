@@ -22,13 +22,13 @@
         "type": "string"
       }
     },
-    "values": {
+    "metrics": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "valueObservations": {
+    "metricSamples": {
       "type": "array",
       "items": {
         "type": "string"

@@ -5,7 +5,7 @@ import * as __sidex_types from "@sidex/types";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
-import * as __schema_value from "./value.js";
+import * as __schema_metric from "./metric.js";
 /**
  * Additional absolute directory paths supplied by packages or administrators.
  * Whole `*` path segments match real directories in lexical order on each load.
@@ -21,15 +21,15 @@ import * as __schema_value from "./value.js";
                                             * Additional health status directories.
                                             */
                                                         "healthStatuses"?: __sidex_types.builtins.String[], /**
-                                            * Additional value definition directories.
+                                            * Additional metric definition directories.
                                             */
-                                                        "values"?: __sidex_types.builtins.String[], /**
-                                            * Additional value observation directories.
+                                                        "metrics"?: __sidex_types.builtins.String[], /**
+                                            * Additional metric sample directories.
                                             */
-                                                        "valueObservations"?: __sidex_types.builtins.String[] };
+                                                        "metricSamples"?: __sidex_types.builtins.String[] };
 
 export const DirectoryConfig = {
-    ...__sidex_types.checker<DirectoryConfig>((): __sidex_types.Check => __sidex_types.record([["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthNodes", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthStatuses", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["values", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["valueObservations", __sidex_types.sequence(__sidex_types.builtin("string")), true]], [])),
+    ...__sidex_types.checker<DirectoryConfig>((): __sidex_types.Check => __sidex_types.record([["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthNodes", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthStatuses", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["metrics", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["metricSamples", __sidex_types.sequence(__sidex_types.builtin("string")), true]], [])),
 };
 /**
  * Complete collection loaded from a filesystem or supplied directly.
@@ -44,13 +44,13 @@ export const DirectoryConfig = {
                                             * Published health status records.
                                             */
                                                         "healthStatuses": __schema_health.HealthStatus[], /**
-                                            * Numeric value definitions.
+                                            * Numeric metric definitions.
                                             */
-                                                        "values"?: __schema_value.ValueDefinition[], /**
-                                            * Published value observations.
+                                                        "metrics"?: __schema_metric.MetricDefinition[], /**
+                                            * Published metric samples.
                                             */
-                                                        "valueObservations"?: __schema_value.ValueObservation[] };
+                                                        "metricSamples"?: __schema_metric.MetricSample[] };
 
 export const RuntimeSnapshot = {
-    ...__sidex_types.checker<RuntimeSnapshot>((): __sidex_types.Check => __sidex_types.record([["components", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_component.ComponentDeclaration)), false], ["healthNodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthNode)), false], ["healthStatuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthStatus)), false], ["values", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueDefinition)), true], ["valueObservations", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_value.ValueObservation)), true]], [])),
+    ...__sidex_types.checker<RuntimeSnapshot>((): __sidex_types.Check => __sidex_types.record([["components", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_component.ComponentDeclaration)), false], ["healthNodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthNode)), false], ["healthStatuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthStatus)), false], ["metrics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricDefinition)), true], ["metricSamples", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricSample)), true]], [])),
 };

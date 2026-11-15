@@ -3,8 +3,8 @@
 import component::ComponentDeclaration
 import health::HealthNode
 import health::HealthStatus
-import value::ValueDefinition
-import value::ValueObservation
+import metric::MetricDefinition
+import metric::MetricSample
 
 /// Additional absolute directory paths supplied by packages or administrators.
 /// Whole `*` path segments match real directories in lexical order on each load.
@@ -16,10 +16,10 @@ record DirectoryConfig {
     health_nodes?: [string],
     /// Additional health status directories.
     health_statuses?: [string],
-    /// Additional value definition directories.
-    values?: [string],
-    /// Additional value observation directories.
-    value_observations?: [string],
+    /// Additional metric definition directories.
+    metrics?: [string],
+    /// Additional metric sample directories.
+    metric_samples?: [string],
 }
 
 /// Complete collection loaded from a filesystem or supplied directly.
@@ -30,8 +30,8 @@ record RuntimeSnapshot {
     health_nodes: [HealthNode],
     /// Published health status records.
     health_statuses: [HealthStatus],
-    /// Numeric value definitions.
-    values?: [ValueDefinition],
-    /// Published value observations.
-    value_observations?: [ValueObservation],
+    /// Numeric metric definitions.
+    metrics?: [MetricDefinition],
+    /// Published metric samples.
+    metric_samples?: [MetricSample],
 }

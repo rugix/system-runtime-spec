@@ -103,7 +103,7 @@ if (!health.HealthSnapshot.is(received)) {
 }
 const report = evaluateHealth(
   received.nodes, received.statuses, received.clock.context,
-  received.values, received.valueObservations,
+  received.metrics, received.metricSamples,
 );
 console.log(report);
 for (const status of received.statuses) {
@@ -119,9 +119,9 @@ its boot-time context.
 `undefined` for a wrong boot, future observation, or unsupported timestamp range.
 Sampling uncertainty and wall-clock corrections limit the estimate.
 
-Pass optional value definitions and observations as the fourth and fifth
+Pass optional metric definitions and samples as the fourth and fifth
 arguments to evaluate numeric threshold nodes. The
-[value and threshold reference](https://github.com/rugix/system-runtime-spec#runtime-values-and-thresholds)
+[metric and threshold reference](https://github.com/rugix/system-runtime-spec#metrics-and-thresholds)
 describes units, ranges, and evidence freshness.
 
 ## Models

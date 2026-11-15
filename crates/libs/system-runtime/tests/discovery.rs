@@ -2,7 +2,7 @@ use std::path::Path;
 
 use system_runtime_spec::compatibility::check_components;
 use system_runtime_spec::discovery::RuntimeDirectories;
-use system_runtime_spec::evaluation::{evaluate_health, evaluate_health_with_values};
+use system_runtime_spec::evaluation::{evaluate_health, evaluate_health_with_metrics};
 use system_runtime_spec::types::filesystem::DirectoryConfig;
 use system_runtime_spec::types::health::{HealthContext, HealthNode, HealthState};
 
@@ -32,8 +32,8 @@ fn directory_integration() {
     );
     let mut directories = RuntimeDirectories::standard(root.path());
     directories.extend(&DirectoryConfig {
-        values: None,
-        value_observations: None,
+        metrics: None,
+        metric_samples: None,
         components: Some(vec!["/apps/7/components".into()]),
         health_nodes: None,
         health_statuses: None,
@@ -63,20 +63,20 @@ fn directory_integration() {
     );
     let value_node: HealthNode = sidex::formats::json::from_str(
         r#"{
-        "id":"storage", "rule":{"type": "threshold", "value":"storage.free",
+        "id":"storage", "rule":{"type": "threshold", "metric":"storage.free",
         "healthy":{"lower":{"value":104857600,"inclusive":true}},
         "usable":{}}}"#,
     )
     .unwrap();
-    let values = snapshot.values.as_deref().unwrap();
-    let observations = snapshot.value_observations.as_deref().unwrap();
-    assert_eq!(values.len(), 1);
+    let metrics = snapshot.metrics.as_deref().unwrap();
+    let observations = snapshot.metric_samples.as_deref().unwrap();
+    assert_eq!(metrics.len(), 1);
     assert_eq!(observations.len(), 1);
     assert_eq!(
-        evaluate_health_with_values(
+        evaluate_health_with_metrics(
             std::slice::from_ref(&value_node),
             &[],
-            values,
+            metrics,
             observations,
             &context
         )
@@ -94,7 +94,7 @@ fn directory_integration() {
         HealthState::Unknown
     );
     assert_eq!(
-        evaluate_health_with_values(&[value_node], &[], values, observations, &context)
+        evaluate_health_with_metrics(&[value_node], &[], metrics, observations, &context)
             .unwrap()
             .nodes[0]
             .state,

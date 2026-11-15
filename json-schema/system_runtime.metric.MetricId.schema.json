@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.metric.MetricId",
+  "type": "string",
+  "description": "Identifier of a metric, unique independently of health node IDs."
+}

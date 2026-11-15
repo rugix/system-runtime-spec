@@ -13,39 +13,39 @@ from .models.health import (
     HealthState_Unhealthy,
     HealthState_Unknown,
 )
-from .models.value import (
-    ValueDefinition,
-    ValueObservation,
-    ValueRange,
+from .models.metric import (
+    MetricDefinition,
+    MetricRange,
+    MetricSample,
 )
 
 
-class ValueEvidence:
+class MetricEvidence:
     """Validated definitions and measurements shared by threshold nodes."""
 
     def __init__(
         self,
-        definitions: Sequence[ValueDefinition],
-        observations: Sequence[ValueObservation],
+        definitions: Sequence[MetricDefinition],
+        observations: Sequence[MetricSample],
     ) -> None:
         self.definitions = {v.id: v for v in definitions}
         self.observations = {v.id: v for v in observations}
         if len(self.definitions) != len(definitions):
-            raise ValueError("Duplicate value ID")
+            raise ValueError("Duplicate metric ID")
         if len(self.observations) != len(observations):
-            raise ValueError("Duplicate value observation ID")
+            raise ValueError("Duplicate metric sample ID")
         for definition in definitions:
             if definition.max_age_ms == 0:
                 raise ValueError("Value has zero maxAgeMs")
         for observation in observations:
             validate_number(observation.value)
             if observation.max_age_ms == 0:
-                raise ValueError("Value observation has zero maxAgeMs")
+                raise ValueError("Metric sample has zero maxAgeMs")
 
     def validate(self, rule: HealthRule_Threshold) -> None:
-        """Require a value definition and nested, nonempty ranges."""
-        if rule.value not in self.definitions:
-            raise ValueError(f"Missing value {rule.value!r}")
+        """Require a metric definition and nested, nonempty ranges."""
+        if rule.metric not in self.definitions:
+            raise ValueError(f"Missing metric {rule.metric!r}")
         if rule.max_age_ms == 0:
             raise ValueError("Threshold has zero maxAgeMs")
         for interval in (rule.healthy, rule.usable):
@@ -81,22 +81,22 @@ class ValueEvidence:
         """Check value identity and freshness before applying the policy."""
         rule = node.rule
         assert isinstance(rule, HealthRule_Threshold)
-        definition = self.definitions[rule.value]
-        sample = self.observations.get(rule.value)
+        definition = self.definitions[rule.metric]
+        sample = self.observations.get(rule.metric)
         reason = None
         if sample is None:
-            reason = "Missing value observation"
+            reason = "Missing metric sample"
         elif sample.boot_id != context.boot_id:
-            reason = "Value belongs to another boot"
+            reason = "Metric sample belongs to another boot"
         elif definition.owner is not None and sample.owner != definition.owner:
-            reason = "Value owner does not match"
+            reason = "Metric sample owner does not match"
         elif (
             definition.expected_tag is not None
             and sample.tag != definition.expected_tag
         ):
-            reason = "Value tag does not match"
+            reason = "Metric sample tag does not match"
         elif sample.observed_at_ms > context.now_ms:
-            reason = "Value is in the future"
+            reason = "Metric sample is in the future"
         elif context.now_ms - sample.observed_at_ms >= min(
             sample.max_age_ms,
             definition.max_age_ms
@@ -104,7 +104,7 @@ class ValueEvidence:
             else sample.max_age_ms,
             rule.max_age_ms if rule.max_age_ms is not None else sample.max_age_ms,
         ):
-            reason = "Value has expired"
+            reason = "Metric sample has expired"
         if reason is not None:
             return HealthNodeResult(
                 id=node.id,
@@ -136,7 +136,7 @@ def validate_number(value: float) -> None:
         raise ValueError("Numeric value must be finite")
 
 
-def contains(interval: ValueRange, value: float) -> bool:
+def contains(interval: MetricRange, value: float) -> bool:
     """Test both endpoints with their declared inclusion rules."""
     return (
         interval.lower is None

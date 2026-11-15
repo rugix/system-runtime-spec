@@ -39,12 +39,12 @@ test("owned health graph survives transport without renewing evidence", () => {
     clock: cases.timestamps[0].clock,
     nodes: source.healthNodes,
     statuses: source.healthStatuses,
-    values: source.values,
-    valueObservations: source.valueObservations,
+    metrics: source.metrics,
+    metricSamples: source.metricSamples,
   }));
   assert(health.HealthSnapshot.is(snapshot));
-  assert.deepEqual(snapshot.values, source.values);
-  assert.deepEqual(snapshot.valueObservations, source.valueObservations);
+  assert.deepEqual(snapshot.metrics, source.metrics);
+  assert.deepEqual(snapshot.metricSamples, source.metricSamples);
   const report = evaluateHealth(snapshot.nodes, snapshot.statuses, snapshot.clock.context);
   assert.equal(report.nodes[1].owner, "rugix.apps.example");
   assert.equal(report.nodes[1].state, "healthy");

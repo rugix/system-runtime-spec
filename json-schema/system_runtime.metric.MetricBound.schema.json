@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "system_runtime.value.ValueBound",
+  "$id": "system_runtime.metric.MetricBound",
   "type": "object",
-  "description": "One endpoint of a numeric range, in the referenced value's unit.",
+  "description": "One endpoint of a numeric range, in the referenced metric's unit.",
   "properties": {
     "value": {
       "type": [

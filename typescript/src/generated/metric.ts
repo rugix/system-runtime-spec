@@ -5,22 +5,22 @@ import * as __sidex_types from "@sidex/types";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
-import * as __schema_value from "./value.js";
+import * as __schema_metric from "./metric.js";
 /**
- * Identifier of a runtime value, unique independently of health node IDs.
+ * Identifier of a metric, unique independently of health node IDs.
  */
- export type ValueId = __sidex_types.Nominal<__sidex_types.builtins.String, "::system_runtime::value::ValueId">;
+ export type MetricId = __sidex_types.Nominal<__sidex_types.builtins.String, "::system_runtime::metric::MetricId">;
 
-export const ValueId = {
-    ...__sidex_types.checker<ValueId>((): __sidex_types.Check => __sidex_types.builtin("string")),
+export const MetricId = {
+    ...__sidex_types.checker<MetricId>((): __sidex_types.Check => __sidex_types.builtin("string")),
 };
 /**
- * A named measurement, independent of any health policy.
+ * A named numeric measurement, independent of any health policy; samples carry no history.
  */
- export type ValueDefinition = { /**
-                                            * Unique value ID.
+ export type MetricDefinition = { /**
+                                            * Unique metric ID.
                                             */
-                                                        "id": ValueId, /**
+                                                        "id": MetricId, /**
                                             * Ownership group for replacement or removal, matched exactly.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
@@ -30,33 +30,33 @@ export const ValueId = {
                                             * Related component IDs; these associations do not imply health dependencies.
                                             */
                                                         "components"?: __sidex_types.builtins.String[], /**
-                                            * Unit shared by observations and all thresholds referencing this value.
+                                            * Unit shared by samples and all thresholds referencing this metric.
                                             */
-                                                        "unit": ValueUnit, /**
-                                            * Optional consumer limit on observation age, in milliseconds; must be positive.
+                                                        "unit": MetricUnit, /**
+                                            * Optional consumer limit on sample age, in milliseconds; must be positive.
                                             */
                                                         "maxAgeMs"?: __sidex_types.builtins.U32, /**
-                                            * Optional tag that observations must match exactly.
+                                            * Optional tag that samples must match exactly.
                                             */
                                                         "expectedTag"?: __sidex_types.builtins.String };
 
-export const ValueDefinition = {
-    ...__sidex_types.checker<ValueDefinition>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["unit", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueUnit), false], ["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
+export const MetricDefinition = {
+    ...__sidex_types.checker<MetricDefinition>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["unit", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricUnit), false], ["maxAgeMs", __sidex_types.builtin("u32"), true], ["expectedTag", __sidex_types.builtin("string"), true]], [])),
 };
 /**
  * One measurement within a boot; publishing it does not assert health.
  */
- export type ValueObservation = { /**
-                                            * Observed value ID.
+ export type MetricSample = { /**
+                                            * Measured metric ID.
                                             */
-                                                        "id": ValueId, /**
+                                                        "id": MetricId, /**
                                             * Ownership group; must match the definition's owner when specified.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
                                             * Finite measurement in the definition's unit.
                                             */
                                                         "value": __sidex_types.builtins.F64, /**
-                                            * Boot identifier defining the observation clock domain.
+                                            * Boot identifier defining the sample clock domain.
                                             */
                                                         "bootId": __sidex_types.builtins.String, /**
                                             * Milliseconds on the boot-time clock when the measurement was taken.
@@ -72,42 +72,42 @@ export const ValueDefinition = {
                                             */
                                                         "message"?: __sidex_types.builtins.String };
 
-export const ValueObservation = {
-    ...__sidex_types.checker<ValueObservation>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueId), false], ["owner", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("f64"), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
+export const MetricSample = {
+    ...__sidex_types.checker<MetricSample>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricId), false], ["owner", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("f64"), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
 };
 /**
  * Semantic unit; display prefixes, precision, and conversions are consumer choices.
  */
- export type ValueUnit = ("celsius" | "bytes" | "seconds" | "ratio" | "count" | "bytes-per-second" | "hertz" | "volts" | "amperes" | "watts" | "revolutions-per-minute");
+ export type MetricUnit = ("celsius" | "bytes" | "seconds" | "ratio" | "count" | "bytes-per-second" | "hertz" | "volts" | "amperes" | "watts" | "revolutions-per-minute");
 
-export const ValueUnit = {
-    ...__sidex_types.checker<ValueUnit>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["celsius", null, null], ["bytes", null, null], ["seconds", null, null], ["ratio", null, null], ["count", null, null], ["bytes-per-second", null, null], ["hertz", null, null], ["volts", null, null], ["amperes", null, null], ["watts", null, null], ["revolutions-per-minute", null, null]])),
+export const MetricUnit = {
+    ...__sidex_types.checker<MetricUnit>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["celsius", null, null], ["bytes", null, null], ["seconds", null, null], ["ratio", null, null], ["count", null, null], ["bytes-per-second", null, null], ["hertz", null, null], ["volts", null, null], ["amperes", null, null], ["watts", null, null], ["revolutions-per-minute", null, null]])),
 };
 /**
- * One endpoint of a numeric range, in the referenced value's unit.
+ * One endpoint of a numeric range, in the referenced metric's unit.
  */
- export type ValueBound = { /**
-                                            * Finite endpoint in the referenced value's unit.
+ export type MetricBound = { /**
+                                            * Finite endpoint in the referenced metric's unit.
                                             */
                                                         "value": __sidex_types.builtins.F64, /**
                                             * Whether equality with this endpoint is inside the range.
                                             */
                                                         "inclusive": __sidex_types.builtins.Bool };
 
-export const ValueBound = {
-    ...__sidex_types.checker<ValueBound>((): __sidex_types.Check => __sidex_types.record([["value", __sidex_types.builtin("f64"), false], ["inclusive", __sidex_types.builtin("bool"), false]], [])),
+export const MetricBound = {
+    ...__sidex_types.checker<MetricBound>((): __sidex_types.Check => __sidex_types.record([["value", __sidex_types.builtin("f64"), false], ["inclusive", __sidex_types.builtin("bool"), false]], [])),
 };
 /**
  * A nonempty interval; omitted endpoints are unbounded.
  */
- export type ValueRange = { /**
+ export type MetricRange = { /**
                                             * Optional lower endpoint.
                                             */
-                                                        "lower"?: ValueBound, /**
+                                                        "lower"?: MetricBound, /**
                                             * Optional upper endpoint.
                                             */
-                                                        "upper"?: ValueBound };
+                                                        "upper"?: MetricBound };
 
-export const ValueRange = {
-    ...__sidex_types.checker<ValueRange>((): __sidex_types.Check => __sidex_types.record([["lower", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueBound), true], ["upper", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ValueBound), true]], [])),
+export const MetricRange = {
+    ...__sidex_types.checker<MetricRange>((): __sidex_types.Check => __sidex_types.record([["lower", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricBound), true], ["upper", __sidex_types.lazy((): __sidex_types.Checker<unknown> => MetricBound), true]], [])),
 };

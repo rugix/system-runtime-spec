@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "system_runtime.value.ValueObservation",
+  "$id": "system_runtime.metric.MetricSample",
   "type": "object",
   "description": "One measurement within a boot; publishing it does not assert health.",
   "properties": {
     "id": {
-      "$ref": "#/$defs/system_runtime.value.ValueId"
+      "$ref": "#/$defs/system_runtime.metric.MetricId"
     },
     "owner": {
       "type": "string"
@@ -51,9 +51,9 @@
   ],
   "unevaluatedProperties": false,
   "$defs": {
-    "system_runtime.value.ValueId": {
+    "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a runtime value, unique independently of health node IDs."
+      "description": "Identifier of a metric, unique independently of health node IDs."
     }
   }
 }

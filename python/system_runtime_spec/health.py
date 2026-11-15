@@ -22,8 +22,8 @@ from .models.health import (
     HealthState_Unknown,
     HealthStatus,
 )
-from .models.value import ValueDefinition, ValueObservation
-from .threshold import ValueEvidence
+from .models.metric import MetricDefinition, MetricSample
+from .threshold import MetricEvidence
 
 StateName = Literal["healthy", "degraded", "unhealthy", "unknown"]
 
@@ -41,15 +41,15 @@ def evaluate_health(
     statuses: Sequence[HealthStatus],
     context: HealthContext,
     *,
-    values: Sequence[ValueDefinition] = (),
-    value_observations: Sequence[ValueObservation] = (),
+    metrics: Sequence[MetricDefinition] = (),
+    metric_samples: Sequence[MetricSample] = (),
 ) -> HealthReport:
     """Validate the graph, then evaluate every node in declaration order.
 
     Malformed graphs and duplicate observations raise ValueError. Missing, expired,
     future, wrong-boot, or wrong-tag evidence yields unknown health.
     """
-    evidence = ValueEvidence(values, value_observations)
+    evidence = MetricEvidence(metrics, metric_samples)
     by_id = {node.id: node for node in nodes}
     if len(by_id) != len(nodes):
         raise ValueError("Duplicate health node ID")
