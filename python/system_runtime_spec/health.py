@@ -60,13 +60,13 @@ def evaluate_health(
         if status.max_age_ms == 0:
             raise ValueError(f"Status {status.id!r} has zero maxAgeMs")
         if status.id in by_id and not isinstance(
-            by_id[status.id].rule, HealthRule_Observed
+            _rule(by_id[status.id]), HealthRule_Observed
         ):
             raise ValueError(f"Status supplied for derived node {status.id!r}")
     remaining: dict[HealthNodeId, int] = {}
     dependents: dict[HealthNodeId, list[HealthNodeId]] = {node.id: [] for node in nodes}
     for node in nodes:
-        rule = node.rule
+        rule = _rule(node)
         if isinstance(rule, HealthRule_Observed):
             if rule.max_age_ms == 0:
                 raise ValueError(f"Node {node.id!r} has zero maxAgeMs")
@@ -94,21 +94,18 @@ def evaluate_health(
     while ready:
         id = ready.popleft()
         node = by_id[id]
-        if isinstance(node.rule, HealthRule_Observed):
+        rule = _rule(node)
+        if isinstance(rule, HealthRule_Observed):
             results[id] = _observe(node, observations.get(id), context)
-        elif isinstance(node.rule, HealthRule_Threshold):
+        elif isinstance(rule, HealthRule_Threshold):
             results[id] = evidence.evaluate(node, context)
         else:
-            required, desired = _counts(node.rule)
+            required, desired = _counts(rule)
             inputs = [
-                results[input.node] for input in node.rule.inputs if not input.optional
+                results[input.node] for input in rule.inputs if not input.optional
             ]
-            optional = [
-                results[input.node] for input in node.rule.inputs if input.optional
-            ]
-            mandatory = [
-                results[input.node] for input in node.rule.inputs if input.required
-            ]
+            optional = [results[input.node] for input in rule.inputs if input.optional]
+            mandatory = [results[input.node] for input in rule.inputs if input.required]
             healthy = sum(result.state.root == "healthy" for result in inputs)
             minimum_met = sum(
                 result.state.root in ("healthy", "degraded") for result in inputs
@@ -135,7 +132,7 @@ def evaluate_health(
                 id=id,
                 owner=node.owner,
                 state=_state(state),
-                inputs=[input.node for input in node.rule.inputs],
+                inputs=[input.node for input in rule.inputs],
             )
         for dependent in dependents[id]:
             remaining[dependent] -= 1
@@ -144,6 +141,13 @@ def evaluate_health(
     if len(results) != len(nodes):
         raise ValueError("Cycle in health graph")
     return HealthReport(nodes=[results[node.id] for node in nodes])
+
+
+def _rule(
+    node: HealthNode,
+) -> HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate:
+    """Treat an omitted rule as an observed node without constraints."""
+    return HealthRule_Observed() if node.rule is None else node.rule
 
 
 def _counts(rule: HealthRule_Aggregate) -> tuple[int, int]:
@@ -158,7 +162,7 @@ def _observe(
     node: HealthNode, status: HealthStatus | None, context: HealthContext
 ) -> HealthNodeResult:
     """Apply freshness and identity constraints to one observed node."""
-    rule = node.rule
+    rule = _rule(node)
     assert isinstance(rule, HealthRule_Observed)
     reason: str | None = None
     if status is None:

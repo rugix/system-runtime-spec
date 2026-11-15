@@ -25,7 +25,7 @@ class HealthNode(_sidex.Model):
     owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
     label: str | None = pydantic.Field(default=None, description="Human-readable label.")
     components: list[str] | None = pydantic.Field(default=None, description="Related component IDs; these associations do not imply health dependencies.")
-    rule: HealthRule = pydantic.Field(description="How this node's health is determined.")
+    rule: HealthRule | None = pydantic.Field(default=None, description="How this node's health is determined; omitted means an observed node without constraints.")
 
 
 class ObservationRule(_sidex.Model):

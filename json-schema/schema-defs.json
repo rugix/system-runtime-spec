@@ -468,8 +468,7 @@
       }
     },
     "required": [
-      "id",
-      "rule"
+      "id"
     ],
     "unevaluatedProperties": false
   },

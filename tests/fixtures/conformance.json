@@ -3650,6 +3650,107 @@
       "error": true
     },
     {
+      "name": "omitted rule is observed",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "type": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              }
+            ]
+          }
+        },
+        {
+          "id": "a"
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "healthy",
+            "inputs": [
+              "a"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "omitted rule without status is unknown",
+      "nodes": [
+        {
+          "id": "a"
+        }
+      ],
+      "statuses": [],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          }
+        ]
+      }
+    },
+    {
+      "name": "omitted rule applies no age limit beyond the status",
+      "nodes": [
+        {
+          "id": "a"
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 10,
+          "maxAgeMs": 100
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "state": "degraded",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
       "name": "zero node age",
       "nodes": [
         {

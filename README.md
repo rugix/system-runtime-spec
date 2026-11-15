@@ -338,7 +338,8 @@ policies, such as availability and readiness to commit an update (accept it as
 successful).
 
 A node can have an `owner`, a label, and associated component IDs. Component
-associations do not create health dependencies. Node definitions and status
+associations do not create health dependencies. A node without a `rule` is an
+observed node without age or tag constraints, such as `{"id": "database"}`. Node definitions and status
 records are stored separately, so a check remains defined when its observer
 stops publishing.
 

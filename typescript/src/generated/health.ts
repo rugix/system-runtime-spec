@@ -30,12 +30,12 @@ export const HealthNodeId = {
                                             * Related component IDs; these associations do not imply health dependencies.
                                             */
                                                         "components"?: __sidex_types.builtins.String[], /**
-                                            * How this node's health is determined.
+                                            * How this node's health is determined; omitted means an observed node without constraints.
                                             */
-                                                        "rule": HealthRule };
+                                                        "rule"?: HealthRule };
 
 export const HealthNode = {
-    ...__sidex_types.checker<HealthNode>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["rule", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthRule), false]], [])),
+    ...__sidex_types.checker<HealthNode>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["rule", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthRule), true]], [])),
 };
 /**
  * Definition of an observed, threshold, or aggregate node.

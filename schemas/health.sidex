@@ -19,8 +19,8 @@ record HealthNode {
     label?: string,
     /// Related component IDs; these associations do not imply health dependencies.
     components?: [string],
-    /// How this node's health is determined.
-    rule: HealthRule,
+    /// How this node's health is determined; omitted means an observed node without constraints.
+    rule?: HealthRule,
 }
 
 /// Definition of an observed, threshold, or aggregate node.

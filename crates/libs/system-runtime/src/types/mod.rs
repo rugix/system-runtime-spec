@@ -1579,41 +1579,12 @@ pub mod health {
         pub label: ::std::option::Option<::std::string::String>,
         #[doc = "Related component IDs; these associations do not imply health dependencies.\n"]
         pub components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
-        #[doc = "How this node's health is determined.\n"]
-        pub rule: HealthRule,
+        #[doc = "How this node's health is determined; omitted means an observed node without constraints.\n"]
+        pub rule: ::std::option::Option<HealthRule>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthNode {
-        const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::health::HealthNode",
-            ::sidex::shape::ShapeKind::Record(::sidex::shape::RecordShape::new(&[
-                ::sidex::shape::FieldShape::new("id", ::sidex::shape::shape_of::<HealthNodeId>)
-                    .with_docs("Unique health node ID.\n"),
-                ::sidex::shape::FieldShape::new(
-                    "owner",
-                    ::sidex::shape::shape_of::<::std::string::String>,
-                )
-                .with_docs("Ownership group for replacement or removal, matched exactly.\n")
-                .optional(),
-                ::sidex::shape::FieldShape::new(
-                    "label",
-                    ::sidex::shape::shape_of::<::std::string::String>,
-                )
-                .with_docs("Human-readable label.\n")
-                .optional(),
-                ::sidex::shape::FieldShape::new(
-                    "components",
-                    ::sidex::shape::shape_of::<::std::vec::Vec<::std::string::String>>,
-                )
-                .with_docs(
-                    "Related component IDs; these associations do not imply health dependencies.\n",
-                )
-                .optional(),
-                ::sidex::shape::FieldShape::new("rule", ::sidex::shape::shape_of::<HealthRule>)
-                    .with_docs("How this node's health is determined.\n"),
-            ])),
-        )
-        .with_docs("A health check or function in a directed acyclic graph.\n");
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthNode" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("Unique health node ID.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Ownership group for replacement or removal, matched exactly.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable label.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Related component IDs; these associations do not imply health dependencies.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("rule" , :: sidex :: shape :: shape_of :: < HealthRule > ,) . with_docs ("How this node's health is determined; omitted means an observed node without constraints.\n") . optional ()]))) . with_docs ("A health check or function in a directed acyclic graph.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for HealthNode {
@@ -1642,7 +1613,10 @@ pub mod health {
                     .components
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
-                4usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.rule)),
+                4usize => self
+                    .rule
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -1697,7 +1671,7 @@ pub mod health {
                 owner: __field_1,
                 label: __field_2,
                 components: __field_3,
-                rule: __field_4.ok_or_else(|| ::sidex::DecodeError::new("missing field `rule`"))?,
+                rule: __field_4,
             })
         }
     }
