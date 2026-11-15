@@ -40,10 +40,10 @@ export const HealthNode = {
 /**
  * Definition of an observed, threshold, or aggregate node.
  */
- export type HealthRule = (({ "rule": "observed" } & ObservationRule) | ({ "rule": "threshold" } & ThresholdRule) | ({ "rule": "aggregate" } & AggregationRule));
+ export type HealthRule = (({ "type": "observed" } & ObservationRule) | ({ "type": "threshold" } & ThresholdRule) | ({ "type": "aggregate" } & AggregationRule));
 
 export const HealthRule = {
-    ...__sidex_types.checker<HealthRule>((): __sidex_types.Check => __sidex_types.variant("internal", "rule", [["observed", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ObservationRule), null], ["threshold", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ThresholdRule), null], ["aggregate", __sidex_types.lazy((): __sidex_types.Checker<unknown> => AggregationRule), null]])),
+    ...__sidex_types.checker<HealthRule>((): __sidex_types.Check => __sidex_types.variant("internal", "type", [["observed", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ObservationRule), null], ["threshold", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ThresholdRule), null], ["aggregate", __sidex_types.lazy((): __sidex_types.Checker<unknown> => AggregationRule), null]])),
 };
 /**
  * Constraints on externally supplied observations.

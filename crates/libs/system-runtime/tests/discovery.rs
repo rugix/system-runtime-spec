@@ -63,7 +63,7 @@ fn directory_integration() {
     );
     let value_node: HealthNode = sidex::formats::json::from_str(
         r#"{
-        "id":"storage", "rule":{"rule":"threshold", "value":"storage.free",
+        "id":"storage", "rule":{"type": "threshold", "value":"storage.free",
         "healthy":{"lower":{"value":104857600,"inclusive":true}},
         "usable":{}}}"#,
     )
@@ -168,7 +168,7 @@ fn app_generation_patterns() {
         .unwrap();
         std::fs::write(
             dir.join("health/nodes/app.json"),
-            format!(r#"{{"id":"app.{generation}","rule":{{"rule":"observed"}}}}"#),
+            format!(r#"{{"id":"app.{generation}","rule":{{"type": "observed"}}}}"#),
         )
         .unwrap();
         std::fs::write(

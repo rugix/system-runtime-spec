@@ -6,7 +6,7 @@
     {
       "type": "object",
       "properties": {
-        "rule": {
+        "type": {
           "const": "observed"
         },
         "maxAgeMs": {
@@ -20,13 +20,13 @@
         }
       },
       "required": [
-        "rule"
+        "type"
       ]
     },
     {
       "type": "object",
       "properties": {
-        "rule": {
+        "type": {
           "const": "threshold"
         },
         "value": {
@@ -46,7 +46,7 @@
         }
       },
       "required": [
-        "rule",
+        "type",
         "value",
         "healthy",
         "usable"
@@ -55,7 +55,7 @@
     {
       "type": "object",
       "properties": {
-        "rule": {
+        "type": {
           "const": "aggregate"
         },
         "inputs": {
@@ -78,7 +78,7 @@
         }
       },
       "required": [
-        "rule",
+        "type",
         "inputs"
       ]
     }

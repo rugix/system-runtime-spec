@@ -1754,7 +1754,7 @@ pub mod health {
                     .json_name("aggregate"),
                 ])
                 .json_tagging(::sidex::formats::json::Tagging::Internal {
-                    tag: "rule",
+                    tag: "type",
                     content: "content",
                 }),
             ),
@@ -1765,7 +1765,7 @@ pub mod health {
             args: &[
                 ::sidex::shape::Attr::Assign {
                     path: "tag",
-                    value: ::sidex::shape::AttrValue::String("rule"),
+                    value: ::sidex::shape::AttrValue::String("type"),
                 },
                 ::sidex::shape::Attr::Assign {
                     path: "rename_all",

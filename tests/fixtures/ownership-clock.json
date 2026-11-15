@@ -44,28 +44,28 @@
           {
             "id": "driver",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system"
           },
           {
             "id": "app.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             }
           }
         ],
@@ -153,21 +153,21 @@
           {
             "id": "app.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             }
           }
         ],
@@ -260,28 +260,28 @@
           {
             "id": "driver",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system"
           },
           {
             "id": "app.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.apps.example"
           },
           {
             "id": "extra.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             }
           }
         ],
@@ -352,21 +352,21 @@
           {
             "id": "driver",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system"
           },
           {
             "id": "extra.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             },
             "owner": "rugix.system.extra"
           },
           {
             "id": "legacy.health",
             "rule": {
-              "rule": "observed"
+              "type": "observed"
             }
           }
         ],

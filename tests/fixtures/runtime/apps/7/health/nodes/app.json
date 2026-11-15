@@ -1,1 +1,1 @@
-{"id": "app", "rule": {"rule": "observed", "expectedTag": "7"}, "owner": "rugix.apps.example"}
+{"id": "app", "rule": {"type": "observed", "expectedTag": "7"}, "owner": "rugix.apps.example"}

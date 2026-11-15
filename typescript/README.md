@@ -89,7 +89,7 @@ const received: unknown = {
     context: { bootId: "example-boot", nowMs: 45000 },
     timestamp: "2026-10-14T12:00:00Z",
   },
-  nodes: [{ id: "application", rule: { rule: "observed" } }],
+  nodes: [{ id: "application", rule: { type: "observed" } }],
   statuses: [{
     id: "application",
     state: "healthy",
