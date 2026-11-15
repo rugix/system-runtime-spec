@@ -58,10 +58,11 @@ record ThresholdRule {
 record AggregationRule {
     /// Dependencies with distinct node IDs.
     inputs: [AggregationInput],
-    /// Minimum healthy or degraded input count, including mandatory inputs.
-    required: u32,
-    /// Desired healthy input count, including mandatory inputs; required <= healthy <= inputs length.
-    healthy: u32,
+    /// Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.
+    required?: u32,
+    /// Desired healthy input count, including mandatory inputs; omitted means all inputs.
+    /// Must satisfy 1 <= required <= healthy <= inputs length.
+    healthy?: u32,
 }
 
 /// One dependency of an aggregate health node.

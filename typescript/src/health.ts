@@ -46,7 +46,8 @@ export function evaluateHealth(
       evidence.validate(rule);
       remaining.set(node.id, 0);
     } else {
-      if (!(1 <= rule.required && rule.required <= rule.healthy && rule.healthy <= rule.inputs.length)) {
+      const [required, healthy] = counts(rule);
+      if (!(1 <= required && required <= healthy && healthy <= rule.inputs.length)) {
         throw new Error(`Invalid thresholds for ${node.id}`);
       }
       if (new Set(rule.inputs.map((input) => input.node)).size !== rule.inputs.length) throw new Error(`Duplicate input for ${node.id}`);
@@ -104,17 +105,24 @@ function observe(
   };
 }
 
+/** Resolve the minimum and desired counts, defaulting to all inputs healthy. */
+function counts(rule: AggregationRule): [number, number] {
+  const healthy = rule.healthy ?? rule.inputs.length;
+  return [rule.required ?? healthy, healthy];
+}
+
 /** Apply mandatory dependency gates and desired and minimum input counts. */
 function aggregate(id: HealthNodeId, rule: AggregationRule, inputs: HealthNodeResult[]): HealthNodeResult {
+  const [required, desired] = counts(rule);
   const healthy = inputs.filter((input) => input.state === "healthy").length;
   const minimumMet = inputs.filter((input) => input.state === "healthy" || input.state === "degraded").length;
   const possibleMinimum = inputs.filter((input) => input.state !== "unhealthy").length;
   const mandatory = inputs.filter((_, index) => rule.inputs[index].required === true);
-  const state: HealthState = possibleMinimum < rule.required || mandatory.some((input) => input.state === "unhealthy")
+  const state: HealthState = possibleMinimum < required || mandatory.some((input) => input.state === "unhealthy")
     ? "unhealthy"
-    : minimumMet < rule.required || mandatory.some((input) => input.state === "unknown")
+    : minimumMet < required || mandatory.some((input) => input.state === "unknown")
       ? "unknown"
-      : healthy >= rule.healthy && mandatory.every((input) => input.state === "healthy")
+      : healthy >= desired && mandatory.every((input) => input.state === "healthy")
         ? "healthy" : "degraded";
   return { id, state, inputs: rule.inputs.map((input) => input.node) };
 }

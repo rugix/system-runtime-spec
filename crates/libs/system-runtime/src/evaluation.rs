@@ -84,10 +84,8 @@ pub fn evaluate_health_with_values(
             }
             HealthRule::Threshold(rule) => evidence.validate(rule)?,
             HealthRule::Aggregate(rule) => {
-                if !(1 <= rule.required
-                    && rule.required <= rule.healthy
-                    && (rule.healthy as usize) <= rule.inputs.len())
-                {
+                let (required, healthy) = counts(rule);
+                if !(1 <= required && required <= healthy && healthy <= rule.inputs.len()) {
                     return Err(Error::Invalid(format!(
                         "invalid thresholds for {:?}",
                         node.id
@@ -202,12 +200,22 @@ fn observe(
     }
 }
 
+/// Resolve the minimum and desired counts, defaulting to all inputs healthy.
+fn counts(rule: &AggregationRule) -> (usize, usize) {
+    let healthy = rule
+        .healthy
+        .map_or(rule.inputs.len(), |healthy| healthy as usize);
+    let required = rule.required.map_or(healthy, |required| required as usize);
+    (required, healthy)
+}
+
 /// Apply mandatory dependency gates and desired and minimum input counts.
 fn aggregate(
     node: &HealthNode,
     rule: &AggregationRule,
     inputs: &[&HealthNodeResult],
 ) -> HealthNodeResult {
+    let (required, desired) = counts(rule);
     let healthy = inputs
         .iter()
         .filter(|i| i.state == HealthState::Healthy)
@@ -227,19 +235,19 @@ fn aggregate(
         .filter(|(input, _)| input.required == Some(true))
         .map(|(_, result)| *result)
         .collect();
-    let state = if possible_minimum < rule.required as usize
+    let state = if possible_minimum < required
         || mandatory
             .iter()
             .any(|input| input.state == HealthState::Unhealthy)
     {
         HealthState::Unhealthy
-    } else if minimum_met < rule.required as usize
+    } else if minimum_met < required
         || mandatory
             .iter()
             .any(|input| input.state == HealthState::Unknown)
     {
         HealthState::Unknown
-    } else if healthy >= rule.healthy as usize
+    } else if healthy >= desired
         && mandatory
             .iter()
             .all(|input| input.state == HealthState::Healthy)

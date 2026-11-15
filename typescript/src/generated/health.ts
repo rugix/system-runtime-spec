@@ -86,15 +86,16 @@ export const ThresholdRule = {
                                             * Dependencies with distinct node IDs.
                                             */
                                                         "inputs": AggregationInput[], /**
-                                            * Minimum healthy or degraded input count, including mandatory inputs.
+                                            * Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.
                                             */
-                                                        "required": __sidex_types.builtins.U32, /**
-                                            * Desired healthy input count, including mandatory inputs; required <= healthy <= inputs length.
+                                                        "required"?: __sidex_types.builtins.U32, /**
+                                            * Desired healthy input count, including mandatory inputs; omitted means all inputs.
+                                            * Must satisfy 1 <= required <= healthy <= inputs length.
                                             */
-                                                        "healthy": __sidex_types.builtins.U32 };
+                                                        "healthy"?: __sidex_types.builtins.U32 };
 
 export const AggregationRule = {
-    ...__sidex_types.checker<AggregationRule>((): __sidex_types.Check => __sidex_types.record([["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => AggregationInput)), false], ["required", __sidex_types.builtin("u32"), false], ["healthy", __sidex_types.builtin("u32"), false]], [])),
+    ...__sidex_types.checker<AggregationRule>((): __sidex_types.Check => __sidex_types.record([["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => AggregationInput)), false], ["required", __sidex_types.builtin("u32"), true], ["healthy", __sidex_types.builtin("u32"), true]], [])),
 };
 /**
  * One dependency of an aggregate health node.

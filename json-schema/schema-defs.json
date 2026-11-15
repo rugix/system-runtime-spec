@@ -396,9 +396,7 @@
       }
     },
     "required": [
-      "inputs",
-      "required",
-      "healthy"
+      "inputs"
     ],
     "unevaluatedProperties": false
   },
@@ -601,9 +599,7 @@
         },
         "required": [
           "rule",
-          "inputs",
-          "required",
-          "healthy"
+          "inputs"
         ]
       }
     ]

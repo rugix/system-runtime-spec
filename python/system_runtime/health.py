@@ -12,6 +12,7 @@ from .models.health import (
     HealthNodeId,
     HealthNodeResult,
     HealthReport,
+    HealthRule_Aggregate,
     HealthRule_Observed,
     HealthRule_Threshold,
     HealthState,
@@ -74,7 +75,8 @@ def evaluate_health(
             evidence.validate(rule)
             remaining[node.id] = 0
         else:
-            if not 1 <= rule.required <= rule.healthy <= len(rule.inputs):
+            required, healthy = _counts(rule)
+            if not 1 <= required <= healthy <= len(rule.inputs):
                 raise ValueError(f"Invalid thresholds for {node.id!r}")
             if len({input.node for input in rule.inputs}) != len(rule.inputs):
                 raise ValueError(f"Duplicate input for {node.id!r}")
@@ -94,6 +96,7 @@ def evaluate_health(
         elif isinstance(node.rule, HealthRule_Threshold):
             results[id] = evidence.evaluate(node, context)
         else:
+            required, desired = _counts(node.rule)
             inputs = [results[input.node] for input in node.rule.inputs]
             mandatory = [
                 results[input.node] for input in node.rule.inputs if input.required
@@ -106,15 +109,15 @@ def evaluate_health(
                 result.state.root != "unhealthy" for result in inputs
             )
             state: StateName
-            if possible_minimum < node.rule.required or any(
+            if possible_minimum < required or any(
                 input.state.root == "unhealthy" for input in mandatory
             ):
                 state = "unhealthy"
-            elif minimum_met < node.rule.required or any(
+            elif minimum_met < required or any(
                 input.state.root == "unknown" for input in mandatory
             ):
                 state = "unknown"
-            elif healthy >= node.rule.healthy and all(
+            elif healthy >= desired and all(
                 input.state.root == "healthy" for input in mandatory
             ):
                 state = "healthy"
@@ -133,6 +136,13 @@ def evaluate_health(
     if len(results) != len(nodes):
         raise ValueError("Cycle in health graph")
     return HealthReport(nodes=[results[node.id] for node in nodes])
+
+
+def _counts(rule: HealthRule_Aggregate) -> tuple[int, int]:
+    """Resolve the minimum and desired counts, defaulting to all inputs healthy."""
+    healthy = len(rule.inputs) if rule.healthy is None else rule.healthy
+    required = healthy if rule.required is None else rule.required
+    return required, healthy
 
 
 def _observe(
