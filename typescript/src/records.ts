@@ -57,8 +57,8 @@ export class Records {
   /**
    * Health nodes, in the order in which they were added.
    *
-   * Unknown rule types are removed, and unknown input modes are `Counted`. Evaluation reports a
-   * node with an unknown rule type or input mode as unsupported, and an aggregate node that a
+   * Unknown rule types are removed, and unknown input modes are `Counted`. Evaluation can report
+   * a node with an unknown rule type or input mode as unsupported, and an aggregate node that a
    * node attaches to with an unknown mode.
    */
   get healthNodes(): readonly HealthNode[] {
@@ -68,8 +68,8 @@ export class Records {
   /**
    * Status records, in the order in which they were added.
    *
-   * Unknown states are `Unknown`. Evaluation reports the node of a fresh status record with an
-   * unknown state as unsupported.
+   * Unknown states are `Unknown`. Evaluation can report an observed node whose fresh status
+   * record has an unknown state as unsupported.
    */
   get healthStatuses(): readonly HealthStatus[] {
     return this.#values("HealthStatus");

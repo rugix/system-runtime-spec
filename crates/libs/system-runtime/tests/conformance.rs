@@ -69,6 +69,10 @@ fn originals(records: &Records) -> JsonValue {
 }
 
 /// Keep the severity and kind of diagnostics, whose messages are not specified.
+fn string(value: &JsonValue, field: &str) -> String {
+    value.get(field).unwrap().as_str().unwrap().to_owned()
+}
+
 fn brief(report: &impl sidex::Encode) -> JsonValue {
     let JsonValue::Map(mut report) = to_json(report) else {
         unreachable!("reports are objects")
@@ -78,10 +82,7 @@ fn brief(report: &impl sidex::Encode) -> JsonValue {
         .and_then(JsonValue::as_seq)
         .into_iter()
         .flatten()
-        .map(|item| {
-            let field = |name: &str| item.get(name).unwrap().as_str().unwrap().to_owned();
-            (field("kind"), field("severity"))
-        })
+        .map(|item| (string(item, "kind"), string(item, "severity")))
         .collect();
     entries.sort();
     report.insert(
@@ -242,19 +243,8 @@ fn snapshots() {
         ] {
             assert_eq!(json.get(field), original.get(field), "{}", name(&case));
         }
-        let diagnostics = JsonValue::from_iter([(
-            "diagnostics",
-            JsonValue::from(
-                snapshot
-                    .records()
-                    .diagnostics()
-                    .iter()
-                    .map(to_json)
-                    .collect::<Vec<_>>(),
-            ),
-        )]);
         assert_eq!(
-            brief(&diagnostics).get("diagnostics"),
+            brief(&json).get("diagnostics"),
             case.get("diagnostics"),
             "{}",
             name(&case)
@@ -332,16 +322,18 @@ fn discovery() {
                 .display()
                 .to_string();
             let item = to_json(diagnostic);
-            let field = |name: &str| item.get(name).unwrap().as_str().unwrap().to_owned();
-            (relative, field("kind"), field("severity"))
+            (relative, string(&item, "kind"), string(&item, "severity"))
         })
         .collect();
     found.sort();
     let expected_diagnostics: Vec<(String, String, String)> = list(expected, "diagnostics")
         .iter()
         .map(|item| {
-            let field = |name: &str| item.get(name).unwrap().as_str().unwrap().to_owned();
-            (field("path"), field("kind"), field("severity"))
+            (
+                string(item, "path"),
+                string(item, "kind"),
+                string(item, "severity"),
+            )
         })
         .collect();
     assert_eq!(found, expected_diagnostics);

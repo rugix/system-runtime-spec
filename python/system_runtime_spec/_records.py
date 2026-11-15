@@ -68,9 +68,10 @@ class Records:
 
         `kind` is the model of the record, such as `HealthStatus`.
         """
-        record = self._accept(kind, value)
-        if record is not None:
-            self._add(record)
+        try:
+            self._add(decode(kind, value))
+        except InvalidRecord as error:
+            self._diagnostics.append(diagnostic("Error", KINDS[kind], str(error)))
 
     def push_diagnostic(self, diagnostic: Diagnostic) -> None:
         """Add a diagnostic, such as one that another reader reported."""
@@ -86,7 +87,7 @@ class Records:
         """Health nodes, in the order in which they were added.
 
         Unknown rule types are removed, and unknown input modes are `Counted`.
-        Evaluation reports a node with an unknown rule type or input mode as
+        Evaluation can report a node with an unknown rule type or input mode as
         unsupported, and an aggregate node that a node attaches to with an unknown
         mode.
         """
@@ -96,8 +97,8 @@ class Records:
     def health_statuses(self) -> tuple[HealthStatus, ...]:
         """Status records, in the order in which they were added.
 
-        Unknown states are `Unknown`. Evaluation reports the node of a fresh status
-        record with an unknown state as unsupported.
+        Unknown states are `Unknown`. Evaluation can report an observed node whose
+        fresh status record has an unknown state as unsupported.
         """
         return self._values("HealthStatus")
 
@@ -190,16 +191,6 @@ class Records:
 
     def _diagnostics_about(self, *kinds: RecordKind) -> list[Diagnostic]:
         return [item for item in self._diagnostics if item.kind in kinds]
-
-    def _accept[M: RecordModel](
-        self, kind: type[M], value: Json, path: str | None = None
-    ) -> Record[M] | None:
-        """Decode a record, reporting an error diagnostic if it is invalid."""
-        try:
-            return decode(kind, value)
-        except InvalidRecord as error:
-            self._diagnostics.append(diagnostic("Error", KINDS[kind], str(error), path))
-            return None
 
     def _add(self, record: Record[Any]) -> None:
         self._records[KINDS[type(record.value)]].append(record)

@@ -141,6 +141,11 @@ export function decode<K extends RecordKind>(
     const [error] = report.errors;
     throw new InvalidRecord(`${error.path}: ${error.message}`);
   }
+  if (kind !== "DirectoryConfig") {
+    const { id, owner } = data as RecordModels[RecordModelKind];
+    checkId(id, "id");
+    checkId(owner, "owner");
+  }
   VALIDATORS[kind](data as never);
   return { json: original, value: data as never, newer, unsupported, unsupportedAttachments };
 }
@@ -210,8 +215,6 @@ function checkDirectoryPath(path: string): void {
 
 const VALIDATORS: { [K in RecordKind]: (record: K extends RecordModelKind ? RecordModels[K] : DirectoryConfig) => void } = {
   ComponentDeclaration(record) {
-    checkId(record.id, "id");
-    checkId(record.owner, "owner");
     if (record.version !== undefined) parse(parseVersion, record.version);
     for (const claim of record.claims ?? []) checkId(claim.id, "claim ID");
     for (const capability of record.provides ?? []) {
@@ -224,8 +227,6 @@ const VALIDATORS: { [K in RecordKind]: (record: K extends RecordModelKind ? Reco
     }
   },
   HealthNode(record) {
-    checkId(record.id, "id");
-    checkId(record.owner, "owner");
     for (const component of record.components ?? []) checkId(component, "component ID");
     for (const attachment of record.partOf ?? []) checkId(attachment.node, "attachment node");
     const rule = record.rule;
@@ -239,19 +240,13 @@ const VALIDATORS: { [K in RecordKind]: (record: K extends RecordModelKind ? Reco
     }
   },
   HealthStatus(record) {
-    checkId(record.id, "id");
-    checkId(record.owner, "owner");
     checkPositive(record.maxAgeMs, "maxAgeMs");
   },
   MetricDefinition(record) {
-    checkId(record.id, "id");
-    checkId(record.owner, "owner");
     for (const component of record.components ?? []) checkId(component, "component ID");
     checkPositive(record.maxAgeMs, "maxAgeMs");
   },
   MetricSample(record) {
-    checkId(record.id, "id");
-    checkId(record.owner, "owner");
     finite(record.value, "value");
     checkPositive(record.maxAgeMs, "maxAgeMs");
   },

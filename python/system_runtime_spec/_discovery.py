@@ -7,7 +7,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._decoding import KINDS, InvalidRecord, Json, RecordModel, decode, diagnostic
+import pydantic
+
+from ._decoding import (
+    KINDS,
+    InvalidRecord,
+    Json,
+    Record,
+    RecordModel,
+    decode,
+    diagnostic,
+)
 from .models.common import RecordKind, Severity
 from .models.component import ComponentDeclaration
 from .models.filesystem import DirectoryConfig
@@ -48,14 +58,9 @@ def discover(root: str | os.PathLike[str], records: Records) -> None:
     reader = _Reader(Path(root), records)
     configs: list[DirectoryConfig] = []
     for file in reader.read("DirectoryConfig", _STANDARD["DirectoryConfig"]):
-        try:
-            config = decode(DirectoryConfig, file.json)
-        except InvalidRecord as error:
-            reader.report("Error", "DirectoryConfig", str(error), file.path)
-            continue
-        if config.newer:
-            reader.report("Warning", "DirectoryConfig", _NEWER, file.path)
-        configs.append(config.value)
+        config = reader.decode(DirectoryConfig, file)
+        if config is not None:
+            configs.append(config.value)
     for model, added in (
         (ComponentDeclaration, [c.components for c in configs]),
         (HealthNode, [c.health_nodes for c in configs]),
@@ -81,16 +86,28 @@ class _Reader:
     ) -> None:
         self.records.push_diagnostic(diagnostic(severity, kind, message, str(path)))
 
+    def decode[M: pydantic.BaseModel](
+        self, model: type[M], file: _File
+    ) -> Record[M] | None:
+        """Decode the record of a file, reporting an error if it is invalid and a
+        warning if it is of a newer minor version."""
+        kind = KINDS[model]
+        try:
+            record = decode(model, file.json)
+        except InvalidRecord as error:
+            self.report("Error", kind, str(error), file.path)
+            return None
+        if record.newer:
+            self.report("Warning", kind, _NEWER, file.path)
+        return record
+
     def collect(self, model: type[RecordModel], added: list[tuple[str, int]]) -> None:
         kind = KINDS[model]
         accepted = []
         for file in self.read(kind, _STANDARD[kind] + added):
-            record = self.records._accept(model, file.json, str(file.path))
-            if record is None:
-                continue
-            if record.newer:
-                self.report("Warning", kind, _NEWER, file.path)
-            accepted.append((file.level, record))
+            record = self.decode(model, file)
+            if record is not None:
+                accepted.append((file.level, record))
         if model in _OVERRIDABLE:
             highest: dict[tuple[str, str | None], int] = {}
             for level, record in accepted:

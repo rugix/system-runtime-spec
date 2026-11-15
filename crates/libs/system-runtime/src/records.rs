@@ -1,5 +1,4 @@
 use std::collections::BTreeSet;
-use std::path::Path;
 
 use anyver::{Version, VersionReq};
 use sidex::types::{JsonValue, Map, Str};
@@ -110,8 +109,12 @@ impl Records {
 
     /// Add a record given as a JSON value, such as a record received from another system.
     pub fn push_json<T: RecordModel>(&mut self, record: JsonValue) {
-        if let Some(record) = self.accept::<T>(record, None) {
-            T::entries_mut(self).push(record);
+        match decode::<T>(T::KIND, record) {
+            Ok(record) => T::entries_mut(self).push(record),
+            Err(message) => {
+                self.diagnostics
+                    .push(Diagnostic::new(Severity::Error, T::KIND, message));
+            }
         }
     }
 
@@ -127,17 +130,17 @@ impl Records {
 
     /// Health nodes, in the order in which they were added.
     ///
-    /// Unknown rule types are removed, and unknown input modes are `Counted`. Evaluation
-    /// reports a node with an unknown rule type or input mode as unsupported, and an
-    /// aggregate node that a node attaches to with an unknown mode.
+    /// Unknown rule types are removed, and unknown input modes are `Counted`. Evaluation can
+    /// report a node with an unknown rule type or input mode as unsupported, and an aggregate
+    /// node that a node attaches to with an unknown mode.
     pub fn health_nodes(&self) -> impl ExactSizeIterator<Item = &HealthNode> {
         values(&self.health_nodes)
     }
 
     /// Status records, in the order in which they were added.
     ///
-    /// Unknown states are `Unknown`. Evaluation reports the node of a fresh status record
-    /// with an unknown state as unsupported.
+    /// Unknown states are `Unknown`. Evaluation can report an observed node whose fresh
+    /// status record has an unknown state as unsupported.
     pub fn health_statuses(&self) -> impl ExactSizeIterator<Item = &HealthStatus> {
         values(&self.health_statuses)
     }
@@ -163,23 +166,6 @@ impl Records {
             .filter(|diagnostic| kinds.contains(&diagnostic.kind))
             .cloned()
             .collect()
-    }
-
-    /// Decode a record, reporting an error diagnostic if it is invalid.
-    pub(crate) fn accept<T: RecordModel>(
-        &mut self,
-        json: JsonValue,
-        path: Option<&Path>,
-    ) -> Option<Record<T>> {
-        match decode::<T>(T::KIND, json) {
-            Ok(record) => Some(record),
-            Err(message) => {
-                let path = path.map(|path| path.display().to_string());
-                self.diagnostics
-                    .push(Diagnostic::new(Severity::Error, T::KIND, message).with_path(path));
-                None
-            }
-        }
     }
 }
 

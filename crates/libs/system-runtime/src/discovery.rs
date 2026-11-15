@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use sidex::types::JsonValue;
 
 use crate::Records;
-use crate::records::{RecordModel, decode};
+use crate::records::{Record, RecordModel, decode};
 use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::component::ComponentDeclaration;
 use crate::types::filesystem::DirectoryConfig;
@@ -58,25 +58,10 @@ impl Records {
             RecordKind::DirectoryConfig,
             &standard(RecordKind::DirectoryConfig),
         ) {
-            let path = Some(file.path.display().to_string());
-            match decode::<DirectoryConfig>(RecordKind::DirectoryConfig, file.json) {
-                Ok(config) => {
-                    if config.newer {
-                        reader.records.push_diagnostic(
-                            Diagnostic::new(
-                                Severity::Warning,
-                                RecordKind::DirectoryConfig,
-                                "record of a newer minor version",
-                            )
-                            .with_path(path),
-                        );
-                    }
-                    configs.push(config.value);
-                }
-                Err(message) => reader.records.push_diagnostic(
-                    Diagnostic::new(Severity::Error, RecordKind::DirectoryConfig, message)
-                        .with_path(path),
-                ),
+            if let Some(config) =
+                reader.decode::<DirectoryConfig>(RecordKind::DirectoryConfig, &file)
+            {
+                configs.push(config.value);
             }
         }
         let added = |select: fn(&DirectoryConfig) -> &Option<Vec<String>>| {
@@ -122,20 +107,30 @@ impl Reader {
         );
     }
 
+    /// Decode the record of a file, reporting an error if it is invalid and a warning if it
+    /// is of a newer minor version.
+    fn decode<T: sidex::Decode>(&mut self, kind: RecordKind, file: &File) -> Option<Record<T>> {
+        match decode::<T>(kind, file.json.clone()) {
+            Ok(record) => {
+                if record.newer {
+                    let message = "record of a newer minor version".into();
+                    self.report(Severity::Warning, kind, message, &file.path);
+                }
+                Some(record)
+            }
+            Err(message) => {
+                self.report(Severity::Error, kind, message, &file.path);
+                None
+            }
+        }
+    }
+
     fn collect<T: RecordModel>(&mut self, added: Vec<String>) {
         let mut directories = standard(T::KIND);
         directories.extend(added.into_iter().map(|path| (path, LIB)));
         let mut records = Vec::new();
         for file in self.read(T::KIND, &directories) {
-            if let Some(record) = self.records.accept::<T>(file.json, Some(&file.path)) {
-                if record.newer {
-                    self.report(
-                        Severity::Warning,
-                        T::KIND,
-                        "record of a newer minor version".into(),
-                        &file.path,
-                    );
-                }
+            if let Some(record) = self.decode::<T>(T::KIND, &file) {
                 records.push((file.level, record));
             }
         }

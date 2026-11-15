@@ -3,7 +3,7 @@ import math
 import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import pydantic
 
@@ -105,6 +105,10 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
         raise InvalidRecord(
             f"{location}: {detail['msg']}" if location else detail["msg"]
         ) from None
+    if not isinstance(instance, DirectoryConfig):
+        identified = cast(RecordModel, instance)
+        _check_id(identified.id, "id")
+        _check_id(identified.owner, "owner")
     _VALIDATORS[kind](instance)
     return Record(original, instance, newer, unsupported, frozenset(attachments))
 
@@ -209,8 +213,6 @@ def _parse(parser: Callable[[str], object], text: str) -> None:
 
 
 def _validate_component(record: ComponentDeclaration) -> None:
-    _check_id(record.id, "id")
-    _check_id(record.owner, "owner")
     if record.version is not None:
         _parse(Version.parse, record.version)
     for claim in record.claims or []:
@@ -232,8 +234,6 @@ def _check_capability(id: str, version: str | None, value: str | None) -> None:
 
 
 def _validate_node(record: HealthNode) -> None:
-    _check_id(record.id, "id")
-    _check_id(record.owner, "owner")
     for component in record.components or []:
         _check_id(component, "component ID")
     for attachment in record.part_of or []:
@@ -278,22 +278,16 @@ def _check_ranges(healthy: MetricRange, usable: MetricRange) -> None:
 
 
 def _validate_status(record: HealthStatus) -> None:
-    _check_id(record.id, "id")
-    _check_id(record.owner, "owner")
     _check_positive(record.max_age_ms, "maxAgeMs")
 
 
 def _validate_metric(record: MetricDefinition) -> None:
-    _check_id(record.id, "id")
-    _check_id(record.owner, "owner")
     for component in record.components or []:
         _check_id(component, "component ID")
     _check_positive(record.max_age_ms, "maxAgeMs")
 
 
 def _validate_sample(record: MetricSample) -> None:
-    _check_id(record.id, "id")
-    _check_id(record.owner, "owner")
     _check_finite(record.value, "value")
     _check_positive(record.max_age_ms, "maxAgeMs")
 
