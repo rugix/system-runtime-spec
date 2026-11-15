@@ -54,8 +54,9 @@ const report = evaluateHealth(snapshot.records, snapshot.clock.context);
 console.log(report.nodes);
 ```
 
-Evaluating a snapshot gives health at the time of its clock sample. `estimateTimestamp` places
-evidence in wall-clock time for display.
+`readSnapshot` throws a `SnapshotError` for snapshots of an unsupported version or with an invalid
+structure. Evaluating a snapshot gives health at the time of its clock sample. `estimateTimestamp`
+places evidence in wall-clock time for display.
 
 Fields defined as integers, such as `observedAtMs` and `maxAgeMs`, hold values beyond
 `Number.MAX_SAFE_INTEGER` as decimal strings, so that they keep their precision; the functions

@@ -5,28 +5,27 @@ use std::collections::BTreeMap;
 use anyver::{Version, VersionReq};
 use sidex::types::JsonValue;
 
-use crate::records::{decode_all, diagnostic};
+use crate::records::{decode_all, diagnostic, to_json};
 use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::component::*;
 
 /// Check a composition, given as component declarations and diagnostics.
 ///
-/// Invalid declarations are skipped with an error diagnostic. The composition is consistent
-/// if there are no problems and no diagnostics with the severity `Error`.
+/// Declarations are typed models or JSON values. Invalid declarations are skipped with an
+/// error diagnostic. The composition is consistent if there are no problems and no
+/// diagnostics with the severity `Error`.
 #[tracing::instrument(level = "debug", skip_all, fields(components = components.len()))]
 pub fn check_components(
-    components: &[JsonValue],
+    components: &[impl sidex::Encode],
     diagnostics: &[Diagnostic],
 ) -> CompatibilityReport {
     let mut diagnostics = diagnostics.to_vec();
-    let declarations: Vec<ComponentDeclaration> = decode_all(
-        RecordKind::ComponentDeclaration,
-        components,
-        &mut diagnostics,
-    )
-    .into_iter()
-    .map(|decoded| decoded.value)
-    .collect();
+    let values: Vec<JsonValue> = components.iter().map(to_json).collect();
+    let declarations: Vec<ComponentDeclaration> =
+        decode_all(RecordKind::ComponentDeclaration, &values, &mut diagnostics)
+            .into_iter()
+            .map(|decoded| decoded.value)
+            .collect();
     let mut capabilities = Vec::new();
     let mut selectors = Vec::new();
     let mut ids = BTreeMap::<&[u8], (&str, usize)>::new();
@@ -135,12 +134,13 @@ pub fn check_components(
 /// Build the composition that would result from an update.
 ///
 /// The update replaces all declarations of `owners` with `declarations`. A new declaration
-/// without a replaced owner is skipped with an error diagnostic.
+/// without a replaced owner is skipped with an error diagnostic. Declarations are typed models
+/// or JSON values; the candidate composition consists of JSON values.
 pub fn candidate_composition(
-    components: &[JsonValue],
+    components: &[impl sidex::Encode],
     diagnostics: &[Diagnostic],
     owners: &[&str],
-    declarations: &[JsonValue],
+    declarations: &[impl sidex::Encode],
 ) -> (Vec<JsonValue>, Vec<Diagnostic>) {
     let replaced = |value: &JsonValue| {
         value
@@ -150,13 +150,13 @@ pub fn candidate_composition(
     };
     let mut result: Vec<_> = components
         .iter()
+        .map(to_json)
         .filter(|component| !replaced(component))
-        .cloned()
         .collect();
     let mut result_diagnostics = diagnostics.to_vec();
-    for declaration in declarations {
-        if replaced(declaration) {
-            result.push(declaration.clone());
+    for declaration in declarations.iter().map(to_json) {
+        if replaced(&declaration) {
+            result.push(declaration);
         } else {
             result_diagnostics.push(diagnostic(
                 Severity::Error,

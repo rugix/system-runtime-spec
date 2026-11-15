@@ -9,6 +9,7 @@ use system_runtime_spec::evaluation::evaluate_health;
 use system_runtime_spec::records::{Records, to_json};
 use system_runtime_spec::snapshot::{make_snapshot, read_snapshot};
 use system_runtime_spec::types::common::{Diagnostic, Severity};
+use system_runtime_spec::types::component::ComponentDeclaration;
 use system_runtime_spec::types::health::{HealthClockSample, HealthContext};
 
 fn fixtures() -> PathBuf {
@@ -118,6 +119,19 @@ fn components() {
             "{}",
             name(&case)
         );
+        // Typed models give the same report as the JSON values they decode from.
+        let typed: Result<Vec<ComponentDeclaration>, _> = list(&case, "components")
+            .iter()
+            .map(sidex::formats::json::from_value)
+            .collect();
+        if let Ok(typed) = typed {
+            assert_eq!(
+                check_components(&typed, &diagnostics(&case)),
+                report,
+                "{}",
+                name(&case)
+            );
+        }
     }
 }
 
@@ -179,14 +193,10 @@ fn snapshots() {
             let again = read_snapshot(&make_snapshot(
                 &snapshot.records,
                 &snapshot.clock,
-                snapshot.components,
-                snapshot.health,
+                snapshot.parts,
             ))
             .unwrap();
-            assert_eq!(
-                (again.components, again.health),
-                (snapshot.components, snapshot.health)
-            );
+            assert_eq!(again.parts, snapshot.parts);
             let original = case.get("snapshot").unwrap();
             for read in [&snapshot, &again] {
                 assert_eq!(read.records.components, list(original, "components"));

@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
-  candidateComposition, checkComponents, estimateTimestamp, evaluateHealth, makeSnapshot, readSnapshot,
+  SnapshotError, candidateComposition, checkComponents, estimateTimestamp, evaluateHealth, makeSnapshot,
+  readSnapshot,
 } from "../dist/index.js";
 
 const cases = JSON.parse(readFileSync(new URL("../../tests/fixtures/conformance.json", import.meta.url)));
@@ -54,7 +55,7 @@ for (const example of cases.health) {
 for (const example of cases.snapshots) {
   test(`snapshots: ${example.name}`, () => {
     if (!example.valid) {
-      assert.throws(() => readSnapshot(example.snapshot));
+      assert.throws(() => readSnapshot(example.snapshot), SnapshotError);
       return;
     }
     const snapshot = readSnapshot(example.snapshot);

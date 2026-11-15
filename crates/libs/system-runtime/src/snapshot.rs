@@ -2,7 +2,6 @@
 
 use sidex::types::{JsonValue, Map, Str};
 
-use crate::Error;
 use crate::records::{Records, SPEC_VERSION, SUPPORTED_MAJOR, parse_spec_version, to_json};
 use crate::types::common::{Diagnostic, RecordKind};
 use crate::types::health::HealthClockSample;
@@ -17,6 +16,29 @@ const KINDS: [&str; 6] = [
     "DirectoryConfig",
 ];
 
+/// Parts of the specification whose records a snapshot includes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Parts {
+    /// Whether the snapshot includes component declarations.
+    pub components: bool,
+    /// Whether the snapshot includes health nodes, status records, and metrics.
+    pub health: bool,
+}
+
+impl Parts {
+    /// Both parts.
+    pub const ALL: Self = Self {
+        components: true,
+        health: true,
+    };
+}
+
+impl Default for Parts {
+    fn default() -> Self {
+        Self::ALL
+    }
+}
+
 /// A received snapshot.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
@@ -24,21 +46,35 @@ pub struct Snapshot {
     pub records: Records,
     /// Correlation of the boot-time clock with wall-clock time.
     pub clock: HealthClockSample,
-    /// Whether the snapshot includes the records of the components part.
-    pub components: bool,
-    /// Whether the snapshot includes the records of the health part.
-    pub health: bool,
+    /// Parts whose records the snapshot includes.
+    pub parts: Parts,
 }
 
-/// Create a snapshot with the original records and their diagnostics.
+/// A snapshot that cannot be read.
+#[derive(Debug, thiserror::Error)]
+pub enum SnapshotError {
+    /// The snapshot follows a version of the specification that this crate does not support.
+    #[error("unsupported snapshot version {0:?}")]
+    UnsupportedVersion(Option<String>),
+    /// The clock sample is missing or invalid.
+    #[error("invalid clock sample: {0}")]
+    InvalidClock(String),
+    /// A field that holds a list holds something else.
+    #[error("{0} is not a list")]
+    NotAList(&'static str),
+    /// The snapshot includes only some lists of the health part.
+    #[error("snapshot includes only some lists of the health part")]
+    PartialHealth,
+    /// A diagnostic is invalid.
+    #[error("invalid diagnostic: {0}")]
+    InvalidDiagnostic(String),
+}
+
+/// Create a snapshot with the original records of the given parts and their diagnostics.
 ///
 /// Take the clock sample after reading the records.
-pub fn make_snapshot(
-    records: &Records,
-    clock: &HealthClockSample,
-    components: bool,
-    health: bool,
-) -> JsonValue {
+pub fn make_snapshot(records: &Records, clock: &HealthClockSample, parts: Parts) -> JsonValue {
+    let Parts { components, health } = parts;
     let mut snapshot: Map<Str, JsonValue> = Map::new();
     snapshot.insert("specVersion".into(), SPEC_VERSION.into());
     snapshot.insert("clock".into(), to_json(clock));
@@ -102,43 +138,42 @@ fn valid_timestamp(text: &str) -> bool {
                 && fraction[1..].iter().all(u8::is_ascii_digit)))
 }
 
-fn list(value: &JsonValue, field: &str) -> Result<Vec<JsonValue>, Error> {
+fn list(value: &JsonValue, field: &'static str) -> Result<Vec<JsonValue>, SnapshotError> {
     match value.get(field) {
         None => Ok(Vec::new()),
         Some(JsonValue::Seq(items)) => Ok(items.to_vec()),
-        Some(_) => Err(Error::Invalid(format!("{field} is not a list"))),
+        Some(_) => Err(SnapshotError::NotAList(field)),
     }
 }
 
 /// Read a snapshot, applying the fallbacks to its diagnostics.
 ///
-/// Fail for snapshots of an unsupported version or with an invalid structure.
-pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, Error> {
+/// Fail for snapshots of an unsupported version or with an invalid structure. Records are
+/// validated when they are checked or evaluated.
+pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, SnapshotError> {
     let version = value.get("specVersion").and_then(JsonValue::as_str);
     if version.and_then(parse_spec_version).map(|(major, _)| major) != Some(SUPPORTED_MAJOR) {
-        return Err(Error::Invalid(format!(
-            "unsupported snapshot version {version:?}"
-        )));
+        return Err(SnapshotError::UnsupportedVersion(
+            version.map(str::to_owned),
+        ));
     }
     let clock = value.get("clock").cloned().unwrap_or_default();
     let timestamp = clock.get("timestamp").and_then(JsonValue::as_str);
     if !timestamp.is_some_and(valid_timestamp) {
-        return Err(Error::Invalid(format!(
-            "invalid clock timestamp {timestamp:?}"
+        return Err(SnapshotError::InvalidClock(format!(
+            "invalid timestamp {timestamp:?}"
         )));
     }
     let clock: HealthClockSample = sidex::formats::json::from_value(&clock)
-        .map_err(|error| Error::Invalid(error.to_string()))?;
+        .map_err(|error| SnapshotError::InvalidClock(error.to_string()))?;
     let present = HEALTH.map(|field| value.get(field).is_some());
     if present.iter().any(|p| *p) && !present.iter().all(|p| *p) {
-        return Err(Error::Invalid(
-            "snapshot includes only some lists of the health part".into(),
-        ));
+        return Err(SnapshotError::PartialHealth);
     }
     let mut diagnostics = Vec::new();
     for item in list(value, "diagnostics")? {
         let Some(mut item) = item.as_map().cloned() else {
-            return Err(Error::Invalid("diagnostic is not an object".into()));
+            return Err(SnapshotError::InvalidDiagnostic("not an object".into()));
         };
         let known = |item: &Map<Str, JsonValue>, field: &str, values: &[&str]| {
             item.get(field)
@@ -152,7 +187,7 @@ pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, Error> {
             item.insert("severity".into(), "Error".into());
         }
         let diagnostic: Diagnostic = sidex::formats::json::from_value(&JsonValue::Map(item))
-            .map_err(|error| Error::Invalid(error.to_string()))?;
+            .map_err(|error| SnapshotError::InvalidDiagnostic(error.to_string()))?;
         diagnostics.push(diagnostic);
     }
     Ok(Snapshot {
@@ -165,7 +200,9 @@ pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, Error> {
             diagnostics,
         },
         clock,
-        components: value.get("components").is_some(),
-        health: present.iter().all(|p| *p),
+        parts: Parts {
+            components: value.get("components").is_some(),
+            health: present.iter().all(|p| *p),
+        },
     })
 }

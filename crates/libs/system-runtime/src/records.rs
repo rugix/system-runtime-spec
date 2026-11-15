@@ -39,9 +39,47 @@ pub struct Records {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Convert a record to its JSON value.
+/// Convert a record, given as a typed model or as a JSON value, to its JSON value.
 pub fn to_json<T: sidex::Encode + ?Sized>(record: &T) -> JsonValue {
     sidex::formats::json::to_value(record).expect("records are valid JSON")
+}
+
+impl Records {
+    /// Add component declarations, given as typed models or as JSON values.
+    pub fn with_components(mut self, records: &[impl sidex::Encode]) -> Self {
+        self.components.extend(records.iter().map(to_json));
+        self
+    }
+
+    /// Add health nodes, given as typed models or as JSON values.
+    pub fn with_health_nodes(mut self, records: &[impl sidex::Encode]) -> Self {
+        self.health_nodes.extend(records.iter().map(to_json));
+        self
+    }
+
+    /// Add status records, given as typed models or as JSON values.
+    pub fn with_health_statuses(mut self, records: &[impl sidex::Encode]) -> Self {
+        self.health_statuses.extend(records.iter().map(to_json));
+        self
+    }
+
+    /// Add metric definitions, given as typed models or as JSON values.
+    pub fn with_metrics(mut self, records: &[impl sidex::Encode]) -> Self {
+        self.metrics.extend(records.iter().map(to_json));
+        self
+    }
+
+    /// Add metric samples, given as typed models or as JSON values.
+    pub fn with_metric_samples(mut self, records: &[impl sidex::Encode]) -> Self {
+        self.metric_samples.extend(records.iter().map(to_json));
+        self
+    }
+
+    /// Add diagnostics.
+    pub fn with_diagnostics(mut self, diagnostics: &[Diagnostic]) -> Self {
+        self.diagnostics.extend_from_slice(diagnostics);
+        self
+    }
 }
 
 /// Create a diagnostic.
@@ -58,6 +96,49 @@ pub fn diagnostic(
         path,
     }
 }
+
+/// Implement conversions for an ID wrapper, whose generated field is private to the crate.
+///
+/// Converting does not validate the ID; evaluation skips records with invalid IDs.
+macro_rules! id_conversions {
+    ($($id:ty),*) => {$(
+        impl $id {
+            /// The ID as a string.
+            pub fn as_str(&self) -> &str {
+                &self.0
+            }
+        }
+
+        impl From<String> for $id {
+            fn from(id: String) -> Self {
+                Self(id)
+            }
+        }
+
+        impl From<&str> for $id {
+            fn from(id: &str) -> Self {
+                Self(id.to_owned())
+            }
+        }
+
+        impl AsRef<str> for $id {
+            fn as_ref(&self) -> &str {
+                &self.0
+            }
+        }
+
+        impl std::fmt::Display for $id {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.0)
+            }
+        }
+    )*};
+}
+
+id_conversions!(
+    crate::types::health::HealthNodeId,
+    crate::types::metric::MetricId
+);
 
 /// A valid record, normalized for evaluation, with the values that need a fallback.
 ///

@@ -12,10 +12,10 @@ evaluates health, and sends records to other systems as snapshots.
 system-runtime-spec = "0.2"
 ```
 
-Import the crate as `system_runtime_spec`. Records are
-[`sidex::types::JsonValue`](https://docs.rs/sidex) values, so that snapshots carry them unchanged
-and records of newer minor versions keep working. The generated models in `types` describe their
-structure, and `records::to_json` converts typed models to records.
+Import the crate as `system_runtime_spec`. Functions that take records accept the generated
+models in `types` or [`sidex::types::JsonValue`](https://docs.rs/sidex) values. `Records` keeps
+records as JSON values, so that snapshots carry them unchanged and records of newer minor versions
+keep working. `Records::with_components` and similar methods add typed models.
 
 ## Read and Check a System
 
@@ -32,7 +32,7 @@ fn main() -> Result<(), system_runtime_spec::Error> {
     let health = evaluate_health(&records, &current_context()?);
     println!("{}", compatibility.consistent);
     for node in &health.nodes {
-        println!("{}: {:?}/{:?}", node.id.as_str(), node.usable, node.healthy);
+        println!("{}: {:?}/{:?}", node.id, node.usable, node.healthy);
     }
     Ok(())
 }
@@ -79,12 +79,12 @@ use system_runtime_spec::{
     clock::current_clock_sample,
     discovery::read_records,
     evaluation::evaluate_health,
-    snapshot::{make_snapshot, read_snapshot},
+    snapshot::{Parts, make_snapshot, read_snapshot},
 };
 
-fn main() -> Result<(), system_runtime_spec::Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let records = read_records("/");
-    let snapshot = make_snapshot(&records, &current_clock_sample()?, true, true);
+    let snapshot = make_snapshot(&records, &current_clock_sample()?, Parts::ALL);
     let received = read_snapshot(&snapshot)?;
     let report = evaluate_health(&received.records, &received.clock.context);
     println!("{:?}", report.nodes);
@@ -92,7 +92,9 @@ fn main() -> Result<(), system_runtime_spec::Error> {
 }
 ```
 
-Evaluating a snapshot gives health at the time of its clock sample. `clock::estimate_timestamp`
+`Parts` selects whether a snapshot includes component declarations, health records, or both.
+`read_snapshot` fails with a `SnapshotError` for snapshots of an unsupported version or with an
+invalid structure. Evaluating a snapshot gives health at the time of its clock sample. `clock::estimate_timestamp`
 places evidence in wall-clock time for display.
 
 `discovery`, `current_context`, and `current_clock_sample` are available on Linux only.

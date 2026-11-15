@@ -14,4 +14,4 @@ export { estimateTimestamp } from "./clock.js";
 export { candidateComposition, checkComponents } from "./components.js";
 export { evaluateHealth } from "./health.js";
 export { type JsonObject, type Records, SPEC_VERSION } from "./records.js";
-export { type Snapshot, makeSnapshot, readSnapshot } from "./snapshot.js";
+export { type Snapshot, SnapshotError, makeSnapshot, readSnapshot } from "./snapshot.js";
