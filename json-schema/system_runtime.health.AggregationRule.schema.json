@@ -24,9 +24,7 @@
     }
   },
   "required": [
-    "inputs",
-    "required",
-    "healthy"
+    "inputs"
   ],
   "unevaluatedProperties": false,
   "$defs": {

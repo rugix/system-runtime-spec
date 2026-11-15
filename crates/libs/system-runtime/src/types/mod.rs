@@ -2060,14 +2060,14 @@ pub mod health {
     pub struct AggregationRule {
         #[doc = "Dependencies with distinct node IDs.\n"]
         pub inputs: ::std::vec::Vec<AggregationInput>,
-        #[doc = "Minimum healthy or degraded input count, including mandatory inputs.\n"]
-        pub required: u32,
-        #[doc = "Desired healthy input count, including mandatory inputs; required <= healthy <= inputs length.\n"]
-        pub healthy: u32,
+        #[doc = "Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.\n"]
+        pub required: ::std::option::Option<u32>,
+        #[doc = "Desired healthy input count, including mandatory inputs; omitted means all inputs.\nMust satisfy 1 <= required <= healthy <= inputs length.\n"]
+        pub healthy: ::std::option::Option<u32>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for AggregationRule {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("inputs" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < AggregationInput , > > ,) . with_docs ("Dependencies with distinct node IDs.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Minimum healthy or degraded input count, including mandatory inputs.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Desired healthy input count, including mandatory inputs; required <= healthy <= inputs length.\n")]))) . with_docs ("Minimum and desired health targets.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::AggregationRule" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("inputs" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < AggregationInput , > > ,) . with_docs ("Dependencies with distinct node IDs.\n") , :: sidex :: shape :: FieldShape :: new ("required" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < u32 > ,) . with_docs ("Desired healthy input count, including mandatory inputs; omitted means all inputs.\nMust satisfy 1 <= required <= healthy <= inputs length.\n") . optional ()]))) . with_docs ("Minimum and desired health targets.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for AggregationRule {
@@ -2084,8 +2084,14 @@ pub mod health {
         fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
             match index {
                 0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.inputs)),
-                1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.required)),
-                2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.healthy)),
+                1usize => self
+                    .required
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                2usize => self
+                    .healthy
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -2123,10 +2129,8 @@ pub mod health {
             ::std::result::Result::Ok(Self {
                 inputs: __field_0
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `inputs`"))?,
-                required: __field_1
-                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `required`"))?,
-                healthy: __field_2
-                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthy`"))?,
+                required: __field_1,
+                healthy: __field_2,
             })
         }
     }

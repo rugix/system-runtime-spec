@@ -264,9 +264,7 @@
           },
           "required": [
             "rule",
-            "inputs",
-            "required",
-            "healthy"
+            "inputs"
           ]
         }
       ]

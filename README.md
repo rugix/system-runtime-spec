@@ -407,11 +407,13 @@ not extend its lifetime, and wall-clock changes do not affect freshness.
 
 #### Aggregate Nodes
 
-An aggregate declares `inputs`, a minimum `required` count of healthy or
-degraded inputs, and a desired `healthy` count. Each input is a record with a
-referenced `node` ID and an optional `required` flag, which defaults to false.
-Node IDs must be distinct. Count thresholds must satisfy
-`1 <= required <= healthy <= inputs.length`.
+An aggregate declares `inputs`, an optional minimum `required` count of healthy
+or degraded inputs, and an optional desired `healthy` count. Each input is a
+record with a referenced `node` ID and an optional `required` flag, which
+defaults to false. Node IDs must be distinct. An omitted `healthy` count means
+all inputs, and an omitted `required` count equals the `healthy` count, so an
+aggregate without counts requires all inputs to be healthy. The resolved counts
+must satisfy `1 <= required <= healthy <= inputs.length`.
 
 Existing declarations must convert string inputs such as `"storage"` to
 `{"node": "storage"}`, even when no input is individually required.
@@ -422,16 +424,14 @@ Existing declarations must convert string inputs such as `"storage"` to
   "origin": "rugix.system",
   "rule": {
     "rule": "aggregate",
-    "inputs": [{"node": "storage"}, {"node": "application"}],
-    "required": 2,
-    "healthy": 2
+    "inputs": [{"node": "storage"}, {"node": "application"}]
   }
 }
 ```
 
 Both input nodes must exist in the graph. Without individually required inputs,
-setting both thresholds to the input count expresses all-of; setting both to one
-expresses any-of. Setting `required` below `healthy` expresses redundancy that
+omitting both counts expresses all-of; setting `healthy` to one expresses
+any-of. Setting `required` below `healthy` expresses redundancy that
 can tolerate some failures.
 
 An input with `required: true` is mandatory. It must be healthy or degraded for
