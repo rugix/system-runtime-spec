@@ -55,9 +55,9 @@ for a part to publish its records.
 ## Implementations
 
 All three implementations are published as `system-runtime-spec`. They check compatibility,
-evaluate health, and read snapshots; the Rust and Python implementations also discover records in
-the filesystem and create snapshots. Version 0.2 of the packages implements version 1.0 (draft) of
-the specification.
+evaluate health, and create and read snapshots; the Rust and Python implementations also discover
+records in the filesystem. Version 0.2 of the packages implements version 1.0 (draft) of the
+specification.
 
 | Language | Package | Documentation |
 | --- | --- | --- |
