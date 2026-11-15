@@ -462,10 +462,11 @@ before it applied overrides, each with its level ([Section 8.3](#83-reading)):
    the update supplies them.
 3. Apply the overrides of [Section 8.3](#83-reading).
 
-The diagnostics of the candidate composition are the current diagnostics and those about the new
-declarations. The current diagnostics can concern files that the update replaces; diagnostic
-equality ([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can
-recognize them as existing ones.
+The diagnostics of the candidate composition are the current diagnostics that step 1 keeps, and
+those about the new declarations. The kept diagnostics can concern files that the update replaces,
+for example, an invalid record without a readable owner. Diagnostic equality
+([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can recognize them
+as existing ones.
 
 Checking the candidate composition finds broken requirements before the update takes place, because
 the remaining declarations keep their requirements. Declarations at higher levels stay in effect, as
@@ -1051,7 +1052,8 @@ To read the records of one kind, a reader:
    links, count as different files.
 
 Each record has the level of the directory through which the reader read it. A file that the
-reader reaches through directories of several levels has the highest of these levels.
+reader reaches through directories of several levels has the highest of these levels. A diagnostic
+about a file or directory has the level of the directory through which the reader reached it.
 
 A reader MUST skip directories that do not exist, and entries that disappear between listing a
 directory and reading them. If a directory path exists but is not a directory or is a broken
