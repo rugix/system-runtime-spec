@@ -104,17 +104,18 @@ parts define their consequences.
 
 Records come from many contributors, and one faulty record should not prevent the evaluation of
 the others. Readers, compatibility checkers, and health evaluators MUST skip invalid records and
-records they cannot read, and MUST report a _diagnostic_ with the severity `error` for each. They
-report diagnostics with the severity `warning` for records that they use despite a problem
-([Section 3.6](#36-evolution)). A diagnostic has the following fields:
+records they cannot read, and MUST report a _diagnostic_ with the severity `error` for each. Other
+problems with records, such as conflicts that the results show, are reported with the severity
+`warning`. A diagnostic has the following fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `severity` | severity | `error` if the records concerned were skipped or not evaluated, and `warning` otherwise. |
+| `severity` | severity | `error` if the results may not reflect the records concerned, for example, because they were skipped, and `warning` if the results account for the problem. |
 | `kind` | diagnostic kind | Kind of records concerned: `components`, `healthNodes`, `healthStatuses`, `metrics`, `metricSamples`, or `directories`. |
 | `message` | string | Description of the problem. |
 | `path` | string, optional | Path of the file or directory concerned. |
 | `recordId` | string, optional | ID of the identifiable invalid record that the diagnostic reports. |
+| `recordOwner` | string, optional | Owner of the identifiable invalid record, if it has a valid one. |
 
 The kind of a diagnostic is the kind of the records it concerns, also for a directory of such
 records and for diagnostics added during evaluation. The kind `directories` is reserved for
@@ -123,12 +124,14 @@ diagnostics affect their results ([Sections 5.4](#54-consistency) and
 [6.7](#67-evaluation-and-reports)). The messages of diagnostics and their order are not specified
 and differ between implementations.
 
-An invalid record is _identifiable_ if its file contains an I-JSON object whose `id` member holds
-a valid ID ([Section 3.3](#33-identifiers)). The diagnostic of an identifiable invalid record has
-the severity `error` and carries its ID in `recordId`; other diagnostics have no `recordId`. Where
-this specification counts the records with one ID, such as to find conflicts, each diagnostic with
-a `recordId` counts as one record of its kind with that ID, so that skipping an invalid record does
-not hide a conflict. Invalid records never override other records, and an identifiable invalid
+An invalid record is _identifiable_ if its file contains an I-JSON object whose `id` member holds a
+valid ID ([Section 3.3](#33-identifiers)). The diagnostic of an identifiable invalid record has the
+severity `error` and carries its ID in `recordId` and, if its `owner` member holds a valid owner,
+the owner in `recordOwner`. Other diagnostics have neither. Where this specification counts the
+records with an ID that a valid record has, such as to find conflicts, each diagnostic with that
+`recordId` counts as one record of its kind, so that skipping an invalid record does not hide a
+conflict. Diagnostics do not create IDs: an ID that only diagnostics have has no result and causes
+no problem of its own. Invalid records never override other records, and an identifiable invalid
 record that a valid record of a higher level overrides is skipped without a diagnostic
 ([Section 8.3](#83-reading)).
 
@@ -211,10 +214,10 @@ follows:
 > **Note:** The fallbacks are conservative. For example, a node that attaches to `system` with an
 > input mode added in a later minor version makes `system` unknown for older health evaluators.
 
-A change that readers cannot safely ignore requires a new major version. Records of a new major
-version can appear next to records of earlier ones, but readers of earlier major versions report
-them as invalid. A new major version therefore MUST use new standard directories ([Section
-8.1](#81-directories)), so that readers of an earlier major version never misinterpret its records.
+A change that readers cannot safely ignore requires a new major version. If records of a new major
+version appeared next to records of an earlier one, readers of the earlier major version would
+report them as invalid and count them in conflicts. A new major version therefore MUST use new
+standard directories ([Section 8.1](#81-directories)).
 
 ## 4. Versions and Version Requirements
 
@@ -450,10 +453,11 @@ owner and adds a diagnostic with the severity `error` for it. An update that
 installs a new contributor replaces an owner that has no declarations yet, and an update that
 removes a contributor supplies no declarations for its owner.
 
-The candidate composition is built from the declarations that a reader read, before it applied
-overrides, each with its level ([Section 8.3](#83-reading)):
+The candidate composition is built from the declarations and diagnostics that a reader read,
+before it applied overrides, each with its level ([Section 8.3](#83-reading)):
 
-1. Remove the declarations at the update's level that have a replaced owner.
+1. Remove the declarations at the update's level that have a replaced owner, and the diagnostics at
+   that level whose `recordOwner` is a replaced owner.
 2. Append the new declarations to the end of the list, with the update's level, in the order that
    the update supplies them.
 3. Apply the overrides of [Section 8.3](#83-reading).
@@ -463,10 +467,10 @@ declarations. The current diagnostics can concern files that the update replaces
 equality ([Section 5.5](#55-compatibility-reports)) compares their paths, so that a tool can
 recognize them as existing ones.
 
-Checking the candidate composition finds broken requirements before the update takes place,
-because the remaining declarations keep their requirements. Declarations at higher levels stay in
-effect, as they will after the update. Declarations without level information, such as those of a
-snapshot ([Section 9.1](#91-snapshots)), all count as being at the update's level. A candidate
+Checking the candidate composition finds broken requirements before the update takes place, because
+the remaining declarations keep their requirements. Declarations at higher levels stay in effect, as
+they will after the update. Declarations and diagnostics without level information, such as those of
+a snapshot ([Section 9.1](#91-snapshots)), all count as being at the update's level. A candidate
 composition built from them does not reflect overrides that stay in effect after the update: it
 contains the new declaration where the override would apply, and an override with another owner
 appears as a duplicate component.
@@ -818,7 +822,7 @@ configurations ([Section 3.2](#32-diagnostics)). It proceeds as follows:
 1. It skips invalid records, for example, nodes with an empty range or evidence with a `maxAgeMs`
    of zero, and adds a diagnostic with the severity `error` for each.
 2. If several nodes have the same ID, it evaluates none of them. The ID has one result, at the
-   position of the first of these nodes, with the answers `unknown`/`unknown`, the reason
+   position of the first valid one of these nodes, with the answers `unknown`/`unknown`, the reason
    `conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
    to their ID are ignored. The evaluator adds a diagnostic with the severity `error` for the ID.
 3. It adds the attached inputs of the remaining aggregate nodes
