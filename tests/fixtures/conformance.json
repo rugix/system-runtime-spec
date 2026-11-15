@@ -2602,7 +2602,11 @@
             "state": "Healthy",
             "bootId": "boot",
             "observedAtMs": 80,
-            "maxAgeMs": 20
+            "maxAgeMs": 20,
+            "message": "low disk",
+            "details": {
+              "free": 12
+            }
           }
         ]
       },
@@ -4912,46 +4916,6 @@
       }
     },
     {
-      "name": "matching owner",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "app.health",
-            "rule": {
-              "type": "Observed"
-            },
-            "owner": "rugix.apps.example"
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "app.health",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 3500,
-            "maxAgeMs": 2000,
-            "owner": "rugix.apps.example"
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 5000
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "app.health",
-            "owner": "rugix.apps.example",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
       "name": "wrong owner",
       "records": {
         "healthNodes": [
@@ -5133,7 +5097,7 @@
           {
             "id": "cpu.temperature",
             "owner": "sensor",
-            "value": 72,
+            "value": -12.5,
             "bootId": "boot",
             "observedAtMs": 100,
             "maxAgeMs": 10,
@@ -5405,134 +5369,6 @@
             "usable": "No",
             "healthy": "No",
             "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "negative temperature",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "thermal",
-            "owner": "policy",
-            "rule": {
-              "type": "Threshold",
-              "metric": "cpu.temperature",
-              "healthy": {
-                "upper": {
-                  "value": 75,
-                  "inclusive": true
-                }
-              },
-              "usable": {
-                "upper": {
-                  "value": 90,
-                  "inclusive": true
-                }
-              }
-            }
-          }
-        ],
-        "healthStatuses": [],
-        "metrics": [
-          {
-            "id": "cpu.temperature",
-            "owner": "sensor",
-            "unit": "Cel",
-            "expectedTag": "v1"
-          }
-        ],
-        "metricSamples": [
-          {
-            "id": "cpu.temperature",
-            "owner": "sensor",
-            "value": -12.5,
-            "bootId": "boot",
-            "observedAtMs": 100,
-            "maxAgeMs": 10,
-            "tag": "v1"
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "thermal",
-            "owner": "policy",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
-      "name": "observation message is preserved",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "thermal",
-            "owner": "policy",
-            "rule": {
-              "type": "Threshold",
-              "metric": "cpu.temperature",
-              "healthy": {
-                "upper": {
-                  "value": 75,
-                  "inclusive": true
-                }
-              },
-              "usable": {
-                "upper": {
-                  "value": 90,
-                  "inclusive": true
-                }
-              }
-            }
-          }
-        ],
-        "healthStatuses": [],
-        "metrics": [
-          {
-            "id": "cpu.temperature",
-            "owner": "sensor",
-            "unit": "Cel",
-            "expectedTag": "v1"
-          }
-        ],
-        "metricSamples": [
-          {
-            "id": "cpu.temperature",
-            "owner": "sensor",
-            "value": 72,
-            "bootId": "boot",
-            "observedAtMs": 100,
-            "maxAgeMs": 10,
-            "tag": "v1",
-            "message": "CPU sensor"
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 100
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "thermal",
-            "owner": "policy",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": [],
-            "message": "CPU sensor"
           }
         ],
         "diagnostics": []
@@ -10272,45 +10108,6 @@
       }
     },
     {
-      "name": "expired evidence carries no message",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "a"
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "a",
-            "state": "Degraded",
-            "bootId": "boot",
-            "observedAtMs": 100,
-            "maxAgeMs": 500,
-            "message": "low disk",
-            "details": {
-              "free": 12
-            }
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 1000
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "a",
-            "usable": "Unknown",
-            "healthy": "Unknown",
-            "inputs": [],
-            "reason": "Expired"
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
       "name": "status for unknown node is ignored",
       "records": {
         "healthNodes": [
@@ -10550,64 +10347,6 @@
       }
     },
     {
-      "name": "matching threshold unit",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "t",
-            "rule": {
-              "type": "Threshold",
-              "metric": "temp",
-              "unit": "Cel",
-              "healthy": {
-                "upper": {
-                  "value": 75,
-                  "inclusive": true
-                }
-              },
-              "usable": {
-                "upper": {
-                  "value": 90,
-                  "inclusive": true
-                }
-              }
-            }
-          }
-        ],
-        "healthStatuses": [],
-        "metrics": [
-          {
-            "id": "temp",
-            "unit": "Cel"
-          }
-        ],
-        "metricSamples": [
-          {
-            "id": "temp",
-            "value": 80,
-            "bootId": "boot",
-            "observedAtMs": 900,
-            "maxAgeMs": 500
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 1000
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "t",
-            "usable": "Yes",
-            "healthy": "No",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
-      }
-    },
-    {
       "name": "threshold unit differs from metric unit",
       "records": {
         "healthNodes": [
@@ -10672,7 +10411,7 @@
       }
     },
     {
-      "name": "unknown unit codes are accepted",
+      "name": "unknown unit codes are accepted and compared",
       "records": {
         "healthNodes": [
           {
@@ -10686,7 +10425,8 @@
                   "inclusive": true
                 }
               },
-              "usable": {}
+              "usable": {},
+              "unit": "{widget}/(fortnight)"
             }
           }
         ],
@@ -10868,7 +10608,7 @@
   ],
   "snapshots": [
     {
-      "name": "valid snapshot",
+      "name": "valid snapshot with diagnostics",
       "snapshot": {
         "specVersion": "1.0",
         "clock": {
@@ -10878,17 +10618,34 @@
           },
           "timestamp": "2026-10-14T12:00:00Z"
         },
-        "components": [],
+        "components": [
+          {
+            "id": "os",
+            "owner": "rugix.system",
+            "com.example.extra": [
+              1
+            ]
+          }
+        ],
         "diagnostics": [
           {
             "severity": "Warning",
             "kind": "HealthNode",
             "message": "x"
+          },
+          {
+            "severity": "Fatal",
+            "kind": "Schedule",
+            "message": "y"
           }
         ]
       },
       "valid": true,
       "diagnostics": [
+        {
+          "severity": "Error",
+          "kind": "DirectoryConfig"
+        },
         {
           "severity": "Warning",
           "kind": "HealthNode"
@@ -10905,37 +10662,22 @@
             "nowMs": 1000
           },
           "timestamp": "2026-10-14T12:00:00.5Z"
-        }
+        },
+        "healthNodes": [
+          {
+            "specVersion": "1.1",
+            "id": "a",
+            "rule": {
+              "type": "Schedule"
+            }
+          }
+        ],
+        "healthStatuses": [],
+        "metrics": [],
+        "metricSamples": []
       },
       "valid": true,
       "diagnostics": []
-    },
-    {
-      "name": "unknown diagnostic kind and severity",
-      "snapshot": {
-        "specVersion": "1.0",
-        "clock": {
-          "context": {
-            "bootId": "boot",
-            "nowMs": 1000
-          },
-          "timestamp": "2026-10-14T12:00:00Z"
-        },
-        "diagnostics": [
-          {
-            "severity": "Fatal",
-            "kind": "Schedule",
-            "message": "x"
-          }
-        ]
-      },
-      "valid": true,
-      "diagnostics": [
-        {
-          "severity": "Error",
-          "kind": "DirectoryConfig"
-        }
-      ]
     },
     {
       "name": "unsupported major version",

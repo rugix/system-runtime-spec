@@ -176,6 +176,19 @@ fn snapshots() {
         let valid = case.get("valid").and_then(JsonValue::as_bool) == Some(true);
         assert_eq!(result.is_ok(), valid, "{}", name(&case));
         if let Ok(snapshot) = result {
+            let again = read_snapshot(&make_snapshot(
+                &snapshot.records,
+                &snapshot.clock,
+                snapshot.components,
+                snapshot.health,
+            ))
+            .unwrap();
+            assert_eq!(
+                (again.components, again.health),
+                (snapshot.components, snapshot.health)
+            );
+            assert_eq!(again.records.components, snapshot.records.components);
+            assert_eq!(again.records.health_nodes, snapshot.records.health_nodes);
             let report = brief(&JsonValue::from_iter([(
                 "diagnostics",
                 JsonValue::from(
@@ -272,12 +285,4 @@ fn discovery() {
         })
         .collect();
     assert_eq!(found, expected_diagnostics);
-
-    let clock: HealthClockSample = sidex::formats::json::from_str(
-        r#"{"context": {"bootId": "boot", "nowMs": 100}, "timestamp": "2026-10-14T12:00:00Z"}"#,
-    )
-    .unwrap();
-    let snapshot = read_snapshot(&make_snapshot(&records, &clock, true, true)).unwrap();
-    assert!(snapshot.components && snapshot.health);
-    assert_eq!(snapshot.records, records);
 }

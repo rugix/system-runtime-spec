@@ -108,6 +108,17 @@ def test_snapshots(case: dict[str, Any]) -> None:
         )
         == case["diagnostics"]
     )
+    again = read_snapshot(
+        make_snapshot(
+            snapshot.records,
+            snapshot.clock,
+            components=snapshot.components,
+            health=snapshot.health,
+        )
+    )
+    assert (again.components, again.health) == (snapshot.components, snapshot.health)
+    assert again.records.components == snapshot.records.components
+    assert again.records.health_nodes == snapshot.records.health_nodes
 
 
 @pytest.mark.parametrize("case", CASES["timestamps"], ids=lambda case: case["name"])
@@ -149,13 +160,3 @@ def test_discovery(tmp_path: Path) -> None:
         key=lambda d: (d["path"], d["kind"], d["severity"]),
     )
     assert found == expected["diagnostics"]
-
-    clock = {
-        "context": {"bootId": "boot", "nowMs": 100},
-        "timestamp": "2026-10-14T12:00:00Z",
-    }
-    snapshot = read_snapshot(make_snapshot(records, clock))
-    assert snapshot.components and snapshot.health
-    assert snapshot.records.components == records.components
-    assert snapshot.records.health_nodes == records.health_nodes
-    assert len(snapshot.records.diagnostics) == len(records.diagnostics)

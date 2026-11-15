@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
-  candidateComposition, checkComponents, estimateTimestamp, evaluateHealth, readSnapshot,
+  candidateComposition, checkComponents, estimateTimestamp, evaluateHealth, makeSnapshot, readSnapshot,
 } from "../dist/index.js";
 
 const cases = JSON.parse(readFileSync(new URL("../../tests/fixtures/conformance.json", import.meta.url)));
@@ -58,6 +58,10 @@ for (const example of cases.snapshots) {
       return;
     }
     const snapshot = readSnapshot(example.snapshot);
+    const again = readSnapshot(makeSnapshot(snapshot.records, snapshot.clock, snapshot));
+    assert.deepEqual([again.components, again.health], [snapshot.components, snapshot.health]);
+    assert.deepEqual(again.records.components, snapshot.records.components);
+    assert.deepEqual(again.records.healthNodes, snapshot.records.healthNodes);
     assert.deepEqual(brief({ diagnostics: snapshot.records.diagnostics }).diagnostics, example.diagnostics);
   });
 }
