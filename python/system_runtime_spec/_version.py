@@ -34,6 +34,13 @@ class Version:
             raise ValueError(f"Version number exceeds u64: {text!r}")
         return cls(release, prerelease)
 
+    def same_release(self, other: "Version") -> bool:
+        """Compare release components only, ignoring trailing zeros."""
+        return all(
+            left == right
+            for left, right in zip_longest(self.release, other.release, fillvalue=0)
+        )
+
     def compare(self, other: "Version") -> int:
         for left, right in zip_longest(self.release, other.release, fillvalue=0):
             if left != right:
@@ -70,16 +77,21 @@ def parse_requirement(text: str) -> list[tuple[str, Version]]:
 def matches_requirement(
     requirement: list[tuple[str, Version]], version: Version
 ) -> bool:
-    """Match all comparators, including prereleases without implicit exclusions."""
+    """Match all comparators; `<V` also excludes prereleases of a final release V."""
     for operator, target in requirement:
         comparison = version.compare(target)
+        prerelease_of_bound = (
+            not target.prerelease
+            and bool(version.prerelease)
+            and version.same_release(target)
+        )
         if not {
             "=": comparison == 0,
             "==": comparison == 0,
             "!=": comparison != 0,
             ">": comparison > 0,
             ">=": comparison >= 0,
-            "<": comparison < 0,
+            "<": comparison < 0 and not prerelease_of_bound,
             "<=": comparison <= 0,
         }[operator]:
             return False

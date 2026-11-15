@@ -31,20 +31,30 @@ export function parseRequirement(text: string): Requirement {
   });
 }
 
-/** Match all comparators, including prereleases without implicit exclusions. */
+/** Match all comparators; `<V` also excludes prereleases of a final release V. */
 export function matchesRequirement(requirement: Requirement, version: Version): boolean {
   return requirement.every(({ operator, version: target }) => {
     const comparison = compare(version, target);
+    const prereleaseOfBound = !target.prerelease.length && version.prerelease.length > 0
+      && sameRelease(version, target);
     switch (operator) {
       case "=": case "==": return comparison === 0;
       case "!=": return comparison !== 0;
       case ">": return comparison > 0;
       case ">=": return comparison >= 0;
-      case "<": return comparison < 0;
+      case "<": return comparison < 0 && !prereleaseOfBound;
       case "<=": return comparison <= 0;
       default: throw new Error("Invalid comparator operator");
     }
   });
+}
+
+/** Compare release numbers only, ignoring trailing zeros. */
+function sameRelease(left: Version, right: Version): boolean {
+  for (let i = 0; i < Math.max(left.release.length, right.release.length); i++) {
+    if ((left.release[i] ?? 0n) !== (right.release[i] ?? 0n)) return false;
+  }
+  return true;
 }
 
 /** Compare normalized release numbers, then SemVer-style prerelease identifiers. */

@@ -175,7 +175,7 @@ order, with each provider's implicit capability preceding its explicit ones.
 
 #### Versions and Requirements
 
-Versions follow Rugix's version format (`anyver` 0.1): one or more numeric, dot-separated
+Versions follow Rugix's version format (`anyver` 0.2): one or more numeric, dot-separated
 release components, an optional `-` prerelease, and optional `+` build metadata.
 Release components and numeric prerelease identifiers must fit in an unsigned
 64-bit integer. Prerelease and build identifiers are nonempty, dot-separated
@@ -188,8 +188,12 @@ a longer one.
 
 Requirements are comma-separated conjunctions of `=`, `==`, `!=`, `>`, `>=`,
 `<`, or `<=` comparators. A bare version means equality; a sole `*` matches all
-versions. Outer whitespace is ignored. Prereleases use the same comparisons
-without implicit exclusion. SemVer shorthand such as `^` and `~` is not accepted.
+versions. Outer whitespace is ignored. Comparators use the version order with
+one exception, as in PEP 440: an exclusive upper bound without a prerelease,
+such as `<4`, also excludes prereleases of its version, such as `4.0-rc.1`. A
+requirement like `>=3,<4` therefore matches `3.5-beta` but not `4.0-rc.1`. An
+upper bound with a prerelease, such as `<4-rc.2`, compares in the version order.
+SemVer shorthand such as `^` and `~` is not accepted.
 
 ### Metrics and Thresholds
 
