@@ -60,8 +60,10 @@ for (const example of cases.snapshots) {
     const snapshot = readSnapshot(example.snapshot);
     const again = readSnapshot(makeSnapshot(snapshot.records, snapshot.clock, snapshot));
     assert.deepEqual([again.components, again.health], [snapshot.components, snapshot.health]);
-    assert.deepEqual(again.records.components, snapshot.records.components);
-    assert.deepEqual(again.records.healthNodes, snapshot.records.healthNodes);
+    for (const read of [snapshot, again]) {
+      assert.deepEqual(read.records.components, example.snapshot.components ?? []);
+      assert.deepEqual(read.records.healthNodes, example.snapshot.healthNodes ?? []);
+    }
     assert.deepEqual(brief({ diagnostics: snapshot.records.diagnostics }).diagnostics, example.diagnostics);
   });
 }

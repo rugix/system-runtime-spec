@@ -187,8 +187,11 @@ fn snapshots() {
                 (again.components, again.health),
                 (snapshot.components, snapshot.health)
             );
-            assert_eq!(again.records.components, snapshot.records.components);
-            assert_eq!(again.records.health_nodes, snapshot.records.health_nodes);
+            let original = case.get("snapshot").unwrap();
+            for read in [&snapshot, &again] {
+                assert_eq!(read.records.components, list(original, "components"));
+                assert_eq!(read.records.health_nodes, list(original, "healthNodes"));
+            }
             let report = brief(&JsonValue::from_iter([(
                 "diagnostics",
                 JsonValue::from(

@@ -117,8 +117,9 @@ def test_snapshots(case: dict[str, Any]) -> None:
         )
     )
     assert (again.components, again.health) == (snapshot.components, snapshot.health)
-    assert again.records.components == snapshot.records.components
-    assert again.records.health_nodes == snapshot.records.health_nodes
+    for read in (snapshot, again):
+        assert read.records.components == case["snapshot"].get("components", [])
+        assert read.records.health_nodes == case["snapshot"].get("healthNodes", [])
 
 
 @pytest.mark.parametrize("case", CASES["timestamps"], ids=lambda case: case["name"])
