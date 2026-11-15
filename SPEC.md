@@ -69,11 +69,12 @@ The specification distinguishes five roles:
 - A **consumer** acts on reports, such as an update controller that decides whether to commit an
   update.
 
-An implementation conforms to the specification for a role if it satisfies all requirements of
-this document that apply to that role. The [conformance suite](tests/fixtures/) in this repository
+An implementation conforms to the specification for a role if it satisfies all requirements of this
+document that apply to that role. The [conformance suite](tests/fixtures/) in this repository
 contains test cases for version matching, compatibility checking, candidate compositions, health
-evaluation, snapshots, clock correlation, and discovery. Passing it is evidence of conformance, but does not replace the requirements of this document. If a test
-case contradicts this document, the document applies, and the test case is wrong.
+evaluation, snapshots, clock correlation, and discovery. Passing it is evidence of conformance, but
+does not replace the requirements of this document. If a test case contradicts this document, the
+document applies, and the test case is wrong.
 
 ## 3. Records
 
@@ -1086,11 +1087,11 @@ their installation directories:
 | `metrics` | list of paths, optional | Directories of metric definitions. |
 | `metricSamples` | list of paths, optional | Directories of metric samples. |
 
-Paths MUST be absolute and MUST NOT contain `..` segments or NUL characters. A path segment consisting only of `*`
-matches every directory at that level whose name does not start with `.`, in the order of the
-bytes of their names, but no symlink. Other wildcards, such as `*.d` or `**`, are invalid. Readers
-MUST expand wildcards whenever they read records. Directory configurations cannot add directories
-for directory configurations.
+Paths MUST be absolute and MUST NOT contain `..` segments or NUL characters. A path segment
+consisting only of `*` matches every directory at that level whose name does not start with `.`, in
+the order of the bytes of their names, but no symlink. Other wildcards, such as `*.d` or `**`, are
+invalid. Readers MUST expand wildcards whenever they read records. Directory configurations cannot
+add directories for directory configurations.
 
 > **Example:** This configuration discovers the records of all installed apps of an app manager
 > that keeps the active version of each app behind a `current` symlink:
