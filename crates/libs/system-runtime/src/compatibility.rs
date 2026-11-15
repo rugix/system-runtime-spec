@@ -1,5 +1,3 @@
-//! Check the compatibility of compositions and candidate compositions.
-
 use std::collections::BTreeMap;
 
 use anyver::{Version, VersionReq};

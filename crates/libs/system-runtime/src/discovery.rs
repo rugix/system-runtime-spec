@@ -1,5 +1,3 @@
-//! Discover records in the standard directories and added directories.
-
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::os::unix::fs::OpenOptionsExt;
@@ -96,7 +94,6 @@ impl Records {
     }
 }
 
-/// A file that contains JSON, with the level of the directories it was read through.
 struct File {
     path: PathBuf,
     level: u8,
@@ -125,7 +122,6 @@ impl Reader {
         );
     }
 
-    /// Read the valid records of one kind, applying overrides.
     fn collect<T: RecordModel>(&mut self, added: Vec<String>) {
         let mut directories = standard(T::KIND);
         directories.extend(added.into_iter().map(|path| (path, LIB)));
@@ -167,7 +163,6 @@ impl Reader {
         }
     }
 
-    /// Read the files of one kind that contain JSON.
     fn read(&mut self, kind: RecordKind, directories: &[(String, u8)]) -> Vec<File> {
         let mut files: Vec<(PathBuf, PathBuf, u8)> = Vec::new();
         for (directory, level) in directories {

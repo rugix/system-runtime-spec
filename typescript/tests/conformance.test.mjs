@@ -15,7 +15,6 @@ const LISTS = {
 };
 const CLOCK = { context: { bootId: "boot", nowMs: 0 }, timestamp: "2026-01-01T00:00:00Z" };
 
-/** Read the records and diagnostics of the lists of a fixture object. */
 function records(value) {
   const result = new Records();
   for (const diagnostic of value.diagnostics ?? []) result.pushDiagnostic(diagnostic);
@@ -25,7 +24,6 @@ function records(value) {
   return result;
 }
 
-/** The original JSON of records, as a snapshot contains them. */
 function originals(value) {
   return new Snapshot(value, CLOCK).toJSON();
 }

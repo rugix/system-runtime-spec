@@ -1,4 +1,3 @@
-/** Run the examples of the README. */
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

@@ -1,5 +1,3 @@
-/** Send records to another system as snapshots. */
-
 import { KINDS, type RecordModelKind, SPEC_VERSION, SUPPORTED_MAJOR, isObject, parseSpecVersion } from "./decoding.js";
 import { Diagnostic } from "./generated/common.js";
 import type { RuntimeSnapshot } from "./generated/filesystem.js";

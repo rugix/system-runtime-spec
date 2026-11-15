@@ -1,5 +1,3 @@
-"""Check the compatibility of compositions."""
-
 from collections import Counter
 from collections.abc import Sequence
 
@@ -21,7 +19,6 @@ from .models.component import (
 def check(
     declarations: Sequence[ComponentDeclaration], diagnostics: Sequence[Diagnostic]
 ) -> CompatibilityReport:
-    """Check a composition of valid declarations, with the diagnostics about it."""
     provided: list[tuple[str, CapabilityDeclaration, Version | None]] = []
     selectors: list[
         tuple[str, bool, CapabilitySelectorDeclaration, list[Comparator] | None]

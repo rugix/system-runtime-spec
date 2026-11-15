@@ -1,5 +1,3 @@
-"""Run the examples of the README."""
-
 import re
 from pathlib import Path
 

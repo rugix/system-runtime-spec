@@ -1,5 +1,3 @@
-/** Evaluate health in a health context. */
-
 import { builtins } from "@sidex/types";
 import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
 import type {
@@ -49,7 +47,6 @@ function group<T extends { id: string }>(records: readonly Record<T>[]): Map<str
   return groups;
 }
 
-/** Evaluate valid health records, with the diagnostics about them. */
 export function evaluate(
   nodes: readonly Record<HealthNode>[],
   statuses: readonly Record<HealthStatus>[],

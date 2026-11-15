@@ -37,7 +37,6 @@ fn to_json(value: &impl sidex::Encode) -> JsonValue {
     sidex::formats::json::to_value(value).unwrap()
 }
 
-/// Read the records and diagnostics of the lists of a fixture object.
 fn records(value: &JsonValue) -> Records {
     let mut records = Records::new();
     for diagnostic in list(value, "diagnostics") {
@@ -61,7 +60,6 @@ fn records(value: &JsonValue) -> Records {
     records
 }
 
-/// The original JSON of records, as a snapshot contains them.
 fn originals(records: &Records) -> JsonValue {
     let clock = HealthClockSample::new(
         HealthContext::new("boot", 0),

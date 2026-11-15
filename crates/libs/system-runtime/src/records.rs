@@ -1,5 +1,3 @@
-//! Records and their decoding, validation, and fallbacks.
-
 use std::collections::BTreeSet;
 use std::path::Path;
 
@@ -157,7 +155,6 @@ impl Records {
         &self.diagnostics
     }
 
-    /// Diagnostics about records of the given kinds.
     pub(crate) fn diagnostics_about(&self, kinds: &[RecordKind]) -> Vec<Diagnostic> {
         self.diagnostics
             .iter()
@@ -196,7 +193,6 @@ fn values<T>(records: &[Record<T>]) -> impl ExactSizeIterator<Item = &T> {
     records.iter().map(|record| &record.value)
 }
 
-/// Convert a typed model to its JSON value.
 pub(crate) fn to_json<T: sidex::Encode + ?Sized>(value: &T) -> JsonValue {
     sidex::formats::json::to_value(value).expect("models are valid JSON")
 }

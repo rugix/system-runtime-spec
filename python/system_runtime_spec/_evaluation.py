@@ -1,5 +1,3 @@
-"""Evaluate health in a health context."""
-
 from collections.abc import Sequence
 
 from ._decoding import Record, diagnostic
@@ -39,7 +37,6 @@ def evaluate(
     diagnostics: Sequence[Diagnostic],
     context: HealthContext,
 ) -> HealthReport:
-    """Evaluate valid health records, with the diagnostics about them."""
     return _Evaluation(nodes, statuses, metrics, samples, diagnostics, context).report()
 
 

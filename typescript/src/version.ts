@@ -1,5 +1,3 @@
-/** Versions, precedence, and version requirements. */
-
 type Identifier = bigint | string;
 export type Version = { release: bigint[]; prerelease: Identifier[] };
 export type Requirement = { operator: string; version: Version; wildcard: boolean }[];

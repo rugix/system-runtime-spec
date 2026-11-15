@@ -1,5 +1,3 @@
-"""Discover records in the standard directories and added directories."""
-
 from __future__ import annotations
 
 import json
@@ -84,7 +82,6 @@ class _Reader:
         self.records.push_diagnostic(diagnostic(severity, kind, message, str(path)))
 
     def collect(self, model: type[RecordModel], added: list[tuple[str, int]]) -> None:
-        """Read the valid records of one kind, applying overrides."""
         kind = KINDS[model]
         accepted = []
         for file in self.read(kind, _STANDARD[kind] + added):

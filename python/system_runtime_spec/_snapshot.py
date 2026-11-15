@@ -1,5 +1,3 @@
-"""Send records to another system as snapshots."""
-
 from __future__ import annotations
 
 import re

@@ -1,5 +1,3 @@
-"""Versions, precedence, and version requirements."""
-
 import re
 from dataclasses import dataclass
 from itertools import zip_longest

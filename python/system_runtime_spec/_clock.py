@@ -1,5 +1,3 @@
-"""Read the health context and correlate the boot-time clock with wall-clock time."""
-
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path

@@ -1,5 +1,3 @@
-/** Correlate the boot-time clock with wall-clock time. */
-
 import { builtins } from "@sidex/types";
 import type { HealthClockSample, HealthStatus } from "./generated/health.js";
 import type { MetricSample } from "./generated/metric.js";

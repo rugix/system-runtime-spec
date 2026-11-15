@@ -1,5 +1,3 @@
-/** The records of a system and the diagnostics about them. */
-
 import { check } from "./compatibility.js";
 import {
   InvalidRecord, type Record, type RecordModelKind, type RecordModels, decode, diagnostic,
@@ -31,7 +29,7 @@ export class Records {
   };
   #diagnostics: Diagnostic[] = [];
 
-  /** Add a record given as a model, such as `push("HealthNode", node)`. */
+  /** Add a record given as a model. */
   push<K extends RecordModelKind>(kind: K, record: RecordModels[K]): void {
     this.pushJson(kind, record);
   }

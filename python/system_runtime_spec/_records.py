@@ -1,5 +1,3 @@
-"""The records of a system and the diagnostics about them."""
-
 from __future__ import annotations
 
 import os
@@ -214,7 +212,6 @@ class Records:
         return [record.json for record in self._records[kind]]
 
     def _only(self, *, components: bool, health: bool) -> Records:
-        """Copy the records and diagnostics of the given parts."""
         result = self._copy()
         kinds = {"DirectoryConfig"}
         if components:

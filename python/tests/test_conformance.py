@@ -43,7 +43,6 @@ CLOCK = HealthClockSample(
 
 
 def records(value: dict[str, Any]) -> Records:
-    """Read the records and diagnostics of the lists of a fixture object."""
     result = Records()
     for item in value.get("diagnostics", []):
         result.push_diagnostic(Diagnostic.model_validate(item))
@@ -54,7 +53,6 @@ def records(value: dict[str, Any]) -> Records:
 
 
 def originals(value: Records) -> dict[str, Any]:
-    """The original JSON of records, as a snapshot contains them."""
     return Snapshot(value, CLOCK).to_json()
 
 

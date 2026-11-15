@@ -1,5 +1,3 @@
-//! Send records to another system as snapshots.
-
 use sidex::types::{JsonValue, Map, Str};
 
 use crate::Records;

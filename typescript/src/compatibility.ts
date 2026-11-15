@@ -1,5 +1,3 @@
-/** Check the compatibility of compositions. */
-
 import type { Diagnostic } from "./generated/common.js";
 import type {
   CapabilityDeclaration, CapabilitySelectorDeclaration, CompatibilityProblem, CompatibilityReport,
@@ -22,7 +20,6 @@ function declared<T extends CapabilityDeclaration | CapabilitySelectorDeclaratio
   return { id, ...(version === undefined ? {} : { version }), ...(value === undefined ? {} : { value }) } as T;
 }
 
-/** Check a composition of valid declarations, with the diagnostics about it. */
 export function check(
   declarations: readonly ComponentDeclaration[], diagnostics: readonly Diagnostic[],
 ): CompatibilityReport {

@@ -1,5 +1,3 @@
-//! Evaluate health in a health context.
-
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::Records;

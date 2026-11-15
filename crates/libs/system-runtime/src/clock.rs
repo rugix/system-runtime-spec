@@ -1,5 +1,3 @@
-//! Correlate the boot-time clock with wall-clock time.
-
 use sidex::types::Timestamp;
 
 use crate::types::health::{HealthClockSample, HealthStatus};

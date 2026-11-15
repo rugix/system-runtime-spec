@@ -1,5 +1,3 @@
-"""Decode and validate records, applying the fallbacks for unknown values."""
-
 import copy
 import math
 import re
@@ -71,7 +69,6 @@ class Record[M: pydantic.BaseModel]:
 
 
 def to_json(model: pydantic.BaseModel) -> Json:
-    """Encode a model as JSON."""
     return model.model_dump(mode="json")
 
 
