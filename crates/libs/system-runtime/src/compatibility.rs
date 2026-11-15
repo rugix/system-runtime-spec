@@ -3,34 +3,91 @@
 use std::collections::BTreeMap;
 
 use anyver::{Version, VersionReq};
-use sidex::types::JsonValue;
 
-use crate::records::{decode_all, diagnostic, to_json};
+use crate::Records;
 use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::component::*;
 
-/// Check a composition, given as component declarations and diagnostics.
-///
-/// Declarations are typed models or JSON values. Invalid declarations are skipped with an
-/// error diagnostic. The composition is consistent if there are no problems and no
-/// diagnostics with the severity `Error`.
-#[tracing::instrument(level = "debug", skip_all, fields(components = components.len()))]
-pub fn check_components(
-    components: &[impl sidex::Encode],
-    diagnostics: &[Diagnostic],
+impl Records {
+    /// Check the composition of the component declarations.
+    ///
+    /// The report contains the diagnostics about component declarations and directory
+    /// configurations. The composition is consistent if there are no problems and none of
+    /// these diagnostics has the severity `Error`.
+    #[tracing::instrument(level = "debug", skip_all, fields(components = self.components.len()))]
+    pub fn check_compatibility(&self) -> CompatibilityReport {
+        let diagnostics = self.diagnostics_about(&[
+            RecordKind::ComponentDeclaration,
+            RecordKind::DirectoryConfig,
+        ]);
+        let declarations: Vec<&ComponentDeclaration> = self.components().collect();
+        check(&declarations, diagnostics)
+    }
+
+    /// Build the candidate composition of an update.
+    ///
+    /// The update replaces all component declarations of `owners` with the component
+    /// declarations of `update`. A new declaration without a replaced owner is skipped with an
+    /// error diagnostic. The candidate has the current records and diagnostics, and the
+    /// diagnostics of `update` about component declarations.
+    ///
+    /// ```
+    /// use system_runtime_spec::Records;
+    /// use system_runtime_spec::types::component::ComponentDeclaration;
+    ///
+    /// let os = |version: &str| {
+    ///     ComponentDeclaration::new("os")
+    ///         .with_owner(Some("rugix.system".into()))
+    ///         .with_version(Some(version.into()))
+    /// };
+    /// let mut records = Records::new();
+    /// records.push(os("1.0"));
+    /// let mut update = Records::new();
+    /// update.push(os("2.0"));
+    /// let candidate = records.with_update(&["rugix.system"], &update);
+    /// assert_eq!(candidate.components().next().unwrap().version.as_deref(), Some("2.0"));
+    /// ```
+    pub fn with_update(&self, owners: &[&str], update: &Records) -> Records {
+        let replaced = |declaration: &ComponentDeclaration| {
+            declaration
+                .owner
+                .as_deref()
+                .is_some_and(|owner| owners.contains(&owner))
+        };
+        let mut candidate = self.clone();
+        candidate
+            .components
+            .retain(|record| !replaced(&record.value));
+        candidate
+            .diagnostics
+            .extend(update.diagnostics_about(&[RecordKind::ComponentDeclaration]));
+        for record in &update.components {
+            if replaced(&record.value) {
+                candidate.components.push(record.clone());
+            } else {
+                candidate.diagnostics.push(Diagnostic::new(
+                    Severity::Error,
+                    RecordKind::ComponentDeclaration,
+                    format!(
+                        "new declaration {:?} does not have a replaced owner",
+                        record.value.id
+                    ),
+                ));
+            }
+        }
+        candidate
+    }
+}
+
+fn check(
+    declarations: &[&ComponentDeclaration],
+    diagnostics: Vec<Diagnostic>,
 ) -> CompatibilityReport {
-    let mut diagnostics = diagnostics.to_vec();
-    let values: Vec<JsonValue> = components.iter().map(to_json).collect();
-    let declarations: Vec<ComponentDeclaration> =
-        decode_all(RecordKind::ComponentDeclaration, &values, &mut diagnostics)
-            .into_iter()
-            .map(|decoded| decoded.value)
-            .collect();
     let mut capabilities = Vec::new();
     let mut selectors = Vec::new();
     let mut ids = BTreeMap::<&[u8], (&str, usize)>::new();
     let mut claims = BTreeMap::<&[u8], (&str, Vec<String>)>::new();
-    for component in &declarations {
+    for component in declarations {
         ids.entry(component.id.as_bytes())
             .or_insert((&component.id, 0))
             .1 += 1;
@@ -129,42 +186,4 @@ pub fn check_components(
         problems,
         diagnostics,
     }
-}
-
-/// Build the composition that would result from an update.
-///
-/// The update replaces all declarations of `owners` with `declarations`. A new declaration
-/// without a replaced owner is skipped with an error diagnostic. Declarations are typed models
-/// or JSON values; the candidate composition consists of JSON values.
-pub fn candidate_composition(
-    components: &[impl sidex::Encode],
-    diagnostics: &[Diagnostic],
-    owners: &[&str],
-    declarations: &[impl sidex::Encode],
-) -> (Vec<JsonValue>, Vec<Diagnostic>) {
-    let replaced = |value: &JsonValue| {
-        value
-            .get("owner")
-            .and_then(JsonValue::as_str)
-            .is_some_and(|owner| owners.contains(&owner))
-    };
-    let mut result: Vec<_> = components
-        .iter()
-        .map(to_json)
-        .filter(|component| !replaced(component))
-        .collect();
-    let mut result_diagnostics = diagnostics.to_vec();
-    for declaration in declarations.iter().map(to_json) {
-        if replaced(&declaration) {
-            result.push(declaration);
-        } else {
-            result_diagnostics.push(diagnostic(
-                Severity::Error,
-                RecordKind::ComponentDeclaration,
-                "new declaration does not have a replaced owner",
-                None,
-            ));
-        }
-    }
-    (result, result_diagnostics)
 }

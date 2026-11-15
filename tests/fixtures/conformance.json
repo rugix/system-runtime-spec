@@ -821,8 +821,9 @@
       "diagnostics": [
         {
           "severity": "Warning",
-          "kind": "HealthNode",
-          "message": "newer"
+          "kind": "DirectoryConfig",
+          "message": "newer",
+          "path": "/etc/system-runtime/directories/x.json"
         }
       ],
       "report": {
@@ -831,7 +832,7 @@
         "diagnostics": [
           {
             "severity": "Warning",
-            "kind": "HealthNode"
+            "kind": "DirectoryConfig"
           }
         ]
       }
@@ -860,6 +861,26 @@
             "kind": "DirectoryConfig"
           }
         ]
+      }
+    },
+    {
+      "name": "diagnostics about health records do not affect compatibility",
+      "components": [
+        {
+          "id": "a"
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "Error",
+          "kind": "HealthNode",
+          "message": "broken"
+        }
+      ],
+      "report": {
+        "consistent": true,
+        "problems": [],
+        "diagnostics": []
       }
     },
     {
@@ -1380,13 +1401,7 @@
           "version": "v2"
         }
       ],
-      "candidate": [
-        {
-          "id": "os",
-          "owner": "image",
-          "version": "v2"
-        }
-      ],
+      "candidate": [],
       "report": {
         "consistent": false,
         "problems": [],
@@ -10528,6 +10543,47 @@
             "kind": "HealthNode"
           }
         ]
+      }
+    },
+    {
+      "name": "diagnostics about component declarations do not affect health",
+      "records": {
+        "healthNodes": [
+          {
+            "id": "a"
+          }
+        ],
+        "healthStatuses": [
+          {
+            "id": "a",
+            "state": "Healthy",
+            "bootId": "boot",
+            "observedAtMs": 900,
+            "maxAgeMs": 500
+          }
+        ],
+        "diagnostics": [
+          {
+            "severity": "Error",
+            "kind": "ComponentDeclaration",
+            "message": "broken"
+          }
+        ]
+      },
+      "context": {
+        "bootId": "boot",
+        "nowMs": 1000
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "a",
+            "usable": "Yes",
+            "healthy": "Yes",
+            "inputs": []
+          }
+        ],
+        "diagnostics": []
       }
     },
     {

@@ -1,19 +1,23 @@
 """Discover records in the standard directories and added directories."""
 
+from __future__ import annotations
+
 import json
 import os
 import stat
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from ._records import (
-    InvalidRecord,
-    JsonObject,
-    Records,
-    decode,
-    diagnostic,
-)
-from .models.common import Diagnostic
+from ._decoding import KINDS, InvalidRecord, Json, RecordModel, decode, diagnostic
+from .models.common import RecordKind, Severity
+from .models.component import ComponentDeclaration
+from .models.filesystem import DirectoryConfig
+from .models.health import HealthNode, HealthStatus
+from .models.metric import MetricDefinition, MetricSample
+
+if TYPE_CHECKING:
+    from ._records import Records
 
 # Levels of the directories, from lowest to highest.
 _LIB, _RUN, _ETC = 0, 1, 2
@@ -22,7 +26,7 @@ _PREFIXES = (
     ("/etc/system-runtime", _ETC),
     ("/run/system-runtime", _RUN),
 )
-_STANDARD = {
+_STANDARD: dict[RecordKind, list[tuple[str, int]]] = {
     "ComponentDeclaration": [(f"{p}/components", level) for p, level in _PREFIXES],
     "HealthNode": [(f"{p}/health/nodes", level) for p, level in _PREFIXES],
     "HealthStatus": [("/run/system-runtime/health/status", _RUN)],
@@ -30,46 +34,39 @@ _STANDARD = {
     "MetricSample": [("/run/system-runtime/metrics/samples", _RUN)],
     "DirectoryConfig": [(f"{p}/directories", level) for p, level in _PREFIXES],
 }
-_CONFIG_FIELDS = {
-    "ComponentDeclaration": "components",
-    "HealthNode": "healthNodes",
-    "HealthStatus": "healthStatuses",
-    "MetricDefinition": "metrics",
-    "MetricSample": "metricSamples",
-}
-_OVERRIDABLE = ("ComponentDeclaration", "HealthNode", "MetricDefinition")
+_OVERRIDABLE = (ComponentDeclaration, HealthNode, MetricDefinition)
+_NEWER = "record of a newer minor version"
 
 
 @dataclass
-class _Entry:
+class _File:
+    path: Path
     level: int
-    record: JsonObject
+    json: Json
 
 
-def read_records(root: str | Path = "/") -> Records:
-    """Read the records of all kinds from the directories below `root`.
-
-    Files that cannot be read or do not contain a valid record are skipped with an error
-    diagnostic. Overrides are applied, so the records are those that readers use.
-    """
-    reader = _Reader(Path(root))
-    configs = reader.read("DirectoryConfig", _STANDARD["DirectoryConfig"])
-    added: dict[str, list[tuple[str, int]]] = {kind: [] for kind in _CONFIG_FIELDS}
-    for config in configs:
-        for kind, name in _CONFIG_FIELDS.items():
-            added[kind].extend((path, _LIB) for path in config.get(name) or [])
-    lists = {
-        kind: reader.read(kind, _STANDARD[kind] + added[kind])
-        for kind in _CONFIG_FIELDS
-    }
-    return Records(
-        components=lists["ComponentDeclaration"],
-        health_nodes=lists["HealthNode"],
-        health_statuses=lists["HealthStatus"],
-        metrics=lists["MetricDefinition"],
-        metric_samples=lists["MetricSample"],
-        diagnostics=reader.diagnostics,
-    )
+def discover(root: str | os.PathLike[str], records: Records) -> None:
+    """Add the records below `root` to `records`, applying overrides."""
+    reader = _Reader(Path(root), records)
+    configs: list[DirectoryConfig] = []
+    for file in reader.read("DirectoryConfig", _STANDARD["DirectoryConfig"]):
+        try:
+            config = decode(DirectoryConfig, file.json)
+        except InvalidRecord as error:
+            reader.report("Error", "DirectoryConfig", str(error), file.path)
+            continue
+        if config.newer:
+            reader.report("Warning", "DirectoryConfig", _NEWER, file.path)
+        configs.append(config.value)
+    for model, added in (
+        (ComponentDeclaration, [c.components for c in configs]),
+        (HealthNode, [c.health_nodes for c in configs]),
+        (HealthStatus, [c.health_statuses for c in configs]),
+        (MetricDefinition, [c.metrics for c in configs]),
+        (MetricSample, [c.metric_samples for c in configs]),
+    ):
+        paths = [(path, _LIB) for paths in added for path in paths or []]
+        reader.collect(model, paths)
 
 
 def _byte_order(name: str) -> bytes:
@@ -77,14 +74,40 @@ def _byte_order(name: str) -> bytes:
 
 
 class _Reader:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, records: Records) -> None:
         self.root = root
-        self.diagnostics: list[Diagnostic] = []
+        self.records = records
 
-    def _report(self, severity: str, kind: str, message: str, path: Path | str) -> None:
-        self.diagnostics.append(diagnostic(severity, kind, message, str(path)))
+    def report(
+        self, severity: Severity, kind: RecordKind, message: str, path: Path | str
+    ) -> None:
+        self.records.push_diagnostic(diagnostic(severity, kind, message, str(path)))
 
-    def read(self, kind: str, directories: list[tuple[str, int]]) -> list[JsonObject]:
+    def collect(self, model: type[RecordModel], added: list[tuple[str, int]]) -> None:
+        """Read the valid records of one kind, applying overrides."""
+        kind = KINDS[model]
+        accepted = []
+        for file in self.read(kind, _STANDARD[kind] + added):
+            record = self.records._accept(model, file.json, str(file.path))
+            if record is None:
+                continue
+            if record.newer:
+                self.report("Warning", kind, _NEWER, file.path)
+            accepted.append((file.level, record))
+        if model in _OVERRIDABLE:
+            highest: dict[tuple[str, str | None], int] = {}
+            for level, record in accepted:
+                key = (record.value.id, record.value.owner)
+                highest[key] = max(highest.get(key, level), level)
+            accepted = [
+                (level, record)
+                for level, record in accepted
+                if level == highest[(record.value.id, record.value.owner)]
+            ]
+        for _, record in accepted:
+            self.records._add(record)
+
+    def read(self, kind: RecordKind, directories: list[tuple[str, int]]) -> list[_File]:
         files: dict[str, tuple[Path, int]] = {}
         for directory, level in directories:
             for source in self._expand(kind, directory):
@@ -99,35 +122,24 @@ class _Reader:
                         )
                     else:
                         files[canonical] = (path, level)
-        entries = []
+        result = []
         for path, level in files.values():
-            record = self._load(kind, path)
-            if record is not None:
-                entries.append(_Entry(level, record))
-        if kind in _OVERRIDABLE:
-            highest: dict[tuple[str, str | None], int] = {}
-            for entry in entries:
-                key = (entry.record["id"], entry.record.get("owner"))
-                highest[key] = max(highest.get(key, entry.level), entry.level)
-            entries = [
-                entry
-                for entry in entries
-                if entry.level
-                == highest[(entry.record["id"], entry.record.get("owner"))]
-            ]
-        return [entry.record for entry in entries]
+            loaded, value = self._load(kind, path)
+            if loaded:
+                result.append(_File(path, level, value))
+        return result
 
-    def _resolve(self, kind: str, path: Path) -> str | None:
+    def _resolve(self, kind: RecordKind, path: Path) -> str | None:
         """Resolve a path; paths that disappeared resolve to None."""
         try:
             return os.path.realpath(path, strict=True)
         except FileNotFoundError:
             return None
         except OSError as error:
-            self._report("Error", kind, f"cannot resolve path: {error}", path)
+            self.report("Error", kind, f"cannot resolve path: {error}", path)
             return None
 
-    def _check_directory(self, kind: str, path: Path) -> bool:
+    def _check_directory(self, kind: RecordKind, path: Path) -> bool:
         """Check that a path is a directory; diagnose everything but its absence."""
         try:
             status = os.stat(path)
@@ -137,20 +149,20 @@ class _Reader:
             except FileNotFoundError:
                 return False
             except OSError as error:
-                self._report("Error", kind, f"cannot inspect path: {error}", path)
+                self.report("Error", kind, f"cannot inspect path: {error}", path)
                 return False
             if stat.S_ISLNK(status.st_mode):
-                self._report("Error", kind, "directory is a broken symlink", path)
+                self.report("Error", kind, "directory is a broken symlink", path)
                 return False
         except OSError as error:
-            self._report("Error", kind, f"cannot inspect path: {error}", path)
+            self.report("Error", kind, f"cannot inspect path: {error}", path)
             return False
         if not stat.S_ISDIR(status.st_mode):
-            self._report("Error", kind, "path is not a directory", path)
+            self.report("Error", kind, "path is not a directory", path)
             return False
         return True
 
-    def _list(self, kind: str, directory: Path) -> list[tuple[Path, bool]]:
+    def _list(self, kind: RecordKind, directory: Path) -> list[tuple[Path, bool]]:
         """List a directory in byte order, skipping hidden entries and symlinks.
 
         Return the paths of the entries and whether they are directories; regular files
@@ -162,7 +174,7 @@ class _Reader:
         except FileNotFoundError:
             return []
         except OSError as error:
-            self._report("Error", kind, f"cannot list directory: {error}", directory)
+            self.report("Error", kind, f"cannot list directory: {error}", directory)
             return []
         result = []
         for child in children:
@@ -176,12 +188,10 @@ class _Reader:
             except FileNotFoundError:
                 continue
             except OSError as error:
-                self._report(
-                    "Error", kind, f"cannot inspect entry: {error}", child.path
-                )
+                self.report("Error", kind, f"cannot inspect entry: {error}", child.path)
         return result
 
-    def _expand(self, kind: str, directory: str) -> list[Path]:
+    def _expand(self, kind: RecordKind, directory: str) -> list[Path]:
         """Expand whole `*` segments over directories that are no symlinks."""
         matches = [self.root]
         for segment in directory.strip("/").split("/"):
@@ -199,7 +209,7 @@ class _Reader:
             ]
         return matches
 
-    def _walk(self, kind: str, source: Path) -> list[Path]:
+    def _walk(self, kind: RecordKind, source: Path) -> list[Path]:
         if not self._check_directory(kind, source):
             return []
         resolved = self._resolve(kind, source)
@@ -209,34 +219,26 @@ class _Reader:
         self._traverse(kind, Path(resolved), files)
         return files
 
-    def _traverse(self, kind: str, directory: Path, files: list[Path]) -> None:
+    def _traverse(self, kind: RecordKind, directory: Path, files: list[Path]) -> None:
         for path, is_directory in self._list(kind, directory):
             if is_directory:
                 self._traverse(kind, path, files)
             elif path.name.endswith(".json"):
                 files.append(path)
 
-    def _load(self, kind: str, path: Path) -> JsonObject | None:
+    def _load(self, kind: RecordKind, path: Path) -> tuple[bool, Json]:
+        """Read a file that contains JSON; return whether it could be read."""
         try:
             descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
             with os.fdopen(descriptor, "rb") as file:
                 data = file.read()
         except FileNotFoundError:
-            return None
+            return False, None
         except OSError as error:
-            self._report("Error", kind, f"cannot read file: {error}", path)
-            return None
+            self.report("Error", kind, f"cannot read file: {error}", path)
+            return False, None
         try:
-            value = json.loads(data)
+            return True, json.loads(data)
         except ValueError as error:
-            self._report("Error", kind, f"invalid JSON: {error}", path)
-            return None
-        try:
-            decoded = decode(kind, value)
-        except InvalidRecord as error:
-            self._report("Error", kind, str(error), path)
-            return None
-        if decoded.newer:
-            self._report("Warning", kind, "record of a newer minor version", path)
-        assert isinstance(value, dict)
-        return value
+            self.report("Error", kind, f"invalid JSON: {error}", path)
+            return False, None

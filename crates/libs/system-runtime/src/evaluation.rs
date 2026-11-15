@@ -2,31 +2,38 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::records::{Decoded, Records, decode_all, diagnostic};
+use crate::Records;
+use crate::records::Record;
 use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::health::*;
 use crate::types::metric::{MetricDefinition, MetricRange, MetricSample};
 
-/// Read the Linux boot ID and the boot-time clock in milliseconds.
-#[cfg(target_os = "linux")]
-pub fn current_context() -> Result<HealthContext, crate::Error> {
-    let path = std::path::PathBuf::from("/proc/sys/kernel/random/boot_id");
-    let boot_id =
-        std::fs::read_to_string(&path).map_err(|source| crate::Error::Io { path, source })?;
-    let time = rustix::time::clock_gettime(rustix::time::ClockId::Boottime);
-    Ok(HealthContext {
-        boot_id: boot_id.trim().into(),
-        now_ms: (time.tv_sec as u64) * 1_000 + (time.tv_nsec as u64) / 1_000_000,
-    })
+impl HealthContext {
+    /// Read the current Linux boot ID and boot-time clock.
+    #[cfg(target_os = "linux")]
+    pub fn current() -> std::io::Result<Self> {
+        const BOOT_ID: &str = "/proc/sys/kernel/random/boot_id";
+        let boot_id = std::fs::read_to_string(BOOT_ID).map_err(|error| {
+            std::io::Error::new(error.kind(), format!("failed to read {BOOT_ID}: {error}"))
+        })?;
+        let time = rustix::time::clock_gettime(rustix::time::ClockId::Boottime);
+        Ok(Self {
+            boot_id: boot_id.trim().into(),
+            now_ms: (time.tv_sec as u64) * 1_000 + (time.tv_nsec as u64) / 1_000_000,
+        })
+    }
 }
 
-/// Evaluate the health records of `records` in a health context.
-///
-/// Invalid records are skipped with an error diagnostic. The report contains one result per
-/// node ID, in the order of the node definitions, and all diagnostics.
-#[tracing::instrument(level = "debug", skip_all)]
-pub fn evaluate_health(records: &Records, context: &HealthContext) -> HealthReport {
-    Evaluation::new(records, context).report()
+impl Records {
+    /// Evaluate the health records in a health context.
+    ///
+    /// The report contains one result per node ID, in the order of the node definitions, and
+    /// the diagnostics about health records and directory configurations, including those
+    /// that evaluation adds.
+    #[tracing::instrument(level = "debug", skip_all)]
+    pub fn evaluate_health(&self, context: &HealthContext) -> HealthReport {
+        Evaluation::new(self, context).report()
+    }
 }
 
 type Answers = (Answer, Answer);
@@ -77,13 +84,16 @@ fn contains(range: &MetricRange, value: f64) -> bool {
             .is_none_or(|b| value < b.value || (value == b.value && b.inclusive))
 }
 
-fn group<T>(items: Vec<Decoded<T>>, id: impl Fn(&T) -> &str) -> BTreeMap<String, Vec<Decoded<T>>> {
-    let mut groups: BTreeMap<String, Vec<Decoded<T>>> = BTreeMap::new();
+fn group<T: Clone>(
+    items: &[Record<T>],
+    id: impl Fn(&T) -> &str,
+) -> BTreeMap<String, Vec<Record<T>>> {
+    let mut groups: BTreeMap<String, Vec<Record<T>>> = BTreeMap::new();
     for item in items {
         groups
             .entry(id(&item.value).to_owned())
             .or_default()
-            .push(item);
+            .push(item.clone());
     }
     groups
 }
@@ -101,11 +111,11 @@ struct Evaluation<'a> {
     diagnostics: Vec<Diagnostic>,
     reported: BTreeSet<String>,
     order: Vec<String>,
-    nodes: BTreeMap<String, Decoded<HealthNode>>,
+    nodes: BTreeMap<String, Record<HealthNode>>,
     conflicts: BTreeSet<String>,
-    statuses: BTreeMap<String, Vec<Decoded<HealthStatus>>>,
-    metrics: BTreeMap<String, Vec<Decoded<MetricDefinition>>>,
-    samples: BTreeMap<String, Vec<Decoded<MetricSample>>>,
+    statuses: BTreeMap<String, Vec<Record<HealthStatus>>>,
+    metrics: BTreeMap<String, Vec<Record<MetricDefinition>>>,
+    samples: BTreeMap<String, Vec<Record<MetricSample>>>,
     inputs: BTreeMap<String, Vec<(String, InputMode)>>,
     unsupported: BTreeSet<String>,
     on_cycle: BTreeSet<String>,
@@ -114,29 +124,16 @@ struct Evaluation<'a> {
 
 impl<'a> Evaluation<'a> {
     fn new(records: &Records, context: &'a HealthContext) -> Self {
-        let mut diagnostics = records.diagnostics.clone();
-        let nodes = decode_all::<HealthNode>(
+        let diagnostics = records.diagnostics_about(&[
             RecordKind::HealthNode,
-            &records.health_nodes,
-            &mut diagnostics,
-        );
-        let statuses = decode_all::<HealthStatus>(
             RecordKind::HealthStatus,
-            &records.health_statuses,
-            &mut diagnostics,
-        );
-        let metrics = decode_all::<MetricDefinition>(
             RecordKind::MetricDefinition,
-            &records.metrics,
-            &mut diagnostics,
-        );
-        let samples = decode_all::<MetricSample>(
             RecordKind::MetricSample,
-            &records.metric_samples,
-            &mut diagnostics,
-        );
+            RecordKind::DirectoryConfig,
+        ]);
+        let nodes = &records.health_nodes;
         let mut order = Vec::new();
-        for node in &nodes {
+        for node in nodes {
             if !order.contains(&node.value.id.0) {
                 order.push(node.value.id.0.clone());
             }
@@ -149,9 +146,9 @@ impl<'a> Evaluation<'a> {
             order,
             nodes: BTreeMap::new(),
             conflicts: BTreeSet::new(),
-            statuses: group(statuses, |status| &status.id.0),
-            metrics: group(metrics, |metric| &metric.id.0),
-            samples: group(samples, |sample| &sample.id.0),
+            statuses: group(&records.health_statuses, |status| &status.id.0),
+            metrics: group(&records.metrics, |metric| &metric.id.0),
+            samples: group(&records.metric_samples, |sample| &sample.id.0),
             inputs: BTreeMap::new(),
             unsupported: BTreeSet::new(),
             on_cycle: BTreeSet::new(),
@@ -181,7 +178,7 @@ impl<'a> Evaluation<'a> {
     fn diagnose(&mut self, severity: Severity, kind: RecordKind, message: String) {
         if self.reported.insert(message.clone()) {
             self.diagnostics
-                .push(diagnostic(severity, kind, message, None));
+                .push(Diagnostic::new(severity, kind, message));
         }
     }
 

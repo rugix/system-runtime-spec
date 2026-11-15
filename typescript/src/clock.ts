@@ -1,8 +1,8 @@
 /** Correlate the boot-time clock with wall-clock time. */
 
 import { builtins } from "@sidex/types";
-import type { HealthClockSample } from "./generated/health.js";
-import type { JsonObject } from "./records.js";
+import type { HealthClockSample, HealthStatus } from "./generated/health.js";
+import type { MetricSample } from "./generated/metric.js";
 
 // Unix milliseconds of the first and the last instant of the years 0001 to 9999.
 const MIN_TIMESTAMP_MS = -62135596800000n;
@@ -15,10 +15,10 @@ const MAX_TIMESTAMP_MS = 253402300799999n;
  * estimates outside the years 0001 to 9999.
  */
 export function estimateTimestamp(
-  evidence: JsonObject, clock: HealthClockSample,
+  clock: HealthClockSample, evidence: HealthStatus | MetricSample,
 ): builtins.Timestamp | undefined {
   if (evidence.bootId !== clock.context.bootId) return undefined;
-  const age = BigInt(clock.context.nowMs) - BigInt(evidence.observedAtMs as string | number);
+  const age = builtins.U64.toBigInt(clock.context.nowMs) - builtins.U64.toBigInt(evidence.observedAtMs);
   if (age < 0n) return undefined;
   const wallMillis = builtins.Timestamp.toDate(clock.timestamp).getTime();
   if (!Number.isFinite(wallMillis)) return undefined;

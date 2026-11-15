@@ -7,8 +7,13 @@ use std::path::{Path, PathBuf};
 
 use sidex::types::JsonValue;
 
-use crate::records::{Records, check, diagnostic};
+use crate::Records;
+use crate::records::{RecordModel, decode};
 use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::component::ComponentDeclaration;
+use crate::types::filesystem::DirectoryConfig;
+use crate::types::health::{HealthNode, HealthStatus};
+use crate::types::metric::{MetricDefinition, MetricSample};
 
 /// Levels of directories; records of higher levels override those of lower levels.
 const LIB: u8 = 0;
@@ -19,14 +24,6 @@ const PREFIXES: [(&str, u8); 3] = [
     ("/usr/lib/system-runtime", LIB),
     ("/etc/system-runtime", ETC),
     ("/run/system-runtime", RUN),
-];
-
-const KINDS: [(RecordKind, &str); 5] = [
-    (RecordKind::ComponentDeclaration, "components"),
-    (RecordKind::HealthNode, "healthNodes"),
-    (RecordKind::HealthStatus, "healthStatuses"),
-    (RecordKind::MetricDefinition, "metrics"),
-    (RecordKind::MetricSample, "metricSamples"),
 ];
 
 fn standard(kind: RecordKind) -> Vec<(String, u8)> {
@@ -46,55 +43,64 @@ fn standard(kind: RecordKind) -> Vec<(String, u8)> {
     }
 }
 
-/// Read the records of all kinds from the directories below `root`.
-///
-/// Files that cannot be read or do not contain a valid record are skipped with an error
-/// diagnostic. Overrides are applied, so the records are those that readers use.
-#[tracing::instrument(level = "debug", skip_all)]
-pub fn read_records(root: impl AsRef<Path>) -> Records {
-    let mut reader = Reader {
-        root: root.as_ref().to_owned(),
-        diagnostics: Vec::new(),
-    };
-    let configs = reader.read(
-        RecordKind::DirectoryConfig,
-        &standard(RecordKind::DirectoryConfig),
-    );
-    let mut lists = BTreeMap::new();
-    for (kind, field) in KINDS {
-        let mut directories = standard(kind);
-        for config in &configs {
-            for path in config
-                .get(field)
-                .and_then(JsonValue::as_seq)
-                .into_iter()
-                .flatten()
-            {
-                directories.push((path.as_str().unwrap_or_default().to_owned(), LIB));
+impl Records {
+    /// Read the records of a Linux system whose root directory is `root`.
+    ///
+    /// Reads the standard directories and the directories that directory configurations add,
+    /// and applies overrides. Files that cannot be read or do not contain a valid record are
+    /// skipped with an error diagnostic.
+    #[tracing::instrument(level = "debug", skip_all)]
+    pub fn discover(root: impl AsRef<Path>) -> Self {
+        let mut reader = Reader {
+            root: root.as_ref().to_owned(),
+            records: Records::new(),
+        };
+        let mut configs = Vec::new();
+        for file in reader.read(
+            RecordKind::DirectoryConfig,
+            &standard(RecordKind::DirectoryConfig),
+        ) {
+            let path = Some(file.path.display().to_string());
+            match decode::<DirectoryConfig>(RecordKind::DirectoryConfig, file.json) {
+                Ok(config) => {
+                    if config.newer {
+                        reader.records.push_diagnostic(
+                            Diagnostic::new(
+                                Severity::Warning,
+                                RecordKind::DirectoryConfig,
+                                "record of a newer minor version",
+                            )
+                            .with_path(path),
+                        );
+                    }
+                    configs.push(config.value);
+                }
+                Err(message) => reader.records.push_diagnostic(
+                    Diagnostic::new(Severity::Error, RecordKind::DirectoryConfig, message)
+                        .with_path(path),
+                ),
             }
         }
-        lists.insert(field, reader.read(kind, &directories));
-    }
-    let mut take = |field: &str| {
-        lists
-            .remove(field)
-            .expect("records of every kind were read")
-    };
-    Records {
-        components: take("components"),
-        health_nodes: take("healthNodes"),
-        health_statuses: take("healthStatuses"),
-        metrics: take("metrics"),
-        metric_samples: take("metricSamples"),
-        diagnostics: reader.diagnostics,
+        let added = |select: fn(&DirectoryConfig) -> &Option<Vec<String>>| {
+            configs
+                .iter()
+                .flat_map(|config| select(config).iter().flatten().cloned())
+                .collect::<Vec<_>>()
+        };
+        reader.collect::<ComponentDeclaration>(added(|c| &c.components));
+        reader.collect::<HealthNode>(added(|c| &c.health_nodes));
+        reader.collect::<HealthStatus>(added(|c| &c.health_statuses));
+        reader.collect::<MetricDefinition>(added(|c| &c.metrics));
+        reader.collect::<MetricSample>(added(|c| &c.metric_samples));
+        reader.records
     }
 }
 
-fn overridable(kind: RecordKind) -> bool {
-    matches!(
-        kind,
-        RecordKind::ComponentDeclaration | RecordKind::HealthNode | RecordKind::MetricDefinition
-    )
+/// A file that contains JSON, with the level of the directories it was read through.
+struct File {
+    path: PathBuf,
+    level: u8,
+    json: JsonValue,
 }
 
 /// Directory or regular file in a directory whose name does not start with `.`.
@@ -109,20 +115,60 @@ fn not_found(error: &std::io::Error) -> bool {
 
 struct Reader {
     root: PathBuf,
-    diagnostics: Vec<Diagnostic>,
+    records: Records,
 }
 
 impl Reader {
     fn report(&mut self, severity: Severity, kind: RecordKind, message: String, path: &Path) {
-        self.diagnostics.push(diagnostic(
-            severity,
-            kind,
-            message,
-            Some(path.display().to_string()),
-        ));
+        self.records.push_diagnostic(
+            Diagnostic::new(severity, kind, message).with_path(Some(path.display().to_string())),
+        );
     }
 
-    fn read(&mut self, kind: RecordKind, directories: &[(String, u8)]) -> Vec<JsonValue> {
+    /// Read the valid records of one kind, applying overrides.
+    fn collect<T: RecordModel>(&mut self, added: Vec<String>) {
+        let mut directories = standard(T::KIND);
+        directories.extend(added.into_iter().map(|path| (path, LIB)));
+        let mut records = Vec::new();
+        for file in self.read(T::KIND, &directories) {
+            if let Some(record) = self.records.accept::<T>(file.json, Some(&file.path)) {
+                if record.newer {
+                    self.report(
+                        Severity::Warning,
+                        T::KIND,
+                        "record of a newer minor version".into(),
+                        &file.path,
+                    );
+                }
+                records.push((file.level, record));
+            }
+        }
+        let mut highest = BTreeMap::new();
+        for (level, record) in &records {
+            if let Some(key) = record.value.override_key() {
+                let entry = highest.entry(key).or_insert(*level);
+                *entry = (*entry).max(*level);
+            }
+        }
+        let keep: Vec<bool> = records
+            .iter()
+            .map(|(level, record)| {
+                record
+                    .value
+                    .override_key()
+                    .is_none_or(|key| highest[&key] == *level)
+            })
+            .collect();
+        let entries = T::entries_mut(&mut self.records);
+        for ((_, record), keep) in records.into_iter().zip(keep) {
+            if keep {
+                entries.push(record);
+            }
+        }
+    }
+
+    /// Read the files of one kind that contain JSON.
+    fn read(&mut self, kind: RecordKind, directories: &[(String, u8)]) -> Vec<File> {
         let mut files: Vec<(PathBuf, PathBuf, u8)> = Vec::new();
         for (directory, level) in directories {
             for source in self.expand(kind, directory) {
@@ -140,33 +186,13 @@ impl Reader {
                 }
             }
         }
-        let mut entries = Vec::new();
-        for (path, _, level) in files {
-            if let Some(record) = self.load(kind, &path) {
-                entries.push((level, record));
-            }
-        }
-        if overridable(kind) {
-            let key = |record: &JsonValue| {
-                (
-                    record
-                        .get("id")
-                        .and_then(JsonValue::as_str)
-                        .map(str::to_owned),
-                    record
-                        .get("owner")
-                        .and_then(JsonValue::as_str)
-                        .map(str::to_owned),
-                )
-            };
-            let mut highest = BTreeMap::new();
-            for (level, record) in &entries {
-                let entry = highest.entry(key(record)).or_insert(*level);
-                *entry = (*entry).max(*level);
-            }
-            entries.retain(|(level, record)| highest[&key(record)] == *level);
-        }
-        entries.into_iter().map(|(_, record)| record).collect()
+        files
+            .into_iter()
+            .filter_map(|(path, _, level)| {
+                let json = self.load(kind, &path)?;
+                Some(File { path, level, json })
+            })
+            .collect()
     }
 
     /// Resolve a path; paths that disappeared resolve to None.
@@ -333,8 +359,8 @@ impl Reader {
                 return None;
             }
         }
-        let value: JsonValue = match sidex::formats::json::from_slice(&text) {
-            Ok(value) => value,
+        match sidex::formats::json::from_slice(&text) {
+            Ok(value) => Some(value),
             Err(error) => {
                 self.report(
                     Severity::Error,
@@ -342,23 +368,6 @@ impl Reader {
                     format!("invalid JSON: {error}"),
                     path,
                 );
-                return None;
-            }
-        };
-        match check(kind, &value) {
-            Ok(newer) => {
-                if newer {
-                    self.report(
-                        Severity::Warning,
-                        kind,
-                        "record of a newer minor version".into(),
-                        path,
-                    );
-                }
-                Some(value)
-            }
-            Err(message) => {
-                self.report(Severity::Error, kind, message, path);
                 None
             }
         }

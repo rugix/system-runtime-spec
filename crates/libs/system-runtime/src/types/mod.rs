@@ -113,6 +113,70 @@ pub mod common {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl Diagnostic {
+        #[doc = "Creates a new [`Diagnostic`]."]
+        pub fn new(
+            severity: Severity,
+            kind: RecordKind,
+            message: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            Self {
+                severity: severity,
+                kind: kind,
+                message: message.into(),
+                path: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `severity`."]
+        pub fn set_severity(&mut self, severity: Severity) -> &mut Self {
+            self.severity = severity;
+            self
+        }
+        #[doc = "Sets the value of `severity`."]
+        pub fn with_severity(mut self, severity: Severity) -> Self {
+            self.severity = severity;
+            self
+        }
+        #[doc = "Sets the value of `kind`."]
+        pub fn set_kind(&mut self, kind: RecordKind) -> &mut Self {
+            self.kind = kind;
+            self
+        }
+        #[doc = "Sets the value of `kind`."]
+        pub fn with_kind(mut self, kind: RecordKind) -> Self {
+            self.kind = kind;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn set_message(
+            &mut self,
+            message: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.message = message.into();
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn with_message(
+            mut self,
+            message: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.message = message.into();
+            self
+        }
+        #[doc = "Sets the value of `path`."]
+        pub fn set_path(
+            &mut self,
+            path: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.path = path;
+            self
+        }
+        #[doc = "Sets the value of `path`."]
+        pub fn with_path(mut self, path: ::std::option::Option<::std::string::String>) -> Self {
+            self.path = path;
+            self
+        }
+    }
     #[doc = "Effect of a diagnostic on the results.\n"]
     #[derive(Clone, Debug, PartialEq, Copy, Eq)]
     pub enum Severity {
@@ -528,6 +592,164 @@ pub mod component {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl ComponentDeclaration {
+        #[doc = "Creates a new [`ComponentDeclaration`]."]
+        pub fn new(id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            Self {
+                id: id.into(),
+                spec_version: ::std::default::Default::default(),
+                owner: ::std::default::Default::default(),
+                version: ::std::default::Default::default(),
+                provides: ::std::default::Default::default(),
+                claims: ::std::default::Default::default(),
+                requires: ::std::default::Default::default(),
+                conflicts: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(
+            &mut self,
+            id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn set_owner(
+            &mut self,
+            owner: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `version`."]
+        pub fn set_version(
+            &mut self,
+            version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.version = version;
+            self
+        }
+        #[doc = "Sets the value of `version`."]
+        pub fn with_version(
+            mut self,
+            version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.version = version;
+            self
+        }
+        #[doc = "Sets the value of `provides`."]
+        pub fn set_provides(
+            &mut self,
+            provides: ::std::option::Option<::std::vec::Vec<CapabilityDeclaration>>,
+        ) -> &mut Self {
+            self.provides = provides;
+            self
+        }
+        #[doc = "Sets the value of `provides`."]
+        pub fn with_provides(
+            mut self,
+            provides: ::std::option::Option<::std::vec::Vec<CapabilityDeclaration>>,
+        ) -> Self {
+            self.provides = provides;
+            self
+        }
+        #[doc = "Sets the value of `claims`."]
+        pub fn set_claims(
+            &mut self,
+            claims: ::std::option::Option<::std::vec::Vec<ClaimDeclaration>>,
+        ) -> &mut Self {
+            self.claims = claims;
+            self
+        }
+        #[doc = "Sets the value of `claims`."]
+        pub fn with_claims(
+            mut self,
+            claims: ::std::option::Option<::std::vec::Vec<ClaimDeclaration>>,
+        ) -> Self {
+            self.claims = claims;
+            self
+        }
+        #[doc = "Sets the value of `requires`."]
+        pub fn set_requires(
+            &mut self,
+            requires: ::std::option::Option<::std::vec::Vec<CapabilitySelectorDeclaration>>,
+        ) -> &mut Self {
+            self.requires = requires;
+            self
+        }
+        #[doc = "Sets the value of `requires`."]
+        pub fn with_requires(
+            mut self,
+            requires: ::std::option::Option<::std::vec::Vec<CapabilitySelectorDeclaration>>,
+        ) -> Self {
+            self.requires = requires;
+            self
+        }
+        #[doc = "Sets the value of `conflicts`."]
+        pub fn set_conflicts(
+            &mut self,
+            conflicts: ::std::option::Option<::std::vec::Vec<CapabilitySelectorDeclaration>>,
+        ) -> &mut Self {
+            self.conflicts = conflicts;
+            self
+        }
+        #[doc = "Sets the value of `conflicts`."]
+        pub fn with_conflicts(
+            mut self,
+            conflicts: ::std::option::Option<::std::vec::Vec<CapabilitySelectorDeclaration>>,
+        ) -> Self {
+            self.conflicts = conflicts;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
+            &mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.annotations = annotations;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
+            mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.annotations = annotations;
+            self
+        }
+    }
     #[doc = "A resource that at most one component may claim.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct ClaimDeclaration {
@@ -605,6 +827,25 @@ pub mod component {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl ClaimDeclaration {
+        #[doc = "Creates a new [`ClaimDeclaration`]."]
+        pub fn new(id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            Self { id: id.into() }
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(
+            &mut self,
+            id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.id = id.into();
+            self
         }
     }
     #[doc = "A fact that a component provides.\n"]
@@ -724,6 +965,58 @@ pub mod component {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl CapabilityDeclaration {
+        #[doc = "Creates a new [`CapabilityDeclaration`]."]
+        pub fn new(id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            Self {
+                id: id.into(),
+                version: ::std::default::Default::default(),
+                value: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(
+            &mut self,
+            id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `version`."]
+        pub fn set_version(
+            &mut self,
+            version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.version = version;
+            self
+        }
+        #[doc = "Sets the value of `version`."]
+        pub fn with_version(
+            mut self,
+            version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.version = version;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn set_value(
+            &mut self,
+            value: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.value = value;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn with_value(mut self, value: ::std::option::Option<::std::string::String>) -> Self {
+            self.value = value;
+            self
+        }
+    }
     #[doc = "A selector over capabilities.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct CapabilitySelectorDeclaration {
@@ -841,6 +1134,58 @@ pub mod component {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl CapabilitySelectorDeclaration {
+        #[doc = "Creates a new [`CapabilitySelectorDeclaration`]."]
+        pub fn new(id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            Self {
+                id: id.into(),
+                version: ::std::default::Default::default(),
+                value: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(
+            &mut self,
+            id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `version`."]
+        pub fn set_version(
+            &mut self,
+            version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.version = version;
+            self
+        }
+        #[doc = "Sets the value of `version`."]
+        pub fn with_version(
+            mut self,
+            version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.version = version;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn set_value(
+            &mut self,
+            value: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.value = value;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn with_value(mut self, value: ::std::option::Option<::std::string::String>) -> Self {
+            self.value = value;
+            self
+        }
+    }
     #[doc = "Result of checking a composition.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct CompatibilityReport {
@@ -936,6 +1281,59 @@ pub mod component {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl CompatibilityReport {
+        #[doc = "Creates a new [`CompatibilityReport`]."]
+        pub fn new(
+            consistent: bool,
+            problems: ::std::vec::Vec<CompatibilityProblem>,
+            diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
+        ) -> Self {
+            Self {
+                consistent: consistent,
+                problems: problems,
+                diagnostics: diagnostics,
+            }
+        }
+        #[doc = "Sets the value of `consistent`."]
+        pub fn set_consistent(&mut self, consistent: bool) -> &mut Self {
+            self.consistent = consistent;
+            self
+        }
+        #[doc = "Sets the value of `consistent`."]
+        pub fn with_consistent(mut self, consistent: bool) -> Self {
+            self.consistent = consistent;
+            self
+        }
+        #[doc = "Sets the value of `problems`."]
+        pub fn set_problems(
+            &mut self,
+            problems: ::std::vec::Vec<CompatibilityProblem>,
+        ) -> &mut Self {
+            self.problems = problems;
+            self
+        }
+        #[doc = "Sets the value of `problems`."]
+        pub fn with_problems(mut self, problems: ::std::vec::Vec<CompatibilityProblem>) -> Self {
+            self.problems = problems;
+            self
+        }
+        #[doc = "Sets the value of `diagnostics`."]
+        pub fn set_diagnostics(
+            &mut self,
+            diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
+        ) -> &mut Self {
+            self.diagnostics = diagnostics;
+            self
+        }
+        #[doc = "Sets the value of `diagnostics`."]
+        pub fn with_diagnostics(
+            mut self,
+            diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
+        ) -> Self {
+            self.diagnostics = diagnostics;
+            self
         }
     }
     #[doc = "A violated constraint.\n"]
@@ -1157,6 +1555,25 @@ pub mod component {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl ComponentIdProblem {
+        #[doc = "Creates a new [`ComponentIdProblem`]."]
+        pub fn new(id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            Self { id: id.into() }
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(
+            &mut self,
+            id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.id = id.into();
+            self
+        }
+    }
     #[doc = "A resource that more than one component claims.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct ClaimProblem {
@@ -1255,6 +1672,47 @@ pub mod component {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl ClaimProblem {
+        #[doc = "Creates a new [`ClaimProblem`]."]
+        pub fn new(
+            id: impl ::std::convert::Into<::std::string::String>,
+            components: ::std::vec::Vec<::std::string::String>,
+        ) -> Self {
+            Self {
+                id: id.into(),
+                components: components,
+            }
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(
+            &mut self,
+            id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.id = id.into();
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn set_components(
+            &mut self,
+            components: ::std::vec::Vec<::std::string::String>,
+        ) -> &mut Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn with_components(
+            mut self,
+            components: ::std::vec::Vec<::std::string::String>,
+        ) -> Self {
+            self.components = components;
+            self
+        }
+    }
     #[doc = "A requirement that matches no capability.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct SelectorProblem {
@@ -1349,6 +1807,44 @@ pub mod component {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl SelectorProblem {
+        #[doc = "Creates a new [`SelectorProblem`]."]
+        pub fn new(
+            component: impl ::std::convert::Into<::std::string::String>,
+            selector: CapabilitySelectorDeclaration,
+        ) -> Self {
+            Self {
+                component: component.into(),
+                selector: selector,
+            }
+        }
+        #[doc = "Sets the value of `component`."]
+        pub fn set_component(
+            &mut self,
+            component: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.component = component.into();
+            self
+        }
+        #[doc = "Sets the value of `component`."]
+        pub fn with_component(
+            mut self,
+            component: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.component = component.into();
+            self
+        }
+        #[doc = "Sets the value of `selector`."]
+        pub fn set_selector(&mut self, selector: CapabilitySelectorDeclaration) -> &mut Self {
+            self.selector = selector;
+            self
+        }
+        #[doc = "Sets the value of `selector`."]
+        pub fn with_selector(mut self, selector: CapabilitySelectorDeclaration) -> Self {
+            self.selector = selector;
+            self
         }
     }
     #[doc = "A conflict that matches a capability.\n"]
@@ -1477,6 +1973,74 @@ pub mod component {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl ConflictProblem {
+        #[doc = "Creates a new [`ConflictProblem`]."]
+        pub fn new(
+            component: impl ::std::convert::Into<::std::string::String>,
+            selector: CapabilitySelectorDeclaration,
+            provider: impl ::std::convert::Into<::std::string::String>,
+            capability: CapabilityDeclaration,
+        ) -> Self {
+            Self {
+                component: component.into(),
+                selector: selector,
+                provider: provider.into(),
+                capability: capability,
+            }
+        }
+        #[doc = "Sets the value of `component`."]
+        pub fn set_component(
+            &mut self,
+            component: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.component = component.into();
+            self
+        }
+        #[doc = "Sets the value of `component`."]
+        pub fn with_component(
+            mut self,
+            component: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.component = component.into();
+            self
+        }
+        #[doc = "Sets the value of `selector`."]
+        pub fn set_selector(&mut self, selector: CapabilitySelectorDeclaration) -> &mut Self {
+            self.selector = selector;
+            self
+        }
+        #[doc = "Sets the value of `selector`."]
+        pub fn with_selector(mut self, selector: CapabilitySelectorDeclaration) -> Self {
+            self.selector = selector;
+            self
+        }
+        #[doc = "Sets the value of `provider`."]
+        pub fn set_provider(
+            &mut self,
+            provider: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.provider = provider.into();
+            self
+        }
+        #[doc = "Sets the value of `provider`."]
+        pub fn with_provider(
+            mut self,
+            provider: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.provider = provider.into();
+            self
+        }
+        #[doc = "Sets the value of `capability`."]
+        pub fn set_capability(&mut self, capability: CapabilityDeclaration) -> &mut Self {
+            self.capability = capability;
+            self
+        }
+        #[doc = "Sets the value of `capability`."]
+        pub fn with_capability(mut self, capability: CapabilityDeclaration) -> Self {
+            self.capability = capability;
+            self
         }
     }
 }
@@ -1639,6 +2203,120 @@ pub mod filesystem {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl DirectoryConfig {
+        #[doc = "Creates a new [`DirectoryConfig`]."]
+        pub fn new() -> Self {
+            Self {
+                spec_version: ::std::default::Default::default(),
+                components: ::std::default::Default::default(),
+                health_nodes: ::std::default::Default::default(),
+                health_statuses: ::std::default::Default::default(),
+                metrics: ::std::default::Default::default(),
+                metric_samples: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn set_components(
+            &mut self,
+            components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn with_components(
+            mut self,
+            components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `health_nodes`."]
+        pub fn set_health_nodes(
+            &mut self,
+            health_nodes: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.health_nodes = health_nodes;
+            self
+        }
+        #[doc = "Sets the value of `health_nodes`."]
+        pub fn with_health_nodes(
+            mut self,
+            health_nodes: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.health_nodes = health_nodes;
+            self
+        }
+        #[doc = "Sets the value of `health_statuses`."]
+        pub fn set_health_statuses(
+            &mut self,
+            health_statuses: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.health_statuses = health_statuses;
+            self
+        }
+        #[doc = "Sets the value of `health_statuses`."]
+        pub fn with_health_statuses(
+            mut self,
+            health_statuses: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.health_statuses = health_statuses;
+            self
+        }
+        #[doc = "Sets the value of `metrics`."]
+        pub fn set_metrics(
+            &mut self,
+            metrics: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.metrics = metrics;
+            self
+        }
+        #[doc = "Sets the value of `metrics`."]
+        pub fn with_metrics(
+            mut self,
+            metrics: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.metrics = metrics;
+            self
+        }
+        #[doc = "Sets the value of `metric_samples`."]
+        pub fn set_metric_samples(
+            &mut self,
+            metric_samples: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.metric_samples = metric_samples;
+            self
+        }
+        #[doc = "Sets the value of `metric_samples`."]
+        pub fn with_metric_samples(
+            mut self,
+            metric_samples: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.metric_samples = metric_samples;
+            self
+        }
+    }
+    impl ::std::default::Default for DirectoryConfig {
+        fn default() -> Self {
+            Self::new()
         }
     }
     #[doc = "Records read from a system, for sending them to another system.\n\nAn omitted list means that the snapshot does not include records of its kind. The lists of the\nhealth part are either all present or all omitted.\n"]
@@ -1818,6 +2496,150 @@ pub mod filesystem {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl RuntimeSnapshot {
+        #[doc = "Creates a new [`RuntimeSnapshot`]."]
+        pub fn new(
+            spec_version: impl ::std::convert::Into<::std::string::String>,
+            clock: super::health::HealthClockSample,
+        ) -> Self {
+            Self {
+                spec_version: spec_version.into(),
+                clock: clock,
+                components: ::std::default::Default::default(),
+                health_nodes: ::std::default::Default::default(),
+                health_statuses: ::std::default::Default::default(),
+                metrics: ::std::default::Default::default(),
+                metric_samples: ::std::default::Default::default(),
+                diagnostics: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version.into();
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version.into();
+            self
+        }
+        #[doc = "Sets the value of `clock`."]
+        pub fn set_clock(&mut self, clock: super::health::HealthClockSample) -> &mut Self {
+            self.clock = clock;
+            self
+        }
+        #[doc = "Sets the value of `clock`."]
+        pub fn with_clock(mut self, clock: super::health::HealthClockSample) -> Self {
+            self.clock = clock;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn set_components(
+            &mut self,
+            components: ::std::option::Option<
+                ::std::vec::Vec<super::component::ComponentDeclaration>,
+            >,
+        ) -> &mut Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn with_components(
+            mut self,
+            components: ::std::option::Option<
+                ::std::vec::Vec<super::component::ComponentDeclaration>,
+            >,
+        ) -> Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `health_nodes`."]
+        pub fn set_health_nodes(
+            &mut self,
+            health_nodes: ::std::option::Option<::std::vec::Vec<super::health::HealthNode>>,
+        ) -> &mut Self {
+            self.health_nodes = health_nodes;
+            self
+        }
+        #[doc = "Sets the value of `health_nodes`."]
+        pub fn with_health_nodes(
+            mut self,
+            health_nodes: ::std::option::Option<::std::vec::Vec<super::health::HealthNode>>,
+        ) -> Self {
+            self.health_nodes = health_nodes;
+            self
+        }
+        #[doc = "Sets the value of `health_statuses`."]
+        pub fn set_health_statuses(
+            &mut self,
+            health_statuses: ::std::option::Option<::std::vec::Vec<super::health::HealthStatus>>,
+        ) -> &mut Self {
+            self.health_statuses = health_statuses;
+            self
+        }
+        #[doc = "Sets the value of `health_statuses`."]
+        pub fn with_health_statuses(
+            mut self,
+            health_statuses: ::std::option::Option<::std::vec::Vec<super::health::HealthStatus>>,
+        ) -> Self {
+            self.health_statuses = health_statuses;
+            self
+        }
+        #[doc = "Sets the value of `metrics`."]
+        pub fn set_metrics(
+            &mut self,
+            metrics: ::std::option::Option<::std::vec::Vec<super::metric::MetricDefinition>>,
+        ) -> &mut Self {
+            self.metrics = metrics;
+            self
+        }
+        #[doc = "Sets the value of `metrics`."]
+        pub fn with_metrics(
+            mut self,
+            metrics: ::std::option::Option<::std::vec::Vec<super::metric::MetricDefinition>>,
+        ) -> Self {
+            self.metrics = metrics;
+            self
+        }
+        #[doc = "Sets the value of `metric_samples`."]
+        pub fn set_metric_samples(
+            &mut self,
+            metric_samples: ::std::option::Option<::std::vec::Vec<super::metric::MetricSample>>,
+        ) -> &mut Self {
+            self.metric_samples = metric_samples;
+            self
+        }
+        #[doc = "Sets the value of `metric_samples`."]
+        pub fn with_metric_samples(
+            mut self,
+            metric_samples: ::std::option::Option<::std::vec::Vec<super::metric::MetricSample>>,
+        ) -> Self {
+            self.metric_samples = metric_samples;
+            self
+        }
+        #[doc = "Sets the value of `diagnostics`."]
+        pub fn set_diagnostics(
+            &mut self,
+            diagnostics: ::std::option::Option<::std::vec::Vec<super::common::Diagnostic>>,
+        ) -> &mut Self {
+            self.diagnostics = diagnostics;
+            self
+        }
+        #[doc = "Sets the value of `diagnostics`."]
+        pub fn with_diagnostics(
+            mut self,
+            diagnostics: ::std::option::Option<::std::vec::Vec<super::common::Diagnostic>>,
+        ) -> Self {
+            self.diagnostics = diagnostics;
+            self
         }
     }
 }
@@ -2061,6 +2883,135 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl HealthNode {
+        #[doc = "Creates a new [`HealthNode`]."]
+        pub fn new(id: HealthNodeId) -> Self {
+            Self {
+                id: id,
+                spec_version: ::std::default::Default::default(),
+                owner: ::std::default::Default::default(),
+                label: ::std::default::Default::default(),
+                components: ::std::default::Default::default(),
+                rule: ::std::default::Default::default(),
+                part_of: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(&mut self, id: HealthNodeId) -> &mut Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: HealthNodeId) -> Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn set_owner(
+            &mut self,
+            owner: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn set_label(
+            &mut self,
+            label: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.label = label;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn with_label(mut self, label: ::std::option::Option<::std::string::String>) -> Self {
+            self.label = label;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn set_components(
+            &mut self,
+            components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn with_components(
+            mut self,
+            components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `rule`."]
+        pub fn set_rule(&mut self, rule: ::std::option::Option<HealthRule>) -> &mut Self {
+            self.rule = rule;
+            self
+        }
+        #[doc = "Sets the value of `rule`."]
+        pub fn with_rule(mut self, rule: ::std::option::Option<HealthRule>) -> Self {
+            self.rule = rule;
+            self
+        }
+        #[doc = "Sets the value of `part_of`."]
+        pub fn set_part_of(
+            &mut self,
+            part_of: ::std::option::Option<::std::vec::Vec<Attachment>>,
+        ) -> &mut Self {
+            self.part_of = part_of;
+            self
+        }
+        #[doc = "Sets the value of `part_of`."]
+        pub fn with_part_of(
+            mut self,
+            part_of: ::std::option::Option<::std::vec::Vec<Attachment>>,
+        ) -> Self {
+            self.part_of = part_of;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
+            &mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.annotations = annotations;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
+            mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.annotations = annotations;
+            self
+        }
+    }
     #[doc = "How a node's answers are determined.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub enum HealthRule {
@@ -2269,6 +3220,46 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl ObservationRule {
+        #[doc = "Creates a new [`ObservationRule`]."]
+        pub fn new() -> Self {
+            Self {
+                max_age_ms: ::std::default::Default::default(),
+                expected_tag: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn set_max_age_ms(&mut self, max_age_ms: ::std::option::Option<u64>) -> &mut Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn with_max_age_ms(mut self, max_age_ms: ::std::option::Option<u64>) -> Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `expected_tag`."]
+        pub fn set_expected_tag(
+            &mut self,
+            expected_tag: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.expected_tag = expected_tag;
+            self
+        }
+        #[doc = "Sets the value of `expected_tag`."]
+        pub fn with_expected_tag(
+            mut self,
+            expected_tag: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.expected_tag = expected_tag;
+            self
+        }
+    }
+    impl ::std::default::Default for ObservationRule {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
     #[doc = "Ranges that a metric sample is compared with.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct ThresholdRule {
@@ -2420,6 +3411,75 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl ThresholdRule {
+        #[doc = "Creates a new [`ThresholdRule`]."]
+        pub fn new(
+            metric: super::metric::MetricId,
+            healthy: super::metric::MetricRange,
+            usable: super::metric::MetricRange,
+        ) -> Self {
+            Self {
+                metric: metric,
+                healthy: healthy,
+                usable: usable,
+                unit: ::std::default::Default::default(),
+                max_age_ms: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `metric`."]
+        pub fn set_metric(&mut self, metric: super::metric::MetricId) -> &mut Self {
+            self.metric = metric;
+            self
+        }
+        #[doc = "Sets the value of `metric`."]
+        pub fn with_metric(mut self, metric: super::metric::MetricId) -> Self {
+            self.metric = metric;
+            self
+        }
+        #[doc = "Sets the value of `unit`."]
+        pub fn set_unit(
+            &mut self,
+            unit: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.unit = unit;
+            self
+        }
+        #[doc = "Sets the value of `unit`."]
+        pub fn with_unit(mut self, unit: ::std::option::Option<::std::string::String>) -> Self {
+            self.unit = unit;
+            self
+        }
+        #[doc = "Sets the value of `healthy`."]
+        pub fn set_healthy(&mut self, healthy: super::metric::MetricRange) -> &mut Self {
+            self.healthy = healthy;
+            self
+        }
+        #[doc = "Sets the value of `healthy`."]
+        pub fn with_healthy(mut self, healthy: super::metric::MetricRange) -> Self {
+            self.healthy = healthy;
+            self
+        }
+        #[doc = "Sets the value of `usable`."]
+        pub fn set_usable(&mut self, usable: super::metric::MetricRange) -> &mut Self {
+            self.usable = usable;
+            self
+        }
+        #[doc = "Sets the value of `usable`."]
+        pub fn with_usable(mut self, usable: super::metric::MetricRange) -> Self {
+            self.usable = usable;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn set_max_age_ms(&mut self, max_age_ms: ::std::option::Option<u64>) -> &mut Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn with_max_age_ms(mut self, max_age_ms: ::std::option::Option<u64>) -> Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+    }
     #[doc = "Inputs of an aggregate node and the counts they need to meet.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct AggregationRule {
@@ -2518,6 +3578,57 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl AggregationRule {
+        #[doc = "Creates a new [`AggregationRule`]."]
+        pub fn new() -> Self {
+            Self {
+                inputs: ::std::default::Default::default(),
+                min_usable: ::std::default::Default::default(),
+                min_healthy: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `inputs`."]
+        pub fn set_inputs(
+            &mut self,
+            inputs: ::std::option::Option<::std::vec::Vec<AggregationInput>>,
+        ) -> &mut Self {
+            self.inputs = inputs;
+            self
+        }
+        #[doc = "Sets the value of `inputs`."]
+        pub fn with_inputs(
+            mut self,
+            inputs: ::std::option::Option<::std::vec::Vec<AggregationInput>>,
+        ) -> Self {
+            self.inputs = inputs;
+            self
+        }
+        #[doc = "Sets the value of `min_usable`."]
+        pub fn set_min_usable(&mut self, min_usable: ::std::option::Option<u64>) -> &mut Self {
+            self.min_usable = min_usable;
+            self
+        }
+        #[doc = "Sets the value of `min_usable`."]
+        pub fn with_min_usable(mut self, min_usable: ::std::option::Option<u64>) -> Self {
+            self.min_usable = min_usable;
+            self
+        }
+        #[doc = "Sets the value of `min_healthy`."]
+        pub fn set_min_healthy(&mut self, min_healthy: ::std::option::Option<u64>) -> &mut Self {
+            self.min_healthy = min_healthy;
+            self
+        }
+        #[doc = "Sets the value of `min_healthy`."]
+        pub fn with_min_healthy(mut self, min_healthy: ::std::option::Option<u64>) -> Self {
+            self.min_healthy = min_healthy;
+            self
+        }
+    }
+    impl ::std::default::Default for AggregationRule {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
     #[doc = "One input of an aggregate node.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct AggregationInput {
@@ -2612,6 +3723,35 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl AggregationInput {
+        #[doc = "Creates a new [`AggregationInput`]."]
+        pub fn new(node: HealthNodeId) -> Self {
+            Self {
+                node: node,
+                mode: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `node`."]
+        pub fn set_node(&mut self, node: HealthNodeId) -> &mut Self {
+            self.node = node;
+            self
+        }
+        #[doc = "Sets the value of `node`."]
+        pub fn with_node(mut self, node: HealthNodeId) -> Self {
+            self.node = node;
+            self
+        }
+        #[doc = "Sets the value of `mode`."]
+        pub fn set_mode(&mut self, mode: ::std::option::Option<InputMode>) -> &mut Self {
+            self.mode = mode;
+            self
+        }
+        #[doc = "Sets the value of `mode`."]
+        pub fn with_mode(mut self, mode: ::std::option::Option<InputMode>) -> Self {
+            self.mode = mode;
+            self
+        }
+    }
     #[doc = "Attachment of a node to an aggregate node as an input.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct Attachment {
@@ -2702,6 +3842,35 @@ pub mod health {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl Attachment {
+        #[doc = "Creates a new [`Attachment`]."]
+        pub fn new(node: HealthNodeId) -> Self {
+            Self {
+                node: node,
+                mode: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `node`."]
+        pub fn set_node(&mut self, node: HealthNodeId) -> &mut Self {
+            self.node = node;
+            self
+        }
+        #[doc = "Sets the value of `node`."]
+        pub fn with_node(mut self, node: HealthNodeId) -> Self {
+            self.node = node;
+            self
+        }
+        #[doc = "Sets the value of `mode`."]
+        pub fn set_mode(&mut self, mode: ::std::option::Option<InputMode>) -> &mut Self {
+            self.mode = mode;
+            self
+        }
+        #[doc = "Sets the value of `mode`."]
+        pub fn with_mode(mut self, mode: ::std::option::Option<InputMode>) -> Self {
+            self.mode = mode;
+            self
         }
     }
     #[doc = "How an input affects the answers of an aggregate node.\n"]
@@ -2988,6 +4157,181 @@ pub mod health {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl HealthStatus {
+        #[doc = "Creates a new [`HealthStatus`]."]
+        pub fn new(
+            id: HealthNodeId,
+            state: HealthState,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+            observed_at_ms: u64,
+            max_age_ms: u64,
+        ) -> Self {
+            Self {
+                id: id,
+                state: state,
+                boot_id: boot_id.into(),
+                observed_at_ms: observed_at_ms,
+                max_age_ms: max_age_ms,
+                spec_version: ::std::default::Default::default(),
+                owner: ::std::default::Default::default(),
+                tag: ::std::default::Default::default(),
+                message: ::std::default::Default::default(),
+                details: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(&mut self, id: HealthNodeId) -> &mut Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: HealthNodeId) -> Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `state`."]
+        pub fn set_state(&mut self, state: HealthState) -> &mut Self {
+            self.state = state;
+            self
+        }
+        #[doc = "Sets the value of `state`."]
+        pub fn with_state(mut self, state: HealthState) -> Self {
+            self.state = state;
+            self
+        }
+        #[doc = "Sets the value of `boot_id`."]
+        pub fn set_boot_id(
+            &mut self,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.boot_id = boot_id.into();
+            self
+        }
+        #[doc = "Sets the value of `boot_id`."]
+        pub fn with_boot_id(
+            mut self,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.boot_id = boot_id.into();
+            self
+        }
+        #[doc = "Sets the value of `observed_at_ms`."]
+        pub fn set_observed_at_ms(&mut self, observed_at_ms: u64) -> &mut Self {
+            self.observed_at_ms = observed_at_ms;
+            self
+        }
+        #[doc = "Sets the value of `observed_at_ms`."]
+        pub fn with_observed_at_ms(mut self, observed_at_ms: u64) -> Self {
+            self.observed_at_ms = observed_at_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn set_max_age_ms(&mut self, max_age_ms: u64) -> &mut Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn with_max_age_ms(mut self, max_age_ms: u64) -> Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn set_owner(
+            &mut self,
+            owner: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `tag`."]
+        pub fn set_tag(&mut self, tag: ::std::option::Option<::std::string::String>) -> &mut Self {
+            self.tag = tag;
+            self
+        }
+        #[doc = "Sets the value of `tag`."]
+        pub fn with_tag(mut self, tag: ::std::option::Option<::std::string::String>) -> Self {
+            self.tag = tag;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn set_message(
+            &mut self,
+            message: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn with_message(
+            mut self,
+            message: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `details`."]
+        pub fn set_details(
+            &mut self,
+            details: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.details = details;
+            self
+        }
+        #[doc = "Sets the value of `details`."]
+        pub fn with_details(
+            mut self,
+            details: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.details = details;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
+            &mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.annotations = annotations;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
+            mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.annotations = annotations;
+            self
         }
     }
     #[doc = "Summary of the answers of a node.\n"]
@@ -3409,6 +4753,41 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl HealthContext {
+        #[doc = "Creates a new [`HealthContext`]."]
+        pub fn new(boot_id: impl ::std::convert::Into<::std::string::String>, now_ms: u64) -> Self {
+            Self {
+                boot_id: boot_id.into(),
+                now_ms: now_ms,
+            }
+        }
+        #[doc = "Sets the value of `boot_id`."]
+        pub fn set_boot_id(
+            &mut self,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.boot_id = boot_id.into();
+            self
+        }
+        #[doc = "Sets the value of `boot_id`."]
+        pub fn with_boot_id(
+            mut self,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.boot_id = boot_id.into();
+            self
+        }
+        #[doc = "Sets the value of `now_ms`."]
+        pub fn set_now_ms(&mut self, now_ms: u64) -> &mut Self {
+            self.now_ms = now_ms;
+            self
+        }
+        #[doc = "Sets the value of `now_ms`."]
+        pub fn with_now_ms(mut self, now_ms: u64) -> Self {
+            self.now_ms = now_ms;
+            self
+        }
+    }
     #[doc = "Correlation of the boot-time clock with wall-clock time.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct HealthClockSample {
@@ -3505,6 +4884,35 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl HealthClockSample {
+        #[doc = "Creates a new [`HealthClockSample`]."]
+        pub fn new(context: HealthContext, timestamp: ::sidex::types::Timestamp) -> Self {
+            Self {
+                context: context,
+                timestamp: timestamp,
+            }
+        }
+        #[doc = "Sets the value of `context`."]
+        pub fn set_context(&mut self, context: HealthContext) -> &mut Self {
+            self.context = context;
+            self
+        }
+        #[doc = "Sets the value of `context`."]
+        pub fn with_context(mut self, context: HealthContext) -> Self {
+            self.context = context;
+            self
+        }
+        #[doc = "Sets the value of `timestamp`."]
+        pub fn set_timestamp(&mut self, timestamp: ::sidex::types::Timestamp) -> &mut Self {
+            self.timestamp = timestamp;
+            self
+        }
+        #[doc = "Sets the value of `timestamp`."]
+        pub fn with_timestamp(mut self, timestamp: ::sidex::types::Timestamp) -> Self {
+            self.timestamp = timestamp;
+            self
+        }
+    }
     #[doc = "Result of evaluating health.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct HealthReport {
@@ -3589,6 +4997,44 @@ pub mod health {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl HealthReport {
+        #[doc = "Creates a new [`HealthReport`]."]
+        pub fn new(
+            nodes: ::std::vec::Vec<HealthNodeResult>,
+            diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
+        ) -> Self {
+            Self {
+                nodes: nodes,
+                diagnostics: diagnostics,
+            }
+        }
+        #[doc = "Sets the value of `nodes`."]
+        pub fn set_nodes(&mut self, nodes: ::std::vec::Vec<HealthNodeResult>) -> &mut Self {
+            self.nodes = nodes;
+            self
+        }
+        #[doc = "Sets the value of `nodes`."]
+        pub fn with_nodes(mut self, nodes: ::std::vec::Vec<HealthNodeResult>) -> Self {
+            self.nodes = nodes;
+            self
+        }
+        #[doc = "Sets the value of `diagnostics`."]
+        pub fn set_diagnostics(
+            &mut self,
+            diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
+        ) -> &mut Self {
+            self.diagnostics = diagnostics;
+            self
+        }
+        #[doc = "Sets the value of `diagnostics`."]
+        pub fn with_diagnostics(
+            mut self,
+            diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
+        ) -> Self {
+            self.diagnostics = diagnostics;
+            self
         }
     }
     #[doc = "Answers of one node.\n"]
@@ -3794,6 +5240,125 @@ pub mod health {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl HealthNodeResult {
+        #[doc = "Creates a new [`HealthNodeResult`]."]
+        pub fn new(
+            id: HealthNodeId,
+            usable: Answer,
+            healthy: Answer,
+            inputs: ::std::vec::Vec<HealthNodeId>,
+        ) -> Self {
+            Self {
+                id: id,
+                usable: usable,
+                healthy: healthy,
+                inputs: inputs,
+                owner: ::std::default::Default::default(),
+                reason: ::std::default::Default::default(),
+                message: ::std::default::Default::default(),
+                details: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(&mut self, id: HealthNodeId) -> &mut Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: HealthNodeId) -> Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn set_owner(
+            &mut self,
+            owner: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `usable`."]
+        pub fn set_usable(&mut self, usable: Answer) -> &mut Self {
+            self.usable = usable;
+            self
+        }
+        #[doc = "Sets the value of `usable`."]
+        pub fn with_usable(mut self, usable: Answer) -> Self {
+            self.usable = usable;
+            self
+        }
+        #[doc = "Sets the value of `healthy`."]
+        pub fn set_healthy(&mut self, healthy: Answer) -> &mut Self {
+            self.healthy = healthy;
+            self
+        }
+        #[doc = "Sets the value of `healthy`."]
+        pub fn with_healthy(mut self, healthy: Answer) -> Self {
+            self.healthy = healthy;
+            self
+        }
+        #[doc = "Sets the value of `inputs`."]
+        pub fn set_inputs(&mut self, inputs: ::std::vec::Vec<HealthNodeId>) -> &mut Self {
+            self.inputs = inputs;
+            self
+        }
+        #[doc = "Sets the value of `inputs`."]
+        pub fn with_inputs(mut self, inputs: ::std::vec::Vec<HealthNodeId>) -> Self {
+            self.inputs = inputs;
+            self
+        }
+        #[doc = "Sets the value of `reason`."]
+        pub fn set_reason(&mut self, reason: ::std::option::Option<Reason>) -> &mut Self {
+            self.reason = reason;
+            self
+        }
+        #[doc = "Sets the value of `reason`."]
+        pub fn with_reason(mut self, reason: ::std::option::Option<Reason>) -> Self {
+            self.reason = reason;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn set_message(
+            &mut self,
+            message: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn with_message(
+            mut self,
+            message: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `details`."]
+        pub fn set_details(
+            &mut self,
+            details: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.details = details;
+            self
+        }
+        #[doc = "Sets the value of `details`."]
+        pub fn with_details(
+            mut self,
+            details: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.details = details;
+            self
         }
     }
 }
@@ -4046,6 +5611,149 @@ pub mod metric {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl MetricDefinition {
+        #[doc = "Creates a new [`MetricDefinition`]."]
+        pub fn new(id: MetricId, unit: impl ::std::convert::Into<::std::string::String>) -> Self {
+            Self {
+                id: id,
+                unit: unit.into(),
+                spec_version: ::std::default::Default::default(),
+                owner: ::std::default::Default::default(),
+                label: ::std::default::Default::default(),
+                components: ::std::default::Default::default(),
+                max_age_ms: ::std::default::Default::default(),
+                expected_tag: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(&mut self, id: MetricId) -> &mut Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: MetricId) -> Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn set_owner(
+            &mut self,
+            owner: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn set_label(
+            &mut self,
+            label: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.label = label;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn with_label(mut self, label: ::std::option::Option<::std::string::String>) -> Self {
+            self.label = label;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn set_components(
+            &mut self,
+            components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> &mut Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `components`."]
+        pub fn with_components(
+            mut self,
+            components: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+        ) -> Self {
+            self.components = components;
+            self
+        }
+        #[doc = "Sets the value of `unit`."]
+        pub fn set_unit(
+            &mut self,
+            unit: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.unit = unit.into();
+            self
+        }
+        #[doc = "Sets the value of `unit`."]
+        pub fn with_unit(mut self, unit: impl ::std::convert::Into<::std::string::String>) -> Self {
+            self.unit = unit.into();
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn set_max_age_ms(&mut self, max_age_ms: ::std::option::Option<u64>) -> &mut Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn with_max_age_ms(mut self, max_age_ms: ::std::option::Option<u64>) -> Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `expected_tag`."]
+        pub fn set_expected_tag(
+            &mut self,
+            expected_tag: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.expected_tag = expected_tag;
+            self
+        }
+        #[doc = "Sets the value of `expected_tag`."]
+        pub fn with_expected_tag(
+            mut self,
+            expected_tag: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.expected_tag = expected_tag;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
+            &mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.annotations = annotations;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
+            mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.annotations = annotations;
+            self
+        }
+    }
     #[doc = "Current measurement of a metric, published while the system runs.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct MetricSample {
@@ -4250,6 +5958,181 @@ pub mod metric {
             ::sidex::serde::deserialize(deserializer)
         }
     }
+    impl MetricSample {
+        #[doc = "Creates a new [`MetricSample`]."]
+        pub fn new(
+            id: MetricId,
+            value: f64,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+            observed_at_ms: u64,
+            max_age_ms: u64,
+        ) -> Self {
+            Self {
+                id: id,
+                value: value,
+                boot_id: boot_id.into(),
+                observed_at_ms: observed_at_ms,
+                max_age_ms: max_age_ms,
+                spec_version: ::std::default::Default::default(),
+                owner: ::std::default::Default::default(),
+                tag: ::std::default::Default::default(),
+                message: ::std::default::Default::default(),
+                details: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn set_spec_version(
+            &mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `spec_version`."]
+        pub fn with_spec_version(
+            mut self,
+            spec_version: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.spec_version = spec_version;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn set_id(&mut self, id: MetricId) -> &mut Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `id`."]
+        pub fn with_id(mut self, id: MetricId) -> Self {
+            self.id = id;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn set_value(&mut self, value: f64) -> &mut Self {
+            self.value = value;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn with_value(mut self, value: f64) -> Self {
+            self.value = value;
+            self
+        }
+        #[doc = "Sets the value of `boot_id`."]
+        pub fn set_boot_id(
+            &mut self,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+        ) -> &mut Self {
+            self.boot_id = boot_id.into();
+            self
+        }
+        #[doc = "Sets the value of `boot_id`."]
+        pub fn with_boot_id(
+            mut self,
+            boot_id: impl ::std::convert::Into<::std::string::String>,
+        ) -> Self {
+            self.boot_id = boot_id.into();
+            self
+        }
+        #[doc = "Sets the value of `observed_at_ms`."]
+        pub fn set_observed_at_ms(&mut self, observed_at_ms: u64) -> &mut Self {
+            self.observed_at_ms = observed_at_ms;
+            self
+        }
+        #[doc = "Sets the value of `observed_at_ms`."]
+        pub fn with_observed_at_ms(mut self, observed_at_ms: u64) -> Self {
+            self.observed_at_ms = observed_at_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn set_max_age_ms(&mut self, max_age_ms: u64) -> &mut Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `max_age_ms`."]
+        pub fn with_max_age_ms(mut self, max_age_ms: u64) -> Self {
+            self.max_age_ms = max_age_ms;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn set_owner(
+            &mut self,
+            owner: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `owner`."]
+        pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
+            self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `tag`."]
+        pub fn set_tag(&mut self, tag: ::std::option::Option<::std::string::String>) -> &mut Self {
+            self.tag = tag;
+            self
+        }
+        #[doc = "Sets the value of `tag`."]
+        pub fn with_tag(mut self, tag: ::std::option::Option<::std::string::String>) -> Self {
+            self.tag = tag;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn set_message(
+            &mut self,
+            message: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `message`."]
+        pub fn with_message(
+            mut self,
+            message: ::std::option::Option<::std::string::String>,
+        ) -> Self {
+            self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `details`."]
+        pub fn set_details(
+            &mut self,
+            details: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.details = details;
+            self
+        }
+        #[doc = "Sets the value of `details`."]
+        pub fn with_details(
+            mut self,
+            details: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.details = details;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
+            &mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.annotations = annotations;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
+            mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.annotations = annotations;
+            self
+        }
+    }
     #[doc = "One bound of a range, in the metric's unit.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct MetricBound {
@@ -4336,6 +6219,35 @@ pub mod metric {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl MetricBound {
+        #[doc = "Creates a new [`MetricBound`]."]
+        pub fn new(value: f64, inclusive: bool) -> Self {
+            Self {
+                value: value,
+                inclusive: inclusive,
+            }
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn set_value(&mut self, value: f64) -> &mut Self {
+            self.value = value;
+            self
+        }
+        #[doc = "Sets the value of `value`."]
+        pub fn with_value(mut self, value: f64) -> Self {
+            self.value = value;
+            self
+        }
+        #[doc = "Sets the value of `inclusive`."]
+        pub fn set_inclusive(&mut self, inclusive: bool) -> &mut Self {
+            self.inclusive = inclusive;
+            self
+        }
+        #[doc = "Sets the value of `inclusive`."]
+        pub fn with_inclusive(mut self, inclusive: bool) -> Self {
+            self.inclusive = inclusive;
+            self
         }
     }
     #[doc = "A non-empty range; a missing bound leaves the range unbounded on that side.\n"]
@@ -4432,6 +6344,40 @@ pub mod metric {
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
             ::sidex::serde::deserialize(deserializer)
+        }
+    }
+    impl MetricRange {
+        #[doc = "Creates a new [`MetricRange`]."]
+        pub fn new() -> Self {
+            Self {
+                lower: ::std::default::Default::default(),
+                upper: ::std::default::Default::default(),
+            }
+        }
+        #[doc = "Sets the value of `lower`."]
+        pub fn set_lower(&mut self, lower: ::std::option::Option<MetricBound>) -> &mut Self {
+            self.lower = lower;
+            self
+        }
+        #[doc = "Sets the value of `lower`."]
+        pub fn with_lower(mut self, lower: ::std::option::Option<MetricBound>) -> Self {
+            self.lower = lower;
+            self
+        }
+        #[doc = "Sets the value of `upper`."]
+        pub fn set_upper(&mut self, upper: ::std::option::Option<MetricBound>) -> &mut Self {
+            self.upper = upper;
+            self
+        }
+        #[doc = "Sets the value of `upper`."]
+        pub fn with_upper(mut self, upper: ::std::option::Option<MetricBound>) -> Self {
+            self.upper = upper;
+            self
+        }
+    }
+    impl ::std::default::Default for MetricRange {
+        fn default() -> Self {
+            Self::new()
         }
     }
 }

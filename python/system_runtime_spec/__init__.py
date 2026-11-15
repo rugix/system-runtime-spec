@@ -1,29 +1,21 @@
-"""Compatibility checking, health evaluation, and discovery of runtime records."""
+"""Compatibility checking, health evaluation, and discovery of runtime records.
 
-from ._records import SPEC_VERSION, Records
-from .clock import current_clock_sample, estimate_timestamp
-from .components import candidate_composition, check_components
-from .filesystem import read_records
-from .health import current_context, evaluate_health
-from .models import common, component, filesystem, health, metric
-from .snapshot import Snapshot, make_snapshot, read_snapshot
+`Records` holds the records of a system and the diagnostics about them. The models in
+`system_runtime_spec.models` are generated from the specification's schemas.
+"""
+
+from ._clock import current_clock_sample, current_context, estimate_timestamp
+from ._decoding import SPEC_VERSION, RecordModel
+from ._records import Records
+from ._snapshot import Snapshot, SnapshotError
 
 __all__ = [
     "SPEC_VERSION",
+    "RecordModel",
     "Records",
     "Snapshot",
-    "candidate_composition",
-    "check_components",
-    "common",
-    "component",
+    "SnapshotError",
     "current_clock_sample",
     "current_context",
     "estimate_timestamp",
-    "evaluate_health",
-    "filesystem",
-    "health",
-    "make_snapshot",
-    "metric",
-    "read_records",
-    "read_snapshot",
 ]

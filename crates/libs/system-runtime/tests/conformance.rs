@@ -3,14 +3,13 @@
 use std::path::{Path, PathBuf};
 
 use sidex::types::JsonValue;
-use system_runtime_spec::clock::estimate_timestamp;
-use system_runtime_spec::compatibility::{candidate_composition, check_components};
-use system_runtime_spec::evaluation::evaluate_health;
-use system_runtime_spec::records::{Records, to_json};
-use system_runtime_spec::snapshot::{make_snapshot, read_snapshot};
 use system_runtime_spec::types::common::{Diagnostic, Severity};
 use system_runtime_spec::types::component::ComponentDeclaration;
-use system_runtime_spec::types::health::{HealthClockSample, HealthContext};
+use system_runtime_spec::types::health::{
+    HealthClockSample, HealthContext, HealthNode, HealthStatus,
+};
+use system_runtime_spec::types::metric::{MetricDefinition, MetricSample};
+use system_runtime_spec::{Parts, Records, Snapshot};
 
 fn fixtures() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../tests/fixtures")
@@ -34,8 +33,41 @@ fn decode<T: sidex::Decode>(value: &JsonValue) -> T {
     sidex::formats::json::from_value(value).unwrap()
 }
 
-fn diagnostics(value: &JsonValue) -> Vec<Diagnostic> {
-    list(value, "diagnostics").iter().map(decode).collect()
+fn to_json(value: &impl sidex::Encode) -> JsonValue {
+    sidex::formats::json::to_value(value).unwrap()
+}
+
+/// Read the records and diagnostics of the lists of a fixture object.
+fn records(value: &JsonValue) -> Records {
+    let mut records = Records::new();
+    for diagnostic in list(value, "diagnostics") {
+        records.push_diagnostic(decode::<Diagnostic>(&diagnostic));
+    }
+    for record in list(value, "components") {
+        records.push_json::<ComponentDeclaration>(record);
+    }
+    for record in list(value, "healthNodes") {
+        records.push_json::<HealthNode>(record);
+    }
+    for record in list(value, "healthStatuses") {
+        records.push_json::<HealthStatus>(record);
+    }
+    for record in list(value, "metrics") {
+        records.push_json::<MetricDefinition>(record);
+    }
+    for record in list(value, "metricSamples") {
+        records.push_json::<MetricSample>(record);
+    }
+    records
+}
+
+/// The original JSON of records, as a snapshot contains them.
+fn originals(records: &Records) -> JsonValue {
+    let clock = HealthClockSample::new(
+        HealthContext::new("boot", 0),
+        "2026-01-01T00:00:00Z".parse().unwrap(),
+    );
+    Snapshot::new(records.clone(), clock, Parts::ALL).to_json()
 }
 
 /// Keep the severity and kind of diagnostics, whose messages are not specified.
@@ -76,23 +108,23 @@ fn versions() {
     for case in cases("versions") {
         let version = case.get("version").unwrap().clone();
         let requirement = case.get("requirement").unwrap().clone();
-        let report = check_components(
-            &[
-                JsonValue::from_iter([("id", JsonValue::from("provider")), ("version", version)]),
-                JsonValue::from_iter([
-                    ("id", JsonValue::from("consumer")),
-                    (
-                        "requires",
-                        vec![JsonValue::from_iter([
-                            ("id", JsonValue::from("provider")),
-                            ("version", requirement),
-                        ])]
-                        .into(),
-                    ),
-                ]),
-            ],
-            &[],
-        );
+        let mut records = Records::new();
+        records.push_json::<ComponentDeclaration>(JsonValue::from_iter([
+            ("id", JsonValue::from("provider")),
+            ("version", version),
+        ]));
+        records.push_json::<ComponentDeclaration>(JsonValue::from_iter([
+            ("id", JsonValue::from("consumer")),
+            (
+                "requires",
+                vec![JsonValue::from_iter([
+                    ("id", JsonValue::from("provider")),
+                    ("version", requirement),
+                ])]
+                .into(),
+            ),
+        ]));
+        let report = records.check_compatibility();
         let error = case.get("error").and_then(JsonValue::as_bool) == Some(true);
         let errors = report
             .diagnostics
@@ -112,7 +144,8 @@ fn versions() {
 #[test]
 fn components() {
     for case in cases("components") {
-        let report = check_components(&list(&case, "components"), &diagnostics(&case));
+        let records = records(&case);
+        let report = records.check_compatibility();
         assert_eq!(
             &brief(&report),
             case.get("report").unwrap(),
@@ -125,8 +158,17 @@ fn components() {
             .map(sidex::formats::json::from_value)
             .collect();
         if let Ok(typed) = typed {
+            let mut typed_records = Records::new();
+            for diagnostic in records
+                .diagnostics()
+                .iter()
+                .take(list(&case, "diagnostics").len())
+            {
+                typed_records.push_diagnostic(diagnostic.clone());
+            }
+            typed_records.extend(typed);
             assert_eq!(
-                check_components(&typed, &diagnostics(&case)),
+                typed_records.check_compatibility(),
                 report,
                 "{}",
                 name(&case)
@@ -143,16 +185,19 @@ fn candidates() {
             .map(|owner| owner.as_str().unwrap().to_owned())
             .collect();
         let owners: Vec<&str> = owners.iter().map(String::as_str).collect();
-        let (components, candidate_diagnostics) = candidate_composition(
-            &list(&case, "components"),
-            &diagnostics(&case),
-            &owners,
-            &list(&case, "new"),
-        );
-        assert_eq!(components, list(&case, "candidate"), "{}", name(&case));
-        let report = check_components(&components, &candidate_diagnostics);
+        let update = records(&JsonValue::from_iter([(
+            "components",
+            JsonValue::from(list(&case, "new")),
+        )]));
+        let candidate = records(&case).with_update(&owners, &update);
         assert_eq!(
-            &brief(&report),
+            originals(&candidate).get("components"),
+            case.get("candidate"),
+            "{}",
+            name(&case)
+        );
+        assert_eq!(
+            &brief(&candidate.check_compatibility()),
             case.get("report").unwrap(),
             "{}",
             name(&case)
@@ -163,17 +208,9 @@ fn candidates() {
 #[test]
 fn health() {
     for case in cases("health") {
-        let records = case.get("records").unwrap();
-        let input = Records {
-            health_nodes: list(records, "healthNodes"),
-            health_statuses: list(records, "healthStatuses"),
-            metrics: list(records, "metrics"),
-            metric_samples: list(records, "metricSamples"),
-            diagnostics: diagnostics(records),
-            ..Records::default()
-        };
+        let records = records(case.get("records").unwrap());
         let context: HealthContext = decode(case.get("context").unwrap());
-        let report = evaluate_health(&input, &context);
+        let report = records.evaluate_health(&context);
         assert_eq!(
             &brief(&report),
             case.get("report").unwrap(),
@@ -186,40 +223,46 @@ fn health() {
 #[test]
 fn snapshots() {
     for case in cases("snapshots") {
-        let result = read_snapshot(case.get("snapshot").unwrap());
+        let original = case.get("snapshot").unwrap();
+        let result = Snapshot::from_json(original);
         let valid = case.get("valid").and_then(JsonValue::as_bool) == Some(true);
         assert_eq!(result.is_ok(), valid, "{}", name(&case));
-        if let Ok(snapshot) = result {
-            let again = read_snapshot(&make_snapshot(
-                &snapshot.records,
-                &snapshot.clock,
-                snapshot.parts,
-            ))
-            .unwrap();
-            assert_eq!(again.parts, snapshot.parts);
-            let original = case.get("snapshot").unwrap();
-            for read in [&snapshot, &again] {
-                assert_eq!(read.records.components, list(original, "components"));
-                assert_eq!(read.records.health_nodes, list(original, "healthNodes"));
-            }
-            let report = brief(&JsonValue::from_iter([(
-                "diagnostics",
-                JsonValue::from(
-                    snapshot
-                        .records
-                        .diagnostics
-                        .iter()
-                        .map(to_json)
-                        .collect::<Vec<_>>(),
-                ),
-            )]));
-            assert_eq!(
-                report.get("diagnostics"),
-                case.get("diagnostics"),
-                "{}",
-                name(&case)
-            );
+        let Ok(snapshot) = result else {
+            continue;
+        };
+        let json = snapshot.to_json();
+        assert_eq!(
+            Snapshot::from_json(&json).unwrap(),
+            snapshot,
+            "{}",
+            name(&case)
+        );
+        for field in [
+            "components",
+            "healthNodes",
+            "healthStatuses",
+            "metrics",
+            "metricSamples",
+        ] {
+            assert_eq!(json.get(field), original.get(field), "{}", name(&case));
         }
+        let diagnostics = JsonValue::from_iter([(
+            "diagnostics",
+            JsonValue::from(
+                snapshot
+                    .records()
+                    .diagnostics()
+                    .iter()
+                    .map(to_json)
+                    .collect::<Vec<_>>(),
+            ),
+        )]);
+        assert_eq!(
+            brief(&diagnostics).get("diagnostics"),
+            case.get("diagnostics"),
+            "{}",
+            name(&case)
+        );
     }
 }
 
@@ -227,20 +270,23 @@ fn snapshots() {
 fn timestamps() {
     for case in cases("timestamps") {
         let clock: HealthClockSample = decode(case.get("clock").unwrap());
-        let estimate = estimate_timestamp(case.get("evidence").unwrap(), &clock);
+        let evidence: HealthStatus = decode(case.get("evidence").unwrap());
         let expected = case
             .get("expected")
             .and_then(JsonValue::as_str)
             .map(|text| text.parse::<sidex::types::Timestamp>().unwrap());
-        assert_eq!(estimate, expected, "{}", name(&case));
+        assert_eq!(
+            clock.estimate_timestamp(&evidence),
+            expected,
+            "{}",
+            name(&case)
+        );
     }
 }
 
 #[cfg(target_os = "linux")]
 #[test]
 fn discovery() {
-    use system_runtime_spec::discovery::read_records;
-
     fn copy_tree(source: &Path, destination: &Path) {
         std::fs::create_dir_all(destination).unwrap();
         for entry in std::fs::read_dir(source).unwrap() {
@@ -265,16 +311,21 @@ fn discovery() {
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::os::unix::fs::symlink(link.get("target").unwrap().as_str().unwrap(), path).unwrap();
     }
-    let records = read_records(&root);
+    let records = Records::discover(&root);
     let expected = spec.get("expected").unwrap();
-    assert_eq!(records.components, list(expected, "components"));
-    assert_eq!(records.health_nodes, list(expected, "healthNodes"));
-    assert_eq!(records.health_statuses, list(expected, "healthStatuses"));
-    assert_eq!(records.metrics, list(expected, "metrics"));
-    assert_eq!(records.metric_samples, list(expected, "metricSamples"));
+    let json = originals(&records);
+    for field in [
+        "components",
+        "healthNodes",
+        "healthStatuses",
+        "metrics",
+        "metricSamples",
+    ] {
+        assert_eq!(json.get(field), expected.get(field), "{field}");
+    }
     let real = std::fs::canonicalize(&root).unwrap();
     let mut found: Vec<(String, String, String)> = records
-        .diagnostics
+        .diagnostics()
         .iter()
         .map(|diagnostic| {
             let path = PathBuf::from(diagnostic.path.as_deref().unwrap());

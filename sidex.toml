@@ -6,7 +6,7 @@ authors = ["Silitics GmbH <info@silitics.com>"]
 
 [backend.rust]
 derive = ["Clone", "Debug", "PartialEq"]
-plugins = ["serde"]
+plugins = ["serde", "builder"]
 [backend.rust.types.table]
 "::core::builtins::string" = "::std::string::String"
 "::core::builtins::Sequence" = "::std::vec::Vec"

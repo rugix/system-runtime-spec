@@ -1,40 +1,44 @@
 //! Compatibility checking, health evaluation, and discovery for the
 //! [System Runtime Specification](https://github.com/rugix/system-runtime-spec/blob/main/SPEC.md).
 //!
-//! Functions that take records accept the typed models in [`types`] or JSON values
-//! ([`JsonValue`](sidex::types::JsonValue)). [`records::Records`] keeps records as JSON values,
-//! so that snapshots carry them unchanged and records of newer minor versions keep working.
+//! [`Records`] holds the records of a system: component declarations, health nodes, status
+//! records, metric definitions, and metric samples, together with the diagnostics about them.
+//! The models in [`types`] are generated from the specification's schemas.
 //!
-//! - [`compatibility::check_components`] checks a composition, and
-//!   [`compatibility::candidate_composition`] predicts the composition after an update.
-//! - [`evaluation::evaluate_health`] evaluates health in a health context.
-//! - [`discovery::read_records`] reads the records of a Linux system.
-//! - [`snapshot::make_snapshot`] and [`snapshot::read_snapshot`] send records to another
-//!   system, and [`clock::estimate_timestamp`] places evidence in wall-clock time.
+//! - [`Records::discover`] reads the records of a Linux system.
+//! - [`Records::check_compatibility`] checks the composition, and [`Records::with_update`]
+//!   builds the composition after an update.
+//! - [`Records::evaluate_health`] evaluates health in a
+//!   [`HealthContext`](types::health::HealthContext).
+//! - [`Snapshot`] sends records to another system.
+//!
+//! ```no_run
+//! use system_runtime_spec::Records;
+//! use system_runtime_spec::types::health::HealthContext;
+//!
+//! let records = Records::discover("/");
+//! let compatibility = records.check_compatibility();
+//! let health = records.evaluate_health(&HealthContext::current()?);
+//! println!("consistent: {}", compatibility.consistent);
+//! for node in &health.nodes {
+//!     println!("{}: usable {:?}, healthy {:?}", node.id, node.usable, node.healthy);
+//! }
+//! # Ok::<(), std::io::Error>(())
+//! ```
 
-pub mod clock;
-pub mod compatibility;
+mod clock;
+mod compatibility;
 #[cfg(target_os = "linux")]
-pub mod discovery;
-pub mod evaluation;
-pub mod records;
-pub mod snapshot;
-/// Models generated from the Sidex schemas.
+mod discovery;
+mod evaluation;
+mod records;
+mod snapshot;
+/// Models generated from the specification's schemas.
 pub mod types;
 
-/// Failure to read the system's boot ID.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// A file could not be read.
-    #[error("failed to read {path}: {source}")]
-    Io {
-        /// Path of the file.
-        path: std::path::PathBuf,
-        /// Underlying error.
-        #[source]
-        source: std::io::Error,
-    },
-}
+pub use clock::Evidence;
+pub use records::{RecordModel, Records, SPEC_VERSION};
+pub use snapshot::{Parts, Snapshot, SnapshotError};
 
 #[cfg(doctest)]
 #[doc = include_str!("../README.md")]

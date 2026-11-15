@@ -2,9 +2,12 @@
 
 use sidex::types::{JsonValue, Map, Str};
 
-use crate::records::{Records, SPEC_VERSION, SUPPORTED_MAJOR, parse_spec_version, to_json};
+use crate::Records;
+use crate::records::{RecordModel, SPEC_VERSION, SUPPORTED_MAJOR, parse_spec_version, to_json};
 use crate::types::common::{Diagnostic, RecordKind};
-use crate::types::health::HealthClockSample;
+use crate::types::component::ComponentDeclaration;
+use crate::types::health::{HealthClockSample, HealthNode, HealthStatus};
+use crate::types::metric::{MetricDefinition, MetricSample};
 
 const HEALTH: [&str; 4] = ["healthNodes", "healthStatuses", "metrics", "metricSamples"];
 const KINDS: [&str; 6] = [
@@ -31,6 +34,14 @@ impl Parts {
         components: true,
         health: true,
     };
+
+    fn includes(self, kind: RecordKind) -> bool {
+        match kind {
+            RecordKind::DirectoryConfig => true,
+            RecordKind::ComponentDeclaration => self.components,
+            _ => self.health,
+        }
+    }
 }
 
 impl Default for Parts {
@@ -39,15 +50,30 @@ impl Default for Parts {
     }
 }
 
-/// A received snapshot.
+/// Records of a system with a clock sample, for sending them to another system.
+///
+/// A snapshot contains the original records, so that the receiving system evaluates them as
+/// the sending system read them, including fields of newer minor versions.
+///
+/// ```
+/// use system_runtime_spec::{Parts, Records, Snapshot};
+/// use system_runtime_spec::types::health::{HealthClockSample, HealthContext, HealthNode};
+///
+/// let mut records = Records::new();
+/// records.push(HealthNode::new("app".into()));
+/// let context = HealthContext::new("boot", 45_000);
+/// let clock = HealthClockSample::new(context, "2026-10-14T12:00:00Z".parse().unwrap());
+/// let json = Snapshot::new(records, clock, Parts::ALL).to_json();
+///
+/// let received = Snapshot::from_json(&json).unwrap();
+/// let report = received.records().evaluate_health(&received.clock().context);
+/// assert_eq!(report.nodes.len(), 1);
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
-    /// Records of the snapshot; omitted lists are empty.
-    pub records: Records,
-    /// Correlation of the boot-time clock with wall-clock time.
-    pub clock: HealthClockSample,
-    /// Parts whose records the snapshot includes.
-    pub parts: Parts,
+    records: Records,
+    clock: HealthClockSample,
+    parts: Parts,
 }
 
 /// A snapshot that cannot be read.
@@ -70,42 +96,155 @@ pub enum SnapshotError {
     InvalidDiagnostic(String),
 }
 
-/// Create a snapshot with the original records of the given parts and their diagnostics.
-///
-/// Take the clock sample after reading the records.
-pub fn make_snapshot(records: &Records, clock: &HealthClockSample, parts: Parts) -> JsonValue {
-    let Parts { components, health } = parts;
-    let mut snapshot: Map<Str, JsonValue> = Map::new();
-    snapshot.insert("specVersion".into(), SPEC_VERSION.into());
-    snapshot.insert("clock".into(), to_json(clock));
-    if components {
-        snapshot.insert("components".into(), records.components.clone().into());
-    }
-    if health {
-        for (field, list) in HEALTH.into_iter().zip([
-            &records.health_nodes,
-            &records.health_statuses,
-            &records.metrics,
-            &records.metric_samples,
-        ]) {
-            snapshot.insert(field.into(), list.clone().into());
+impl Snapshot {
+    /// Create a snapshot of the records of the given parts and their diagnostics.
+    ///
+    /// Take the clock sample after reading the records.
+    pub fn new(mut records: Records, clock: HealthClockSample, parts: Parts) -> Self {
+        if !parts.components {
+            records.components.clear();
+        }
+        if !parts.health {
+            records.health_nodes.clear();
+            records.health_statuses.clear();
+            records.metrics.clear();
+            records.metric_samples.clear();
+        }
+        records
+            .diagnostics
+            .retain(|diagnostic| parts.includes(diagnostic.kind));
+        Self {
+            records,
+            clock,
+            parts,
         }
     }
-    let included = |kind: RecordKind| match kind {
-        RecordKind::DirectoryConfig => true,
-        RecordKind::ComponentDeclaration => components,
-        _ => health,
-    };
-    let diagnostics: Vec<JsonValue> = records
-        .diagnostics
-        .iter()
-        .filter(|diagnostic| included(diagnostic.kind))
-        .map(to_json)
-        .collect();
-    if !diagnostics.is_empty() {
-        snapshot.insert("diagnostics".into(), diagnostics.into());
+
+    /// Records of the snapshot; the lists of parts it does not include are empty.
+    pub fn records(&self) -> &Records {
+        &self.records
     }
-    JsonValue::Map(snapshot)
+
+    /// Take the records of the snapshot.
+    pub fn into_records(self) -> Records {
+        self.records
+    }
+
+    /// Correlation of the boot-time clock with wall-clock time.
+    pub fn clock(&self) -> &HealthClockSample {
+        &self.clock
+    }
+
+    /// Parts whose records the snapshot includes.
+    pub fn parts(&self) -> Parts {
+        self.parts
+    }
+
+    /// Encode the snapshot as a `RuntimeSnapshot`.
+    pub fn to_json(&self) -> JsonValue {
+        let mut snapshot: Map<Str, JsonValue> = Map::new();
+        snapshot.insert("specVersion".into(), SPEC_VERSION.into());
+        snapshot.insert("clock".into(), to_json(&self.clock));
+        let mut insert = |field: &str, list: Vec<JsonValue>| {
+            snapshot.insert(field.into(), list.into());
+        };
+        if self.parts.components {
+            insert(
+                "components",
+                originals::<ComponentDeclaration>(&self.records),
+            );
+        }
+        if self.parts.health {
+            insert("healthNodes", originals::<HealthNode>(&self.records));
+            insert("healthStatuses", originals::<HealthStatus>(&self.records));
+            insert("metrics", originals::<MetricDefinition>(&self.records));
+            insert("metricSamples", originals::<MetricSample>(&self.records));
+        }
+        if !self.records.diagnostics.is_empty() {
+            let diagnostics: Vec<JsonValue> =
+                self.records.diagnostics.iter().map(to_json).collect();
+            snapshot.insert("diagnostics".into(), diagnostics.into());
+        }
+        JsonValue::Map(snapshot)
+    }
+
+    /// Decode a `RuntimeSnapshot`, applying the fallbacks to its diagnostics.
+    ///
+    /// Fail for snapshots of an unsupported version or with an invalid structure. Invalid
+    /// records are skipped with an error diagnostic, as when they are read from files.
+    pub fn from_json(value: &JsonValue) -> Result<Self, SnapshotError> {
+        let version = value.get("specVersion").and_then(JsonValue::as_str);
+        if version.and_then(parse_spec_version).map(|(major, _)| major) != Some(SUPPORTED_MAJOR) {
+            return Err(SnapshotError::UnsupportedVersion(
+                version.map(str::to_owned),
+            ));
+        }
+        let clock = value.get("clock").cloned().unwrap_or_default();
+        let timestamp = clock.get("timestamp").and_then(JsonValue::as_str);
+        if !timestamp.is_some_and(valid_timestamp) {
+            return Err(SnapshotError::InvalidClock(format!(
+                "invalid timestamp {timestamp:?}"
+            )));
+        }
+        let clock: HealthClockSample = sidex::formats::json::from_value(&clock)
+            .map_err(|error| SnapshotError::InvalidClock(error.to_string()))?;
+        let present = HEALTH.map(|field| value.get(field).is_some());
+        if present.iter().any(|p| *p) && !present.iter().all(|p| *p) {
+            return Err(SnapshotError::PartialHealth);
+        }
+        let mut records = Records::new();
+        for item in list(value, "diagnostics")? {
+            records.push_diagnostic(read_diagnostic(item)?);
+        }
+        push_all::<ComponentDeclaration>(&mut records, list(value, "components")?);
+        push_all::<HealthNode>(&mut records, list(value, "healthNodes")?);
+        push_all::<HealthStatus>(&mut records, list(value, "healthStatuses")?);
+        push_all::<MetricDefinition>(&mut records, list(value, "metrics")?);
+        push_all::<MetricSample>(&mut records, list(value, "metricSamples")?);
+        let parts = Parts {
+            components: value.get("components").is_some(),
+            health: present.iter().all(|p| *p),
+        };
+        Ok(Self {
+            records,
+            clock,
+            parts,
+        })
+    }
+}
+
+fn originals<T: RecordModel>(records: &Records) -> Vec<JsonValue> {
+    T::entries(records)
+        .iter()
+        .map(|record| record.json.clone())
+        .collect()
+}
+
+fn push_all<T: RecordModel>(records: &mut Records, items: Vec<JsonValue>) {
+    for item in items {
+        records.push_json::<T>(item);
+    }
+}
+
+/// Decode a diagnostic, treating unknown kinds as `DirectoryConfig` and unknown severities as
+/// `Error`.
+fn read_diagnostic(item: JsonValue) -> Result<Diagnostic, SnapshotError> {
+    let JsonValue::Map(mut item) = item else {
+        return Err(SnapshotError::InvalidDiagnostic("not an object".into()));
+    };
+    let known = |item: &Map<Str, JsonValue>, field: &str, values: &[&str]| {
+        item.get(field)
+            .and_then(JsonValue::as_str)
+            .is_some_and(|value| values.contains(&value))
+    };
+    if !known(&item, "kind", &KINDS) {
+        item.insert("kind".into(), "DirectoryConfig".into());
+    }
+    if !known(&item, "severity", &["Error", "Warning"]) {
+        item.insert("severity".into(), "Error".into());
+    }
+    sidex::formats::json::from_value(&JsonValue::Map(item))
+        .map_err(|error| SnapshotError::InvalidDiagnostic(error.to_string()))
 }
 
 fn valid_timestamp(text: &str) -> bool {
@@ -144,65 +283,4 @@ fn list(value: &JsonValue, field: &'static str) -> Result<Vec<JsonValue>, Snapsh
         Some(JsonValue::Seq(items)) => Ok(items.to_vec()),
         Some(_) => Err(SnapshotError::NotAList(field)),
     }
-}
-
-/// Read a snapshot, applying the fallbacks to its diagnostics.
-///
-/// Fail for snapshots of an unsupported version or with an invalid structure. Records are
-/// validated when they are checked or evaluated.
-pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, SnapshotError> {
-    let version = value.get("specVersion").and_then(JsonValue::as_str);
-    if version.and_then(parse_spec_version).map(|(major, _)| major) != Some(SUPPORTED_MAJOR) {
-        return Err(SnapshotError::UnsupportedVersion(
-            version.map(str::to_owned),
-        ));
-    }
-    let clock = value.get("clock").cloned().unwrap_or_default();
-    let timestamp = clock.get("timestamp").and_then(JsonValue::as_str);
-    if !timestamp.is_some_and(valid_timestamp) {
-        return Err(SnapshotError::InvalidClock(format!(
-            "invalid timestamp {timestamp:?}"
-        )));
-    }
-    let clock: HealthClockSample = sidex::formats::json::from_value(&clock)
-        .map_err(|error| SnapshotError::InvalidClock(error.to_string()))?;
-    let present = HEALTH.map(|field| value.get(field).is_some());
-    if present.iter().any(|p| *p) && !present.iter().all(|p| *p) {
-        return Err(SnapshotError::PartialHealth);
-    }
-    let mut diagnostics = Vec::new();
-    for item in list(value, "diagnostics")? {
-        let Some(mut item) = item.as_map().cloned() else {
-            return Err(SnapshotError::InvalidDiagnostic("not an object".into()));
-        };
-        let known = |item: &Map<Str, JsonValue>, field: &str, values: &[&str]| {
-            item.get(field)
-                .and_then(JsonValue::as_str)
-                .is_some_and(|value| values.contains(&value))
-        };
-        if !known(&item, "kind", &KINDS) {
-            item.insert("kind".into(), "DirectoryConfig".into());
-        }
-        if !known(&item, "severity", &["Error", "Warning"]) {
-            item.insert("severity".into(), "Error".into());
-        }
-        let diagnostic: Diagnostic = sidex::formats::json::from_value(&JsonValue::Map(item))
-            .map_err(|error| SnapshotError::InvalidDiagnostic(error.to_string()))?;
-        diagnostics.push(diagnostic);
-    }
-    Ok(Snapshot {
-        records: Records {
-            components: list(value, "components")?,
-            health_nodes: list(value, "healthNodes")?,
-            health_statuses: list(value, "healthStatuses")?,
-            metrics: list(value, "metrics")?,
-            metric_samples: list(value, "metricSamples")?,
-            diagnostics,
-        },
-        clock,
-        parts: Parts {
-            components: value.get("components").is_some(),
-            health: present.iter().all(|p| *p),
-        },
-    })
 }

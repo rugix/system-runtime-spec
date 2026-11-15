@@ -1,13 +1,13 @@
-//! Decode and validate records, applying the fallbacks for unknown values.
+//! Records and their decoding, validation, and fallbacks.
 
 use std::collections::BTreeSet;
+use std::path::Path;
 
 use anyver::{Version, VersionReq};
 use sidex::types::{JsonValue, Map, Str};
 
 use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::component::ComponentDeclaration;
-use crate::types::filesystem::DirectoryConfig;
 use crate::types::health::{HealthNode, HealthStatus};
 use crate::types::metric::{MetricDefinition, MetricSample};
 
@@ -20,81 +20,185 @@ const RULE_TYPES: [&str; 3] = ["Observed", "Threshold", "Aggregate"];
 const STATES: [&str; 4] = ["Healthy", "Degraded", "Unhealthy", "Unknown"];
 const MODES: [&str; 3] = ["Counted", "Mandatory", "Optional"];
 
-/// Records of all kinds, as JSON objects, with the diagnostics about them.
+/// The records of a system and the diagnostics about them.
 ///
-/// Records keep their original JSON, so snapshots contain them unchanged.
+/// Records are added as typed models or as JSON values. Adding a record decodes and validates
+/// it, and an invalid record is skipped with an error diagnostic. Records keep their original
+/// JSON, so that snapshots contain them unchanged, including fields of newer minor versions.
+///
+/// ```
+/// use sidex::types::JsonValue;
+/// use system_runtime_spec::Records;
+/// use system_runtime_spec::types::component::ComponentDeclaration;
+///
+/// let mut records = Records::new();
+/// records.push(ComponentDeclaration::new("os").with_version(Some("2.1".into())));
+/// records.push_json::<ComponentDeclaration>(JsonValue::from_iter([("id", "app")]));
+/// assert_eq!(records.components().len(), 2);
+/// assert!(records.check_compatibility().consistent);
+/// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Records {
-    /// Component declarations.
-    pub components: Vec<JsonValue>,
-    /// Health nodes.
-    pub health_nodes: Vec<JsonValue>,
-    /// Status records.
-    pub health_statuses: Vec<JsonValue>,
-    /// Metric definitions.
-    pub metrics: Vec<JsonValue>,
-    /// Metric samples.
-    pub metric_samples: Vec<JsonValue>,
-    /// Diagnostics about the records and about directory configurations.
-    pub diagnostics: Vec<Diagnostic>,
+    pub(crate) components: Vec<Record<ComponentDeclaration>>,
+    pub(crate) health_nodes: Vec<Record<HealthNode>>,
+    pub(crate) health_statuses: Vec<Record<HealthStatus>>,
+    pub(crate) metrics: Vec<Record<MetricDefinition>>,
+    pub(crate) metric_samples: Vec<Record<MetricSample>>,
+    pub(crate) diagnostics: Vec<Diagnostic>,
 }
 
-/// Convert a record, given as a typed model or as a JSON value, to its JSON value.
-pub fn to_json<T: sidex::Encode + ?Sized>(record: &T) -> JsonValue {
-    sidex::formats::json::to_value(record).expect("records are valid JSON")
+/// Model of a kind of record that [`Records`] holds.
+///
+/// Implemented by [`ComponentDeclaration`], [`HealthNode`], [`HealthStatus`],
+/// [`MetricDefinition`], and [`MetricSample`].
+pub trait RecordModel: sealed::Storage {
+    /// Kind of the record, which diagnostics about it carry.
+    const KIND: RecordKind;
+}
+
+pub(crate) mod sealed {
+    use super::{Record, Records};
+
+    /// Access to the records of one kind; not implementable outside of this crate.
+    pub trait Storage: sidex::Encode + sidex::Decode + Sized {
+        fn entries(records: &Records) -> &[Record<Self>];
+        fn entries_mut(records: &mut Records) -> &mut Vec<Record<Self>>;
+        /// ID and owner of a record that overrides records of lower levels.
+        fn override_key(&self) -> Option<(&str, Option<&str>)>;
+    }
+}
+
+macro_rules! record_models {
+    ($($model:ident => $field:ident, $key:expr;)*) => {$(
+        impl RecordModel for $model {
+            const KIND: RecordKind = RecordKind::$model;
+        }
+
+        impl sealed::Storage for $model {
+            fn entries(records: &Records) -> &[Record<Self>] {
+                &records.$field
+            }
+
+            fn entries_mut(records: &mut Records) -> &mut Vec<Record<Self>> {
+                &mut records.$field
+            }
+
+            fn override_key(&self) -> Option<(&str, Option<&str>)> {
+                let key: fn(&Self) -> Option<(&str, Option<&str>)> = $key;
+                key(self)
+            }
+        }
+    )*};
+}
+
+record_models! {
+    ComponentDeclaration => components, |r| Some((r.id.as_str(), r.owner.as_deref()));
+    HealthNode => health_nodes, |r| Some((r.id.as_str(), r.owner.as_deref()));
+    HealthStatus => health_statuses, |_| None;
+    MetricDefinition => metrics, |r| Some((r.id.as_str(), r.owner.as_deref()));
+    MetricSample => metric_samples, |_| None;
 }
 
 impl Records {
-    /// Add component declarations, given as typed models or as JSON values.
-    pub fn with_components(mut self, records: &[impl sidex::Encode]) -> Self {
-        self.components.extend(records.iter().map(to_json));
-        self
+    /// Create an empty set of records.
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    /// Add health nodes, given as typed models or as JSON values.
-    pub fn with_health_nodes(mut self, records: &[impl sidex::Encode]) -> Self {
-        self.health_nodes.extend(records.iter().map(to_json));
-        self
+    /// Add a record given as a typed model.
+    pub fn push<T: RecordModel>(&mut self, record: T) {
+        self.push_json::<T>(to_json(&record));
     }
 
-    /// Add status records, given as typed models or as JSON values.
-    pub fn with_health_statuses(mut self, records: &[impl sidex::Encode]) -> Self {
-        self.health_statuses.extend(records.iter().map(to_json));
-        self
+    /// Add a record given as a JSON value, such as a record received from another system.
+    pub fn push_json<T: RecordModel>(&mut self, record: JsonValue) {
+        if let Some(record) = self.accept::<T>(record, None) {
+            T::entries_mut(self).push(record);
+        }
     }
 
-    /// Add metric definitions, given as typed models or as JSON values.
-    pub fn with_metrics(mut self, records: &[impl sidex::Encode]) -> Self {
-        self.metrics.extend(records.iter().map(to_json));
-        self
+    /// Add a diagnostic, such as one that another reader reported.
+    pub fn push_diagnostic(&mut self, diagnostic: Diagnostic) {
+        self.diagnostics.push(diagnostic);
     }
 
-    /// Add metric samples, given as typed models or as JSON values.
-    pub fn with_metric_samples(mut self, records: &[impl sidex::Encode]) -> Self {
-        self.metric_samples.extend(records.iter().map(to_json));
-        self
+    /// Component declarations, in the order in which they were added.
+    pub fn components(&self) -> impl ExactSizeIterator<Item = &ComponentDeclaration> {
+        values(&self.components)
     }
 
-    /// Add diagnostics.
-    pub fn with_diagnostics(mut self, diagnostics: &[Diagnostic]) -> Self {
-        self.diagnostics.extend_from_slice(diagnostics);
-        self
+    /// Health nodes, in the order in which they were added.
+    ///
+    /// A node with an unknown rule type has no rule, and unknown input modes are `Counted`;
+    /// evaluation reports such nodes as unsupported.
+    pub fn health_nodes(&self) -> impl ExactSizeIterator<Item = &HealthNode> {
+        values(&self.health_nodes)
+    }
+
+    /// Status records, in the order in which they were added.
+    ///
+    /// Unknown states are `Unknown`; evaluation reports such records as unsupported.
+    pub fn health_statuses(&self) -> impl ExactSizeIterator<Item = &HealthStatus> {
+        values(&self.health_statuses)
+    }
+
+    /// Metric definitions, in the order in which they were added.
+    pub fn metrics(&self) -> impl ExactSizeIterator<Item = &MetricDefinition> {
+        values(&self.metrics)
+    }
+
+    /// Metric samples, in the order in which they were added.
+    pub fn metric_samples(&self) -> impl ExactSizeIterator<Item = &MetricSample> {
+        values(&self.metric_samples)
+    }
+
+    /// Diagnostics about the records and about directory configurations.
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.diagnostics
+    }
+
+    /// Diagnostics about records of the given kinds.
+    pub(crate) fn diagnostics_about(&self, kinds: &[RecordKind]) -> Vec<Diagnostic> {
+        self.diagnostics
+            .iter()
+            .filter(|diagnostic| kinds.contains(&diagnostic.kind))
+            .cloned()
+            .collect()
+    }
+
+    /// Decode a record, reporting an error diagnostic if it is invalid.
+    pub(crate) fn accept<T: RecordModel>(
+        &mut self,
+        json: JsonValue,
+        path: Option<&Path>,
+    ) -> Option<Record<T>> {
+        match decode::<T>(T::KIND, json) {
+            Ok(record) => Some(record),
+            Err(message) => {
+                let path = path.map(|path| path.display().to_string());
+                self.diagnostics
+                    .push(Diagnostic::new(Severity::Error, T::KIND, message).with_path(path));
+                None
+            }
+        }
     }
 }
 
-/// Create a diagnostic.
-pub fn diagnostic(
-    severity: Severity,
-    kind: RecordKind,
-    message: impl Into<String>,
-    path: Option<String>,
-) -> Diagnostic {
-    Diagnostic {
-        severity,
-        kind,
-        message: message.into(),
-        path,
+impl<T: RecordModel> Extend<T> for Records {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, records: I) {
+        for record in records {
+            self.push(record);
+        }
     }
+}
+
+fn values<T>(records: &[Record<T>]) -> impl ExactSizeIterator<Item = &T> {
+    records.iter().map(|record| &record.value)
+}
+
+/// Convert a typed model to its JSON value.
+pub(crate) fn to_json<T: sidex::Encode + ?Sized>(value: &T) -> JsonValue {
+    sidex::formats::json::to_value(value).expect("models are valid JSON")
 }
 
 /// Implement conversions for an ID wrapper, whose generated field is private to the crate.
@@ -140,15 +244,17 @@ id_conversions!(
     crate::types::metric::MetricId
 );
 
-/// A valid record, normalized for evaluation, with the values that need a fallback.
+/// A valid record with its original JSON and its model, normalized for evaluation.
 ///
 /// Unknown rule types are removed, and unknown states and modes are replaced; the flags
 /// record where the fallbacks apply.
-pub(crate) struct Decoded<T> {
-    pub value: T,
-    pub newer: bool,
-    pub unsupported: bool,
-    pub unsupported_attachments: BTreeSet<String>,
+#[derive(Clone, Debug, PartialEq)]
+pub struct Record<T> {
+    pub(crate) json: JsonValue,
+    pub(crate) value: T,
+    pub(crate) newer: bool,
+    pub(crate) unsupported: bool,
+    pub(crate) unsupported_attachments: BTreeSet<String>,
 }
 
 pub(crate) fn parse_spec_version(text: &str) -> Option<(u64, u64)> {
@@ -230,9 +336,9 @@ fn apply_mode_fallback(entry: &mut Map<Str, JsonValue>) -> Result<bool, String> 
 /// Decode a record with fallbacks and validate it.
 pub(crate) fn decode<T: sidex::Decode>(
     kind: RecordKind,
-    value: &JsonValue,
-) -> Result<Decoded<T>, String> {
-    let mut record = object(&integral(value))?;
+    json: JsonValue,
+) -> Result<Record<T>, String> {
+    let mut record = object(&integral(&json))?;
     let newer = check_version(kind, &record)?;
     let mut unsupported = false;
     let mut unsupported_attachments = BTreeSet::new();
@@ -291,42 +397,13 @@ pub(crate) fn decode<T: sidex::Decode>(
     let record = JsonValue::Map(record);
     let value: T = sidex::formats::json::from_value(&record).map_err(|error| error.to_string())?;
     validate(kind, &record)?;
-    Ok(Decoded {
+    Ok(Record {
+        json,
         value,
         newer,
         unsupported,
         unsupported_attachments,
     })
-}
-
-/// Decode records, skipping invalid ones with an error diagnostic.
-pub(crate) fn decode_all<T: sidex::Decode>(
-    kind: RecordKind,
-    values: &[JsonValue],
-    diagnostics: &mut Vec<Diagnostic>,
-) -> Vec<Decoded<T>> {
-    values
-        .iter()
-        .filter_map(|value| match decode(kind, value) {
-            Ok(decoded) => Some(decoded),
-            Err(message) => {
-                diagnostics.push(diagnostic(Severity::Error, kind, message, None));
-                None
-            }
-        })
-        .collect()
-}
-
-pub(crate) fn check(kind: RecordKind, value: &JsonValue) -> Result<bool, String> {
-    let decoded = match kind {
-        RecordKind::ComponentDeclaration => decode::<ComponentDeclaration>(kind, value)?.newer,
-        RecordKind::HealthNode => decode::<HealthNode>(kind, value)?.newer,
-        RecordKind::HealthStatus => decode::<HealthStatus>(kind, value)?.newer,
-        RecordKind::MetricDefinition => decode::<MetricDefinition>(kind, value)?.newer,
-        RecordKind::MetricSample => decode::<MetricSample>(kind, value)?.newer,
-        RecordKind::DirectoryConfig => decode::<DirectoryConfig>(kind, value)?.newer,
-    };
-    Ok(decoded)
 }
 
 fn get<'a>(value: &'a JsonValue, key: &str) -> Option<&'a JsonValue> {

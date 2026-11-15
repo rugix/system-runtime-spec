@@ -14,35 +14,16 @@ The package uses ES modules and includes TypeScript declarations:
 npm install system-runtime-spec
 ```
 
-Records are plain JSON objects, so that snapshots carry them unchanged and records of newer minor
-versions keep working. The generated models, such as `component.ComponentDeclaration`, describe
-their structure and provide runtime checkers.
-
-## Check an Update
-
-The new system image in this example no longer provides `runtime`, so the check reports the app's
-requirement as unsatisfied:
-
-```typescript
-import { candidateComposition, checkComponents } from "system-runtime-spec";
-
-const current = [
-  { id: "os", owner: "rugix.system", version: "1", provides: [{ id: "runtime", version: "3.2" }] },
-  { id: "app", owner: "rugix.apps.example", requires: [{ id: "runtime", version: ">=3" }] },
-];
-const [components, diagnostics] = candidateComposition(
-  current, [], ["rugix.system"], [{ id: "os", owner: "rugix.system", version: "2" }],
-);
-const report = checkComponents(components, diagnostics);
-console.log(report.consistent, report.problems);
-```
+`Records` holds the records of a system and the diagnostics about them. The models, such as
+`component.ComponentDeclaration`, are generated from the specification's schemas and come with
+runtime checkers.
 
 ## Evaluate a Snapshot
 
 ```typescript
-import { evaluateHealth, readSnapshot } from "system-runtime-spec";
+import { Snapshot } from "system-runtime-spec";
 
-const snapshot = readSnapshot({
+const snapshot = Snapshot.fromJSON({
   specVersion: "1.0",
   clock: { context: { bootId: "boot", nowMs: 45000 }, timestamp: "2026-10-14T12:00:00Z" },
   healthNodes: [{ id: "app" }],
@@ -50,17 +31,43 @@ const snapshot = readSnapshot({
   metrics: [],
   metricSamples: [],
 });
-const report = evaluateHealth(snapshot.records, snapshot.clock.context);
+const report = snapshot.records.evaluateHealth(snapshot.clock.context);
 console.log(report.nodes);
 ```
 
-`readSnapshot` throws a `SnapshotError` for snapshots of an unsupported version or with an invalid
-structure. Evaluating a snapshot gives health at the time of its clock sample. `estimateTimestamp`
-places evidence in wall-clock time for display.
+`Snapshot.fromJSON` throws a `SnapshotError` for snapshots of an unsupported version or with an
+invalid structure, and skips invalid records with an error diagnostic. `JSON.stringify` encodes a
+snapshot. Evaluating a snapshot gives health at the time of its clock sample, and
+`estimateTimestamp` places evidence in wall-clock time for display.
+
+## Check an Update
+
+`withUpdate` builds the composition that an update would produce: it replaces all component
+declarations of the given owners with those of the update. In this example, the new system image
+no longer provides `runtime`, so the check reports the app's requirement as unsatisfied:
+
+```typescript
+import { Records } from "system-runtime-spec";
+
+const records = new Records();
+records.pushJson("ComponentDeclaration", {
+  id: "os", owner: "rugix.system", version: "1", provides: [{ id: "runtime", version: "3.2" }],
+});
+records.pushJson("ComponentDeclaration", {
+  id: "app", owner: "rugix.apps.example", requires: [{ id: "runtime", version: ">=3" }],
+});
+const update = new Records();
+update.pushJson("ComponentDeclaration", { id: "os", owner: "rugix.system", version: "2" });
+const report = records.withUpdate(["rugix.system"], update).checkCompatibility();
+console.log(report.consistent, report.problems);
+```
+
+`pushJson` adds a record given as JSON, and `push` one given as a model. Both validate the record
+and skip it with an error diagnostic if it is invalid.
 
 Fields defined as integers, such as `observedAtMs` and `maxAgeMs`, hold values beyond
-`Number.MAX_SAFE_INTEGER` as decimal strings, so that they keep their precision; the functions
-accept both forms.
+`Number.MAX_SAFE_INTEGER` as decimal strings, so that they keep their precision. The `U64` helpers
+of `@sidex/types` convert them to `bigint`.
 
 ## License
 

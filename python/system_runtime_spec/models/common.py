@@ -20,41 +20,9 @@ class Diagnostic(_sidex.Model):
     path: str | None = pydantic.Field(default=None, description="Path of the file or directory concerned.")
 
 
-class Severity_Error(pydantic.RootModel[Literal["Error"]]):
-    pass
-
-
-class Severity_Warning(pydantic.RootModel[Literal["Warning"]]):
-    pass
-
-
 # Effect of a diagnostic on the results.
-type Severity = Severity_Error | Severity_Warning
-
-
-class RecordKind_ComponentDeclaration(pydantic.RootModel[Literal["ComponentDeclaration"]]):
-    pass
-
-
-class RecordKind_HealthNode(pydantic.RootModel[Literal["HealthNode"]]):
-    pass
-
-
-class RecordKind_HealthStatus(pydantic.RootModel[Literal["HealthStatus"]]):
-    pass
-
-
-class RecordKind_MetricDefinition(pydantic.RootModel[Literal["MetricDefinition"]]):
-    pass
-
-
-class RecordKind_MetricSample(pydantic.RootModel[Literal["MetricSample"]]):
-    pass
-
-
-class RecordKind_DirectoryConfig(pydantic.RootModel[Literal["DirectoryConfig"]]):
-    pass
+type Severity = Literal["Error", "Warning"]
 
 
 # Kind of records, named after the record types.
-type RecordKind = RecordKind_ComponentDeclaration | RecordKind_HealthNode | RecordKind_HealthStatus | RecordKind_MetricDefinition | RecordKind_MetricSample | RecordKind_DirectoryConfig
+type RecordKind = Literal["ComponentDeclaration", "HealthNode", "HealthStatus", "MetricDefinition", "MetricSample", "DirectoryConfig"]

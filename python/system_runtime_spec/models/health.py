@@ -169,93 +169,17 @@ class HealthRule_Aggregate(_sidex.Model):
 type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthRule_Aggregate, pydantic.Discriminator("type")]
 
 
-class InputMode_Counted(pydantic.RootModel[Literal["Counted"]]):
-    pass
-
-
-class InputMode_Mandatory(pydantic.RootModel[Literal["Mandatory"]]):
-    pass
-
-
-class InputMode_Optional(pydantic.RootModel[Literal["Optional"]]):
-    pass
-
-
 # How an input affects the answers of an aggregate node.
-type InputMode = InputMode_Counted | InputMode_Mandatory | InputMode_Optional
-
-
-class HealthState_Healthy(pydantic.RootModel[Literal["Healthy"]]):
-    pass
-
-
-class HealthState_Degraded(pydantic.RootModel[Literal["Degraded"]]):
-    pass
-
-
-class HealthState_Unhealthy(pydantic.RootModel[Literal["Unhealthy"]]):
-    pass
-
-
-class HealthState_Unknown(pydantic.RootModel[Literal["Unknown"]]):
-    pass
+type InputMode = Literal["Counted", "Mandatory", "Optional"]
 
 
 # Summary of the answers of a node.
-type HealthState = HealthState_Healthy | HealthState_Degraded | HealthState_Unhealthy | HealthState_Unknown
-
-
-class Answer_Yes(pydantic.RootModel[Literal["Yes"]]):
-    pass
-
-
-class Answer_No(pydantic.RootModel[Literal["No"]]):
-    pass
-
-
-class Answer_Unknown(pydantic.RootModel[Literal["Unknown"]]):
-    pass
+type HealthState = Literal["Healthy", "Degraded", "Unhealthy", "Unknown"]
 
 
 # Answer to whether criteria are met.
-type Answer = Answer_Yes | Answer_No | Answer_Unknown
-
-
-class Reason_Missing(pydantic.RootModel[Literal["Missing"]]):
-    pass
-
-
-class Reason_OtherBoot(pydantic.RootModel[Literal["OtherBoot"]]):
-    pass
-
-
-class Reason_OwnerMismatch(pydantic.RootModel[Literal["OwnerMismatch"]]):
-    pass
-
-
-class Reason_TagMismatch(pydantic.RootModel[Literal["TagMismatch"]]):
-    pass
-
-
-class Reason_Future(pydantic.RootModel[Literal["Future"]]):
-    pass
-
-
-class Reason_Expired(pydantic.RootModel[Literal["Expired"]]):
-    pass
-
-
-class Reason_Conflict(pydantic.RootModel[Literal["Conflict"]]):
-    pass
-
-
-class Reason_Cycle(pydantic.RootModel[Literal["Cycle"]]):
-    pass
-
-
-class Reason_Unsupported(pydantic.RootModel[Literal["Unsupported"]]):
-    pass
+type Answer = Literal["Yes", "No", "Unknown"]
 
 
 # Why a node's evidence was not used or its rule was not applied.
-type Reason = Reason_Missing | Reason_OtherBoot | Reason_OwnerMismatch | Reason_TagMismatch | Reason_Future | Reason_Expired | Reason_Conflict | Reason_Cycle | Reason_Unsupported
+type Reason = Literal["Missing", "OtherBoot", "OwnerMismatch", "TagMismatch", "Future", "Expired", "Conflict", "Cycle", "Unsupported"]

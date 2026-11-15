@@ -1,20 +1,24 @@
 /** Evaluate health in a health context. */
 
+import { builtins } from "@sidex/types";
 import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
 import type {
-  Answer, HealthContext, HealthNodeId, HealthNodeResult, HealthReport, InputMode, Reason,
+  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthReport, HealthState,
+  HealthStatus, InputMode, ObservationRule, Reason, ThresholdRule,
 } from "./generated/health.js";
-import { type Decoded, type FiniteMetricRange, type JsonObject, type Records, decodeAll, diagnostic } from "./records.js";
+import type { MetricDefinition, MetricRange, MetricSample } from "./generated/metric.js";
+import { type Record, diagnostic } from "./decoding.js";
 
 type Answers = [Answer, Answer];
 
 const UNKNOWN: Answers = ["Unknown", "Unknown"];
-const STATE_ANSWERS: Record<string, Answers> = {
+const STATE_ANSWERS: { [S in HealthState]: Answers } = {
   Healthy: ["Yes", "Yes"],
   Degraded: ["Yes", "No"],
   Unhealthy: ["No", "No"],
   Unknown: UNKNOWN,
 };
+const { U64, F64 } = builtins;
 
 function conjunction(answers: Answer[]): Answer {
   if (answers.includes("No")) return "No";
@@ -30,55 +34,59 @@ function countAnswer(minimum: bigint, answers: Answer[]): Answer {
   return "Unknown";
 }
 
-function contains(range: FiniteMetricRange, value: number): boolean {
+function contains(range: MetricRange, value: number): boolean {
   const { lower, upper } = range;
-  return (lower === undefined || value > lower.value || (value === lower.value && lower.inclusive))
-    && (upper === undefined || value < upper.value || (value === upper.value && upper.inclusive));
+  const bound = (b: { value: builtins.F64 }) => F64.toNumber(b.value);
+  return (lower === undefined || value > bound(lower) || (value === bound(lower) && lower.inclusive))
+    && (upper === undefined || value < bound(upper) || (value === bound(upper) && upper.inclusive));
 }
 
-function group(items: Decoded[]): Map<string, Decoded[]> {
-  const groups = new Map<string, Decoded[]>();
-  for (const item of items) {
-    const id = item.record.id as string;
-    groups.set(id, [...(groups.get(id) ?? []), item]);
+function group<T extends { id: string }>(records: readonly Record<T>[]): Map<string, Record<T>[]> {
+  const groups = new Map<string, Record<T>[]>();
+  for (const record of records) {
+    groups.set(record.value.id, [...(groups.get(record.value.id) ?? []), record]);
   }
   return groups;
 }
 
-function toBigInt(value: unknown): bigint {
-  return BigInt(value as string | number);
-}
-
-/**
- * Evaluate the health records of `records` in a health context.
- *
- * Invalid records are skipped with an error diagnostic. The report contains one result per node
- * ID, in the order of the node definitions, and all diagnostics.
- */
-export function evaluateHealth(records: Records, context: HealthContext): HealthReport {
-  return new Evaluation(records, context).report();
+/** Evaluate valid health records, with the diagnostics about them. */
+export function evaluate(
+  nodes: readonly Record<HealthNode>[],
+  statuses: readonly Record<HealthStatus>[],
+  metrics: readonly Record<MetricDefinition>[],
+  samples: readonly Record<MetricSample>[],
+  diagnostics: readonly Diagnostic[],
+  context: HealthContext,
+): HealthReport {
+  return new Evaluation(nodes, statuses, metrics, samples, diagnostics, context).report();
 }
 
 class Evaluation {
   private readonly diagnostics: Diagnostic[];
   private readonly reported = new Set<string>();
   private readonly order: string[] = [];
-  private readonly nodes = new Map<string, Decoded>();
+  private readonly nodes = new Map<string, Record<HealthNode>>();
   private readonly conflicts = new Set<string>();
-  private readonly statuses: Map<string, Decoded[]>;
-  private readonly metrics: Map<string, Decoded[]>;
-  private readonly samples: Map<string, Decoded[]>;
+  private readonly statuses: Map<string, Record<HealthStatus>[]>;
+  private readonly metrics: Map<string, Record<MetricDefinition>[]>;
+  private readonly samples: Map<string, Record<MetricSample>[]>;
   private readonly inputs = new Map<string, [string, InputMode][]>();
   private readonly unsupported = new Set<string>();
   private readonly onCycle: Set<string>;
   private readonly results = new Map<string, HealthNodeResult>();
 
-  constructor(records: Records, private readonly context: HealthContext) {
-    this.diagnostics = [...(records.diagnostics ?? [])];
-    const nodes = decodeAll("HealthNode", records.healthNodes, this.diagnostics);
-    this.statuses = group(decodeAll("HealthStatus", records.healthStatuses, this.diagnostics));
-    this.metrics = group(decodeAll("MetricDefinition", records.metrics, this.diagnostics));
-    this.samples = group(decodeAll("MetricSample", records.metricSamples, this.diagnostics));
+  constructor(
+    nodes: readonly Record<HealthNode>[],
+    statuses: readonly Record<HealthStatus>[],
+    metrics: readonly Record<MetricDefinition>[],
+    samples: readonly Record<MetricSample>[],
+    diagnostics: readonly Diagnostic[],
+    private readonly context: HealthContext,
+  ) {
+    this.diagnostics = [...diagnostics];
+    this.statuses = group(statuses);
+    this.metrics = group(metrics);
+    this.samples = group(samples);
     for (const [id, nodesWithId] of group(nodes)) {
       this.order.push(id);
       if (nodesWithId.length > 1) {
@@ -99,31 +107,31 @@ class Evaluation {
     this.diagnostics.push(diagnostic(severity, kind, message));
   }
 
-  private aggregateRule(id: string): JsonObject | undefined {
-    const rule = this.nodes.get(id)?.record.rule as JsonObject | undefined;
+  private aggregateRule(id: string): AggregationRule | undefined {
+    const rule = this.nodes.get(id)?.value.rule;
     return rule?.type === "Aggregate" ? rule : undefined;
   }
 
   private resolveInputs(): void {
     const attached = new Map<string, [string, InputMode][]>();
     for (const [id, node] of this.nodes) {
-      for (const attachment of (node.record.partOf as JsonObject[] | undefined) ?? []) {
-        const parent = attachment.node as string;
+      for (const attachment of node.value.partOf ?? []) {
+        const parent = attachment.node;
         if (this.aggregateRule(parent) === undefined) continue;
         if (node.unsupportedAttachments.has(parent)) this.unsupported.add(parent);
-        attached.set(parent, [...(attached.get(parent) ?? []), [id, (attachment.mode as InputMode) ?? "Counted"]]);
+        attached.set(parent, [...(attached.get(parent) ?? []), [id, attachment.mode ?? "Counted"]]);
       }
     }
     for (const id of this.nodes.keys()) {
       const rule = this.aggregateRule(id);
       if (rule === undefined) continue;
       const inputs = new Map<string, InputMode>();
-      for (const entry of (rule.inputs as JsonObject[] | undefined) ?? []) {
-        const child = entry.node as string;
+      for (const entry of rule.inputs ?? []) {
+        const child = entry.node;
         if (!this.nodes.has(child) && !this.conflicts.has(child)) {
           this.diagnose("Warning", "HealthNode", `input ${JSON.stringify(child)} of ${JSON.stringify(id)} does not exist`);
         }
-        if (!inputs.has(child)) inputs.set(child, (entry.mode as InputMode) ?? "Counted");
+        if (!inputs.has(child)) inputs.set(child, entry.mode ?? "Counted");
       }
       for (const [child, mode] of attached.get(id) ?? []) {
         if (!inputs.has(child)) inputs.set(child, mode);
@@ -203,11 +211,15 @@ class Evaluation {
   private result(id: string): HealthNodeResult {
     const cached = this.results.get(id);
     if (cached !== undefined) return cached;
-    const node = (this.nodes.get(id) as Decoded).record;
-    const result: HealthNodeResult = { id: id as HealthNodeId, usable: "Unknown", healthy: "Unknown", inputs: [] };
-    if (node.owner !== undefined) result.owner = node.owner as string;
-    result.inputs = (this.inputs.get(id) ?? []).map(([child]) => child as HealthNodeId);
-    const rule = (node.rule as JsonObject | undefined) ?? { type: "Observed" };
+    const node = (this.nodes.get(id) as Record<HealthNode>).value;
+    const result: HealthNodeResult = {
+      id: node.id,
+      ...(node.owner === undefined ? {} : { owner: node.owner }),
+      usable: "Unknown",
+      healthy: "Unknown",
+      inputs: (this.inputs.get(id) ?? []).map(([child]) => child as HealthNodeId),
+    };
+    const rule = node.rule ?? { type: "Observed" };
     if (this.onCycle.has(id)) result.reason = "Cycle";
     else if (this.unsupported.has(id)) result.reason = "Unsupported";
     else if (rule.type === "Observed") this.observe(result, node, rule);
@@ -219,29 +231,33 @@ class Evaluation {
 
   /** Return why evidence is not fresh, or undefined if it is fresh. */
   private freshnessReason(
-    evidence: JsonObject, owner: unknown, tag: unknown, maxAges: unknown[],
+    evidence: HealthStatus | MetricSample,
+    owner: string | undefined,
+    tag: string | undefined,
+    maxAges: (builtins.U64 | undefined)[],
   ): Reason | undefined {
     if (evidence.bootId !== this.context.bootId) return "OtherBoot";
     if (owner !== undefined && evidence.owner !== owner) return "OwnerMismatch";
     if (tag !== undefined && evidence.tag !== tag) return "TagMismatch";
-    const now = toBigInt(this.context.nowMs);
-    const observed = toBigInt(evidence.observedAtMs);
+    const now = U64.toBigInt(this.context.nowMs);
+    const observed = U64.toBigInt(evidence.observedAtMs);
     if (observed > now) return "Future";
-    const limits = [evidence.maxAgeMs, ...maxAges.filter((age) => age !== undefined)].map(toBigInt);
+    const limits = [evidence.maxAgeMs, ...maxAges]
+      .filter((age): age is builtins.U64 => age !== undefined)
+      .map((age) => U64.toBigInt(age));
     if (limits.some((limit) => now - observed >= limit)) return "Expired";
     return undefined;
   }
 
-  private carry(result: HealthNodeResult, evidence: JsonObject): void {
-    if (evidence.message !== undefined) result.message = evidence.message as string;
-    if (evidence.details !== undefined) result.details = evidence.details as HealthNodeResult["details"];
+  private carry(result: HealthNodeResult, evidence: HealthStatus | MetricSample): void {
+    if (evidence.message !== undefined) result.message = evidence.message;
+    if (evidence.details !== undefined) result.details = evidence.details;
   }
 
-  private observe(result: HealthNodeResult, node: JsonObject, rule: JsonObject): void {
-    const id = node.id as string;
-    const statuses = this.statuses.get(id) ?? [];
+  private observe(result: HealthNodeResult, node: HealthNode, rule: ObservationRule): void {
+    const statuses = this.statuses.get(node.id) ?? [];
     if (statuses.length > 1) {
-      this.diagnose("Warning", "HealthStatus", `several status records for ${JSON.stringify(id)}`);
+      this.diagnose("Warning", "HealthStatus", `several status records for ${JSON.stringify(node.id)}`);
       result.reason = "Conflict";
       return;
     }
@@ -250,25 +266,25 @@ class Evaluation {
       return;
     }
     const [status] = statuses;
-    const reason = this.freshnessReason(status.record, node.owner, rule.expectedTag, [rule.maxAgeMs]);
+    const reason = this.freshnessReason(status.value, node.owner, rule.expectedTag, [rule.maxAgeMs]);
     if (reason !== undefined) {
       result.reason = reason;
       return;
     }
     if (status.unsupported) result.reason = "Unsupported";
-    else [result.usable, result.healthy] = STATE_ANSWERS[status.record.state as string];
-    this.carry(result, status.record);
+    else [result.usable, result.healthy] = STATE_ANSWERS[status.value.state];
+    this.carry(result, status.value);
   }
 
-  private threshold(result: HealthNodeResult, node: JsonObject, rule: JsonObject): void {
-    const metric = rule.metric as string;
+  private threshold(result: HealthNodeResult, node: HealthNode, rule: ThresholdRule): void {
+    const metric = rule.metric;
     const definitions = this.metrics.get(metric) ?? [];
     const samples = this.samples.get(metric) ?? [];
     if (definitions.length === 0) {
       result.reason = "Missing";
       return;
     }
-    const definition = definitions[0].record;
+    const definition = definitions[0].value;
     const conflicts: [RecordKind, string][] = [];
     if (definitions.length > 1) conflicts.push(["MetricDefinition", `several definitions of ${JSON.stringify(metric)}`]);
     if (samples.length > 1) conflicts.push(["MetricSample", `several samples of ${JSON.stringify(metric)}`]);
@@ -284,25 +300,26 @@ class Evaluation {
       result.reason = "Missing";
       return;
     }
-    const sample = samples[0].record;
+    const sample = samples[0].value;
     const reason = this.freshnessReason(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
     if (reason !== undefined) {
       result.reason = reason;
       return;
     }
-    const value = sample.value as number;
-    [result.usable, result.healthy] = contains(rule.healthy as FiniteMetricRange, value)
+    const value = F64.toNumber(sample.value);
+    [result.usable, result.healthy] = contains(rule.healthy, value)
       ? ["Yes", "Yes"]
-      : contains(rule.usable as FiniteMetricRange, value) ? ["Yes", "No"] : ["No", "No"];
+      : contains(rule.usable, value) ? ["Yes", "No"] : ["No", "No"];
     this.carry(result, sample);
   }
 
-  private aggregate(result: HealthNodeResult, rule: JsonObject): void {
-    const inputs = (this.inputs.get(result.id) as [string, InputMode][]).map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
+  private aggregate(result: HealthNodeResult, rule: AggregationRule): void {
+    const inputs = (this.inputs.get(result.id) as [string, InputMode][])
+      .map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
     const counted = inputs.filter(([mode]) => mode !== "Optional").map(([, answers]) => answers);
     const withMode = (wanted: InputMode) => inputs.filter(([mode]) => mode === wanted).map(([, answers]) => answers);
-    const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : toBigInt(rule.minHealthy);
-    const minUsable = rule.minUsable === undefined ? minHealthy : toBigInt(rule.minUsable);
+    const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : U64.toBigInt(rule.minHealthy);
+    const minUsable = rule.minUsable === undefined ? minHealthy : U64.toBigInt(rule.minUsable);
     const usable = conjunction([
       countAnswer(minUsable, counted.map(([u]) => u)),
       ...withMode("Mandatory").map(([u]) => u),
