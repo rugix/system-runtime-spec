@@ -973,13 +973,13 @@ The reasons are:
 
 Other results of aggregate nodes have no reason; their inputs explain them.
 
-A skipped node or directory configuration can have provided inputs of other nodes, which then
-appear healthier than they are. A consumer that makes a decision, such as whether to commit an
-update, SHOULD NOT base it on a report with diagnostics of the severity `Error` and the kinds
-`HealthNode` or `DirectoryConfig`, unless it is configured to. Skipped evidence and metric definitions
-make the nodes that use them unknown, unless a writer published another record with the same ID,
-which [Sections 6.4](#64-observed-nodes-and-status-records) and [6.5](#65-metrics) forbid. A
-consumer can also be configured to require a report without any error diagnostics.
+A skipped node or directory configuration can have provided inputs of other nodes, which then appear
+healthier than they are. A consumer that makes a decision, such as whether to commit an update,
+SHOULD NOT base it on a report with diagnostics of the severity `Error` and the kinds `HealthNode`
+or `DirectoryConfig`, unless it is configured to. Skipped evidence and metric definitions make the
+nodes that use them unknown, unless a writer published another record with the same ID, which
+[Sections 6.4](#64-observed-nodes-and-status-records) and [6.5](#65-metrics) forbid. A consumer can
+also be configured to require a report without any error diagnostics.
 
 ## 7. Links Between Components and Health
 
