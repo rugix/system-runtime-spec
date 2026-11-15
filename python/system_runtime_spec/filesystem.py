@@ -89,7 +89,9 @@ class _Reader:
         for directory, level in directories:
             for source in self._expand(kind, directory):
                 for path in self._walk(kind, source):
-                    canonical = os.path.realpath(path)
+                    canonical = self._resolve(kind, path)
+                    if canonical is None:
+                        continue
                     if canonical in files:
                         files[canonical] = (
                             files[canonical][0],
@@ -115,6 +117,69 @@ class _Reader:
             ]
         return [entry.record for entry in entries]
 
+    def _resolve(self, kind: str, path: Path) -> str | None:
+        """Resolve a path; paths that disappeared resolve to None."""
+        try:
+            return os.path.realpath(path, strict=True)
+        except FileNotFoundError:
+            return None
+        except OSError as error:
+            self._report("Error", kind, f"cannot resolve path: {error}", path)
+            return None
+
+    def _directory(self, kind: str, path: Path) -> bool:
+        """Check that a path is a directory; diagnose everything but its absence."""
+        try:
+            status = os.stat(path)
+        except FileNotFoundError:
+            try:
+                os.lstat(path)
+            except FileNotFoundError:
+                return False
+            except OSError as error:
+                self._report("Error", kind, f"cannot inspect path: {error}", path)
+                return False
+            self._report("Error", kind, "directory is a broken symlink", path)
+            return False
+        except OSError as error:
+            self._report("Error", kind, f"cannot inspect path: {error}", path)
+            return False
+        if not stat.S_ISDIR(status.st_mode):
+            self._report("Error", kind, "path is not a directory", path)
+            return False
+        return True
+
+    def _list(self, kind: str, directory: Path) -> list[tuple[Path, bool]]:
+        """List a directory in byte order, skipping hidden entries and symlinks.
+
+        Return the paths of the entries and whether they are directories; regular files
+        are the entries that are no directories.
+        """
+        try:
+            with os.scandir(directory) as entries:
+                children = sorted(entries, key=lambda e: _byte_order(e.name))
+        except FileNotFoundError:
+            return []
+        except OSError as error:
+            self._report("Error", kind, f"cannot list directory: {error}", directory)
+            return []
+        result = []
+        for child in children:
+            if child.name.startswith("."):
+                continue
+            try:
+                if child.is_dir(follow_symlinks=False):
+                    result.append((Path(child.path), True))
+                elif child.is_file(follow_symlinks=False):
+                    result.append((Path(child.path), False))
+            except FileNotFoundError:
+                continue
+            except OSError as error:
+                self._report(
+                    "Error", kind, f"cannot inspect entry: {error}", child.path
+                )
+        return result
+
     def _expand(self, kind: str, directory: str) -> list[Path]:
         """Expand whole `*` segments over directories that are no symlinks."""
         matches = [self.root]
@@ -124,75 +189,31 @@ class _Reader:
             if segment != "*":
                 matches = [match / segment for match in matches]
                 continue
-            expanded = []
-            for match in matches:
-                try:
-                    with os.scandir(match) as entries:
-                        children = sorted(entries, key=lambda e: _byte_order(e.name))
-                except FileNotFoundError:
-                    continue
-                except NotADirectoryError:
-                    continue
-                except OSError as error:
-                    self._report(
-                        "Error", kind, f"cannot list directory: {error}", match
-                    )
-                    continue
-                for child in children:
-                    try:
-                        if not child.name.startswith(".") and child.is_dir(
-                            follow_symlinks=False
-                        ):
-                            expanded.append(Path(child.path))
-                    except FileNotFoundError:
-                        continue
-            matches = expanded
+            matches = [
+                path
+                for match in matches
+                if self._directory(kind, match)
+                for path, is_directory in self._list(kind, match)
+                if is_directory
+            ]
         return matches
 
     def _walk(self, kind: str, source: Path) -> list[Path]:
-        try:
-            os.lstat(source)
-        except FileNotFoundError:
+        if not self._directory(kind, source):
             return []
-        except OSError as error:
-            self._report("Error", kind, f"cannot inspect directory: {error}", source)
-            return []
-        try:
-            status = os.stat(source)
-        except FileNotFoundError:
-            self._report("Error", kind, "directory is a broken symlink", source)
-            return []
-        except OSError as error:
-            self._report("Error", kind, f"cannot inspect directory: {error}", source)
-            return []
-        if not stat.S_ISDIR(status.st_mode):
-            self._report("Error", kind, "path is not a directory", source)
+        resolved = self._resolve(kind, source)
+        if resolved is None:
             return []
         files: list[Path] = []
-        self._traverse(kind, Path(os.path.realpath(source)), files)
+        self._traverse(kind, Path(resolved), files)
         return files
 
     def _traverse(self, kind: str, directory: Path, files: list[Path]) -> None:
-        try:
-            with os.scandir(directory) as entries:
-                children = sorted(entries, key=lambda e: _byte_order(e.name))
-        except FileNotFoundError:
-            return
-        except OSError as error:
-            self._report("Error", kind, f"cannot list directory: {error}", directory)
-            return
-        for child in children:
-            if child.name.startswith("."):
-                continue
-            try:
-                if child.is_dir(follow_symlinks=False):
-                    self._traverse(kind, Path(child.path), files)
-                elif child.is_file(follow_symlinks=False) and child.name.endswith(
-                    ".json"
-                ):
-                    files.append(Path(child.path))
-            except FileNotFoundError:
-                continue
+        for path, is_directory in self._list(kind, directory):
+            if is_directory:
+                self._traverse(kind, path, files)
+            elif path.name.endswith(".json"):
+                files.append(path)
 
     def _load(self, kind: str, path: Path) -> JsonObject | None:
         try:

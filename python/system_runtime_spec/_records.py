@@ -22,7 +22,7 @@ SUPPORTED_MINOR = 0
 type Json = Any
 type JsonObject = dict[str, Any]
 
-_SPEC_VERSION = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
+_SPEC_VERSION = re.compile(r"(0|[1-9][0-9]{0,19})\.(0|[1-9][0-9]{0,19})")
 _ID = re.compile(r"[!-~]+")
 _U64_MAX = 2**64 - 1
 
@@ -174,10 +174,12 @@ def _health_node_fallbacks(record: JsonObject, result: Decoded) -> None:
             result.unsupported = True
             del record["rule"]
         elif rule_type == "Aggregate":
-            for entry in rule.get("inputs") or []:
+            inputs = rule.get("inputs")
+            for entry in inputs if isinstance(inputs, list) else []:
                 if isinstance(entry, dict) and _unknown_mode(entry):
                     result.unsupported = True
-    for entry in record.get("partOf") or []:
+    attachments = record.get("partOf")
+    for entry in attachments if isinstance(attachments, list) else []:
         if isinstance(entry, dict) and _unknown_mode(entry):
             if isinstance(entry.get("node"), str):
                 result.unsupported_attachments.add(entry["node"])

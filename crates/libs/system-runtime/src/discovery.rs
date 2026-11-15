@@ -97,10 +97,14 @@ fn overridable(kind: RecordKind) -> bool {
     )
 }
 
-/// Entries of a directory that are no symlinks and whose names do not start with `.`.
+/// Directory or regular file in a directory whose name does not start with `.`.
 struct Entry {
     path: PathBuf,
     directory: bool,
+}
+
+fn not_found(error: &std::io::Error) -> bool {
+    error.kind() == std::io::ErrorKind::NotFound
 }
 
 struct Reader {
@@ -123,7 +127,9 @@ impl Reader {
         for (directory, level) in directories {
             for source in self.expand(kind, directory) {
                 for path in self.walk(kind, &source) {
-                    let canonical = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
+                    let Some(canonical) = self.resolve(kind, &path) else {
+                        continue;
+                    };
                     match files
                         .iter_mut()
                         .find(|(_, existing, _)| *existing == canonical)
@@ -163,11 +169,44 @@ impl Reader {
         entries.into_iter().map(|(_, record)| record).collect()
     }
 
+    /// Resolve a path; paths that disappeared resolve to None.
+    fn resolve(&mut self, kind: RecordKind, path: &Path) -> Option<PathBuf> {
+        match std::fs::canonicalize(path) {
+            Ok(resolved) => Some(resolved),
+            Err(error) if not_found(&error) => None,
+            Err(error) => {
+                self.report(
+                    Severity::Error,
+                    kind,
+                    format!("cannot resolve path: {error}"),
+                    path,
+                );
+                None
+            }
+        }
+    }
+
+    /// Check that a path is a directory; diagnose everything but its absence.
+    fn directory(&mut self, kind: RecordKind, path: &Path) -> bool {
+        let message = match std::fs::metadata(path) {
+            Ok(metadata) if metadata.is_dir() => return true,
+            Ok(_) => "path is not a directory".to_owned(),
+            Err(error) if not_found(&error) => match std::fs::symlink_metadata(path) {
+                Ok(_) => "directory is a broken symlink".to_owned(),
+                Err(error) if not_found(&error) => return false,
+                Err(error) => format!("cannot inspect path: {error}"),
+            },
+            Err(error) => format!("cannot inspect path: {error}"),
+        };
+        self.report(Severity::Error, kind, message, path);
+        false
+    }
+
     /// List a directory in byte order, skipping hidden entries and symlinks.
     fn list(&mut self, kind: RecordKind, directory: &Path) -> Vec<Entry> {
         let entries = match std::fs::read_dir(directory) {
             Ok(entries) => entries,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Vec::new(),
+            Err(error) if not_found(&error) => return Vec::new(),
             Err(error) => {
                 self.report(
                     Severity::Error,
@@ -178,17 +217,39 @@ impl Reader {
                 return Vec::new();
             }
         };
-        let mut result: Vec<_> = entries
-            .filter_map(Result::ok)
-            .filter(|entry| !entry.file_name().as_encoded_bytes().starts_with(b"."))
-            .filter_map(|entry| {
-                let kind = entry.file_type().ok()?;
-                (!kind.is_symlink()).then(|| Entry {
+        let mut result = Vec::new();
+        for entry in entries {
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(error) if not_found(&error) => continue,
+                Err(error) => {
+                    self.report(
+                        Severity::Error,
+                        kind,
+                        format!("cannot list directory: {error}"),
+                        directory,
+                    );
+                    continue;
+                }
+            };
+            if entry.file_name().as_encoded_bytes().starts_with(b".") {
+                continue;
+            }
+            match entry.file_type() {
+                Ok(file_type) if file_type.is_dir() || file_type.is_file() => result.push(Entry {
                     path: entry.path(),
-                    directory: kind.is_dir(),
-                })
-            })
-            .collect();
+                    directory: file_type.is_dir(),
+                }),
+                Ok(_) => {}
+                Err(error) if not_found(&error) => {}
+                Err(error) => self.report(
+                    Severity::Error,
+                    kind,
+                    format!("cannot inspect entry: {error}"),
+                    &entry.path(),
+                ),
+            }
+        }
         result.sort_by(|a, b| {
             a.path
                 .file_name()
@@ -210,7 +271,7 @@ impl Reader {
             }
             let mut expanded = Vec::new();
             for path in matches {
-                if path.is_dir() {
+                if self.directory(kind, &path) {
                     expanded.extend(
                         self.list(kind, &path)
                             .into_iter()
@@ -225,50 +286,12 @@ impl Reader {
     }
 
     fn walk(&mut self, kind: RecordKind, source: &Path) -> Vec<PathBuf> {
-        match std::fs::symlink_metadata(source) {
-            Ok(_) => {}
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Vec::new(),
-            Err(error) => {
-                self.report(
-                    Severity::Error,
-                    kind,
-                    format!("cannot inspect directory: {error}"),
-                    source,
-                );
-                return Vec::new();
-            }
-        }
-        let metadata = match std::fs::metadata(source) {
-            Ok(metadata) => metadata,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                self.report(
-                    Severity::Error,
-                    kind,
-                    "directory is a broken symlink".into(),
-                    source,
-                );
-                return Vec::new();
-            }
-            Err(error) => {
-                self.report(
-                    Severity::Error,
-                    kind,
-                    format!("cannot inspect directory: {error}"),
-                    source,
-                );
-                return Vec::new();
-            }
-        };
-        if !metadata.is_dir() {
-            self.report(
-                Severity::Error,
-                kind,
-                "path is not a directory".into(),
-                source,
-            );
+        if !self.directory(kind, source) {
             return Vec::new();
         }
-        let resolved = std::fs::canonicalize(source).unwrap_or_else(|_| source.to_owned());
+        let Some(resolved) = self.resolve(kind, source) else {
+            return Vec::new();
+        };
         let mut files = Vec::new();
         self.traverse(kind, &resolved, &mut files);
         files
@@ -282,7 +305,6 @@ impl Reader {
                 .path
                 .extension()
                 .is_some_and(|extension| extension == "json")
-                && entry.path.is_file()
             {
                 files.push(entry.path);
             }
@@ -298,7 +320,7 @@ impl Reader {
             .and_then(|mut file| file.read_to_end(&mut text));
         match result {
             Ok(_) => {}
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return None,
+            Err(error) if not_found(&error) => return None,
             Err(error) => {
                 self.report(
                     Severity::Error,
