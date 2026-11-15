@@ -2735,6 +2735,883 @@
       "error": true
     },
     {
+      "name": "optional input healthy allows full health",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              },
+              {
+                "node": "c",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "c",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "healthy",
+            "inputs": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "unhealthy optional input only degrades",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              },
+              {
+                "node": "c",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "c",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "unhealthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown optional input only degrades",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              },
+              {
+                "node": "c",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          }
+        ]
+      }
+    },
+    {
+      "name": "degraded optional input prevents full health",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "degraded",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "degraded",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "optional input does not count toward minimum",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unhealthy",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "optional input does not resolve unknown minimum",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "unknown",
+            "inputs": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "unknown",
+            "inputs": [],
+            "message": "Missing status"
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "counts exclude optional inputs",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b"
+              },
+              {
+                "node": "c",
+                "optional": true
+              }
+            ],
+            "required": 1
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "c",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "mandatory and optional inputs combine",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a",
+                "required": true
+              },
+              {
+                "node": "b"
+              },
+              {
+                "node": "c"
+              },
+              {
+                "node": "d",
+                "optional": true
+              }
+            ],
+            "required": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "c",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "d",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "c",
+          "state": "unhealthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "d",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "root",
+            "state": "degraded",
+            "inputs": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ]
+          },
+          {
+            "id": "a",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "b",
+            "state": "healthy",
+            "inputs": []
+          },
+          {
+            "id": "c",
+            "state": "unhealthy",
+            "inputs": []
+          },
+          {
+            "id": "d",
+            "state": "healthy",
+            "inputs": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "input both required and optional is invalid",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a",
+                "required": true,
+                "optional": true
+              },
+              {
+                "node": "b"
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "aggregate with only optional inputs is invalid",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a",
+                "optional": true
+              },
+              {
+                "node": "b",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
+      "name": "healthy count above non-optional inputs is invalid",
+      "nodes": [
+        {
+          "id": "root",
+          "rule": {
+            "rule": "aggregate",
+            "inputs": [
+              {
+                "node": "a"
+              },
+              {
+                "node": "b",
+                "optional": true
+              }
+            ],
+            "healthy": 2
+          }
+        },
+        {
+          "id": "a",
+          "rule": {
+            "rule": "observed"
+          }
+        },
+        {
+          "id": "b",
+          "rule": {
+            "rule": "observed"
+          }
+        }
+      ],
+      "statuses": [
+        {
+          "id": "a",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        },
+        {
+          "id": "b",
+          "state": "healthy",
+          "bootId": "boot",
+          "observedAtMs": 90,
+          "maxAgeMs": 20
+        }
+      ],
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "error": true
+    },
+    {
       "name": "aggregate status",
       "nodes": [
         {

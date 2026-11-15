@@ -86,11 +86,12 @@ export const ThresholdRule = {
                                             * Dependencies with distinct node IDs.
                                             */
                                                         "inputs": AggregationInput[], /**
-                                            * Minimum healthy or degraded input count, including mandatory inputs; omitted means the healthy count.
+                                            * Minimum healthy or degraded count of non-optional inputs, including mandatory inputs;
+                                            * omitted means the healthy count.
                                             */
                                                         "required"?: __sidex_types.builtins.U32, /**
-                                            * Desired healthy input count, including mandatory inputs; omitted means all inputs.
-                                            * Must satisfy 1 <= required <= healthy <= inputs length.
+                                            * Desired healthy count of non-optional inputs, including mandatory inputs; omitted means all
+                                            * non-optional inputs. Must satisfy 1 <= required <= healthy <= non-optional inputs.
                                             */
                                                         "healthy"?: __sidex_types.builtins.U32 };
 
@@ -106,10 +107,14 @@ export const AggregationRule = {
                                                         "node": HealthNodeId, /**
                                             * Whether this dependency must meet minimum and desired criteria; omitted means false.
                                             */
-                                                        "required"?: __sidex_types.builtins.Bool };
+                                                        "required"?: __sidex_types.builtins.Bool, /**
+                                            * Whether this dependency only affects desired criteria; omitted means false.
+                                            * Must not be combined with required.
+                                            */
+                                                        "optional"?: __sidex_types.builtins.Bool };
 
 export const AggregationInput = {
-    ...__sidex_types.checker<AggregationInput>((): __sidex_types.Check => __sidex_types.record([["node", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["required", __sidex_types.builtin("bool"), true]], [])),
+    ...__sidex_types.checker<AggregationInput>((): __sidex_types.Check => __sidex_types.record([["node", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["required", __sidex_types.builtin("bool"), true], ["optional", __sidex_types.builtin("bool"), true]], [])),
 };
 /**
  * Reported status of one observed node within a boot.

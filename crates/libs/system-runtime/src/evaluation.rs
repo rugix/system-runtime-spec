@@ -84,8 +84,23 @@ pub fn evaluate_health_with_values(
             }
             HealthRule::Threshold(rule) => evidence.validate(rule)?,
             HealthRule::Aggregate(rule) => {
+                if rule
+                    .inputs
+                    .iter()
+                    .any(|input| input.required == Some(true) && input.optional == Some(true))
+                {
+                    return Err(Error::Invalid(format!(
+                        "input both required and optional for {:?}",
+                        node.id
+                    )));
+                }
                 let (required, healthy) = counts(rule);
-                if !(1 <= required && required <= healthy && healthy <= rule.inputs.len()) {
+                let counted = rule
+                    .inputs
+                    .iter()
+                    .filter(|input| !is_optional(input))
+                    .count();
+                if !(1 <= required && required <= healthy && healthy <= counted) {
                     return Err(Error::Invalid(format!(
                         "invalid thresholds for {:?}",
                         node.id
@@ -200,11 +215,19 @@ fn observe(
     }
 }
 
-/// Resolve the minimum and desired counts, defaulting to all inputs healthy.
+/// Check whether an input only affects the desired criteria.
+fn is_optional(input: &AggregationInput) -> bool {
+    input.optional == Some(true)
+}
+
+/// Resolve the minimum and desired counts, defaulting to all non-optional inputs healthy.
 fn counts(rule: &AggregationRule) -> (usize, usize) {
-    let healthy = rule
-        .healthy
-        .map_or(rule.inputs.len(), |healthy| healthy as usize);
+    let counted = rule
+        .inputs
+        .iter()
+        .filter(|input| !is_optional(input))
+        .count();
+    let healthy = rule.healthy.map_or(counted, |healthy| healthy as usize);
     let required = rule.required.map_or(healthy, |required| required as usize);
     (required, healthy)
 }
@@ -216,17 +239,22 @@ fn aggregate(
     inputs: &[&HealthNodeResult],
 ) -> HealthNodeResult {
     let (required, desired) = counts(rule);
-    let healthy = inputs
+    let (optional, counted): (Vec<_>, Vec<_>) = rule
+        .inputs
         .iter()
-        .filter(|i| i.state == HealthState::Healthy)
+        .zip(inputs)
+        .partition(|(input, _)| is_optional(input));
+    let healthy = counted
+        .iter()
+        .filter(|(_, i)| i.state == HealthState::Healthy)
         .count();
-    let minimum_met = inputs
+    let minimum_met = counted
         .iter()
-        .filter(|i| matches!(i.state, HealthState::Healthy | HealthState::Degraded))
+        .filter(|(_, i)| matches!(i.state, HealthState::Healthy | HealthState::Degraded))
         .count();
-    let possible_minimum = inputs
+    let possible_minimum = counted
         .iter()
-        .filter(|i| i.state != HealthState::Unhealthy)
+        .filter(|(_, i)| i.state != HealthState::Unhealthy)
         .count();
     let mandatory: Vec<_> = rule
         .inputs
@@ -251,6 +279,9 @@ fn aggregate(
         && mandatory
             .iter()
             .all(|input| input.state == HealthState::Healthy)
+        && optional
+            .iter()
+            .all(|(_, input)| input.state == HealthState::Healthy)
     {
         HealthState::Healthy
     } else {
