@@ -10326,7 +10326,10 @@
             "state": "Healthy",
             "bootId": "boot",
             "observedAtMs": 900,
-            "maxAgeMs": 500
+            "maxAgeMs": 500,
+            "annotations": {
+              "com.example.check": "ping"
+            }
           }
         ]
       },

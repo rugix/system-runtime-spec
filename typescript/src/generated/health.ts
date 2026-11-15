@@ -176,12 +176,15 @@ export const InputMode = {
                                             * Explanation supplied by the writer.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
-                                            * Further information supplied by the writer, in any structure.
+                                            * Further information about the observation, for display, in any structure.
                                             */
-                                                        "details"?: { [key: string]: __sidex_types.builtins.Json } };
+                                                        "details"?: { [key: string]: __sidex_types.builtins.Json }, /**
+                                            * Further data that the specification does not define, with namespaced member names.
+                                            */
+                                                        "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const HealthStatus = {
-    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
+    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
  * Summary of the answers of a node.

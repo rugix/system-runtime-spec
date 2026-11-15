@@ -163,13 +163,19 @@ how owners constrain evidence.
 
 ### 3.5 Annotations
 
-Component declarations, health nodes, and metric definitions have an optional `annotations` field,
-an object for data that this specification does not define, such as information for a particular
-tool. Member names SHOULD start with a reverse domain name that the writer controls, such as
-`com.example.priority`. Annotations do not affect compatibility checking or health evaluation.
+Component declarations, health nodes, metric definitions, and evidence have an optional
+`annotations` field, an object for data that this specification does not define, such as
+information for a particular tool. Member names SHOULD start with a reverse domain name that the
+writer controls, such as `com.example.priority`. Annotations do not affect compatibility checking
+or health evaluation, and results do not carry them.
 
-Writers MUST put data that this specification does not define into annotations or into the
-`details` of evidence ([Section 6.3](#63-evidence)), and MUST NOT add other fields to records.
+Evidence ([Section 6.3](#63-evidence)) also has an optional `details` field, an object that
+explains one observation to people, such as the output of a check, in any structure. The result
+of a node carries the details of its fresh evidence. Writers SHOULD put data for tools into
+annotations and data for display into details.
+
+Writers MUST put data that this specification does not define into annotations or details, and
+MUST NOT add other fields to records.
 
 ### 3.6 Evolution
 
@@ -600,7 +606,8 @@ Evidence has the following fields:
 | `owner` | string, optional | Owner of the evidence. |
 | `tag` | string, optional | Opaque label identifying the configuration or instance that took the evidence. |
 | `message` | string, optional | Explanation supplied by the writer. |
-| `details` | object, optional | Further information supplied by the writer, in any structure. |
+| `details` | object, optional | Further information about the observation, for display ([Section 3.5](#35-annotations)). |
+| `annotations` | object, optional | Further data ([Section 3.5](#35-annotations)). |
 
 On Linux, `bootId` is the UUID in `/proc/sys/kernel/random/boot_id`, without the trailing newline,
 and the boot-time clock is `CLOCK_BOOTTIME`. Writers MUST use the same boot-time clock as the
@@ -716,7 +723,7 @@ are unknown ([Section 6.6](#66-threshold-nodes)). Samples without a definition a
 
 Units are codes of the [Unified Code for Units of Measure][ucum] (UCUM) in its case-sensitive
 form, which OpenTelemetry also uses. UCUM can express any unit, including derived units such as
-`By/s` and annotations in curly braces such as `{packet}/s`, which name what is counted. Writers
+`By/s` and terms in curly braces such as `{packet}/s`, which name what is counted. Writers
 MUST use a valid UCUM code and SHOULD use a base unit without a prefix, such as `s` and `By`, so
 that thresholds of different contributors compare without conversion. Dimensionless values use
 `1`. Common measurements use the following codes:

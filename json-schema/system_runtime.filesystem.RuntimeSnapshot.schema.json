@@ -467,6 +467,10 @@
         "details": {
           "type": "object",
           "additionalProperties": {}
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {}
         }
       },
       "required": [
@@ -621,6 +625,10 @@
           "type": "string"
         },
         "details": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "annotations": {
           "type": "object",
           "additionalProperties": {}
         }
