@@ -185,7 +185,7 @@
       "id": {
         "type": "string"
       },
-      "origin": {
+      "owner": {
         "type": "string"
       },
       "version": {
@@ -448,7 +448,7 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
-      "origin": {
+      "owner": {
         "type": "string"
       },
       "label": {
@@ -481,7 +481,7 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
-      "origin": {
+      "owner": {
         "type": "string"
       },
       "state": {
@@ -659,7 +659,7 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
-      "origin": {
+      "owner": {
         "type": "string"
       },
       "state": {
@@ -771,7 +771,7 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.value.ValueId"
       },
-      "origin": {
+      "owner": {
         "type": "string"
       },
       "label": {
@@ -813,7 +813,7 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.value.ValueId"
       },
-      "origin": {
+      "owner": {
         "type": "string"
       },
       "value": {

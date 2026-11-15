@@ -158,11 +158,11 @@ fn observe(
         Some(a) if a.boot_id != context.boot_id => Some("Status belongs to another boot"),
         Some(a)
             if node
-                .origin
+                .owner
                 .as_ref()
-                .is_some_and(|origin| a.origin.as_ref() != Some(origin)) =>
+                .is_some_and(|owner| a.owner.as_ref() != Some(owner)) =>
         {
-            Some("Status origin does not match")
+            Some("Status owner does not match")
         }
         Some(a)
             if rule
@@ -184,7 +184,7 @@ fn observe(
     if let Some(reason) = reason {
         return HealthNodeResult {
             id: node.id.clone(),
-            origin: node.origin.clone(),
+            owner: node.owner.clone(),
             state: HealthState::Unknown,
             inputs: Vec::new(),
             message: Some(reason.into()),
@@ -193,7 +193,7 @@ fn observe(
     let status = status.expect("absence produces a freshness reason");
     HealthNodeResult {
         id: node.id.clone(),
-        origin: node.origin.clone(),
+        owner: node.owner.clone(),
         state: status.state,
         inputs: Vec::new(),
         message: status.message.clone(),
@@ -258,7 +258,7 @@ fn aggregate(
     };
     HealthNodeResult {
         id: node.id.clone(),
-        origin: node.origin.clone(),
+        owner: node.owner.clone(),
         state,
         inputs: rule.inputs.iter().map(|input| input.node.clone()).collect(),
         message: None,

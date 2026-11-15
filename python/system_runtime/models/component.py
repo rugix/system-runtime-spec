@@ -15,7 +15,7 @@ class ComponentDeclaration(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     id: str = pydantic.Field(description="Unique component ID within the composition.")
-    origin: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
+    owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
     version: str | None = pydantic.Field(default=None, description="Component version, also provided as an implicit capability.")
     provides: list[CapabilityDeclaration] | None = pydantic.Field(default=None, description="Explicit capabilities.")
     claims: list[ClaimDeclaration] | None = pydantic.Field(default=None, description="Exclusive resource ownership.")

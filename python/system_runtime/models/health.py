@@ -22,7 +22,7 @@ class HealthNode(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     id: HealthNodeId = pydantic.Field(description="Unique health node ID.")
-    origin: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
+    owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
     label: str | None = pydantic.Field(default=None, description="Human-readable label.")
     components: list[str] | None = pydantic.Field(default=None, description="Related component IDs; these associations do not imply health dependencies.")
     rule: HealthRule = pydantic.Field(description="How this node's health is determined.")
@@ -68,7 +68,7 @@ class HealthStatus(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     id: HealthNodeId = pydantic.Field(description="Observed node ID.")
-    origin: str | None = pydantic.Field(default=None, description="Ownership group; must match the node's origin when one is specified.")
+    owner: str | None = pydantic.Field(default=None, description="Ownership group; must match the node's owner when one is specified.")
     state: HealthState = pydantic.Field(description="Reported health.")
     boot_id: str = pydantic.Field(description="Boot identifier defining the observation clock domain.", validation_alias="bootId", serialization_alias="bootId")
     observed_at_ms: _sidex.U64 = pydantic.Field(description="Milliseconds on the boot-time clock when health was observed.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
@@ -98,7 +98,7 @@ class HealthSnapshot(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     clock: HealthClockSample = pydantic.Field(description="Clock correlation sampled after collecting the records.")
-    nodes: list[HealthNode] = pydantic.Field(description="Health definitions, including their origins.")
+    nodes: list[HealthNode] = pydantic.Field(description="Health definitions, including their owners.")
     statuses: list[HealthStatus] = pydantic.Field(description="Original status records; observation times and validity are preserved.")
     values: list[_schema_value.ValueDefinition] | None = pydantic.Field(default=None, description="Value definitions used by threshold nodes or displayed independently.")
     value_observations: list[_schema_value.ValueObservation] | None = pydantic.Field(default=None, description="Original measurements; observation times and validity are preserved.", validation_alias="valueObservations", serialization_alias="valueObservations")
@@ -116,7 +116,7 @@ class HealthNodeResult(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     id: HealthNodeId = pydantic.Field(description="Node ID.")
-    origin: str | None = pydantic.Field(default=None, description="Origin of the evaluated node.")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the evaluated node.")
     state: HealthState = pydantic.Field(description="Evaluated health.")
     inputs: list[HealthNodeId] = pydantic.Field(description="Direct dependencies explaining an aggregate result.")
     message: str | None = pydantic.Field(default=None, description="Observation message or freshness explanation.")

@@ -9,7 +9,7 @@ record ValueDefinition {
     /// Unique value ID.
     id: ValueId,
     /// Ownership group for replacement or removal, matched exactly.
-    origin?: string,
+    owner?: string,
     /// Human-readable label.
     label?: string,
     /// Related component IDs; these associations do not imply health dependencies.
@@ -26,8 +26,8 @@ record ValueDefinition {
 record ValueObservation {
     /// Observed value ID.
     id: ValueId,
-    /// Ownership group; must match the definition's origin when specified.
-    origin?: string,
+    /// Ownership group; must match the definition's owner when specified.
+    owner?: string,
     /// Finite measurement in the definition's unit.
     value: f64,
     /// Boot identifier defining the observation clock domain.

@@ -14,7 +14,7 @@ record HealthNode {
     /// Unique health node ID.
     id: HealthNodeId,
     /// Ownership group for replacement or removal, matched exactly.
-    origin?: string,
+    owner?: string,
     /// Human-readable label.
     label?: string,
     /// Related component IDs; these associations do not imply health dependencies.
@@ -77,8 +77,8 @@ record AggregationInput {
 record HealthStatus {
     /// Observed node ID.
     id: HealthNodeId,
-    /// Ownership group; must match the node's origin when one is specified.
-    origin?: string,
+    /// Ownership group; must match the node's owner when one is specified.
+    owner?: string,
     /// Reported health.
     state: HealthState,
     /// Boot identifier defining the observation clock domain.
@@ -127,7 +127,7 @@ record HealthClockSample {
 record HealthSnapshot {
     /// Clock correlation sampled after collecting the records.
     clock: HealthClockSample,
-    /// Health definitions, including their origins.
+    /// Health definitions, including their owners.
     nodes: [HealthNode],
     /// Original status records; observation times and validity are preserved.
     statuses: [HealthStatus],
@@ -147,8 +147,8 @@ record HealthReport {
 record HealthNodeResult {
     /// Node ID.
     id: HealthNodeId,
-    /// Origin of the evaluated node.
-    origin?: string,
+    /// Owner of the evaluated node.
+    owner?: string,
     /// Evaluated health.
     state: HealthState,
     /// Direct dependencies explaining an aggregate result.

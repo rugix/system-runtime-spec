@@ -23,7 +23,7 @@ export const HealthNodeId = {
                                                         "id": HealthNodeId, /**
                                             * Ownership group for replacement or removal, matched exactly.
                                             */
-                                                        "origin"?: __sidex_types.builtins.String, /**
+                                                        "owner"?: __sidex_types.builtins.String, /**
                                             * Human-readable label.
                                             */
                                                         "label"?: __sidex_types.builtins.String, /**
@@ -35,7 +35,7 @@ export const HealthNodeId = {
                                                         "rule": HealthRule };
 
 export const HealthNode = {
-    ...__sidex_types.checker<HealthNode>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["origin", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["rule", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthRule), false]], [])),
+    ...__sidex_types.checker<HealthNode>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["rule", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthRule), false]], [])),
 };
 /**
  * Definition of an observed, threshold, or aggregate node.
@@ -118,9 +118,9 @@ export const AggregationInput = {
                                             * Observed node ID.
                                             */
                                                         "id": HealthNodeId, /**
-                                            * Ownership group; must match the node's origin when one is specified.
+                                            * Ownership group; must match the node's owner when one is specified.
                                             */
-                                                        "origin"?: __sidex_types.builtins.String, /**
+                                                        "owner"?: __sidex_types.builtins.String, /**
                                             * Reported health.
                                             */
                                                         "state": HealthState, /**
@@ -141,7 +141,7 @@ export const AggregationInput = {
                                                         "message"?: __sidex_types.builtins.String };
 
 export const HealthStatus = {
-    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["origin", __sidex_types.builtin("string"), true], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u32"), false], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true]], [])),
 };
 /**
  * Health relative to a node's declared expectations.
@@ -186,7 +186,7 @@ export const HealthClockSample = {
                                             * Clock correlation sampled after collecting the records.
                                             */
                                                         "clock": HealthClockSample, /**
-                                            * Health definitions, including their origins.
+                                            * Health definitions, including their owners.
                                             */
                                                         "nodes": HealthNode[], /**
                                             * Original status records; observation times and validity are preserved.
@@ -220,9 +220,9 @@ export const HealthReport = {
                                             * Node ID.
                                             */
                                                         "id": HealthNodeId, /**
-                                            * Origin of the evaluated node.
+                                            * Owner of the evaluated node.
                                             */
-                                                        "origin"?: __sidex_types.builtins.String, /**
+                                                        "owner"?: __sidex_types.builtins.String, /**
                                             * Evaluated health.
                                             */
                                                         "state": HealthState, /**
@@ -234,5 +234,5 @@ export const HealthReport = {
                                                         "message"?: __sidex_types.builtins.String };
 
 export const HealthNodeResult = {
-    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["origin", __sidex_types.builtin("string"), true], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["message", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["message", __sidex_types.builtin("string"), true]], [])),
 };

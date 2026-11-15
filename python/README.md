@@ -71,33 +71,33 @@ the host's root, rather than the supplied root.
 
 ## Check an Update Candidate
 
-An origin groups records owned by a system image, app, or other contributor.
-`without_origin` returns a snapshot with new lists that exclude records owned by
-that exact origin. Other records keep their requirements and references. Retained
+An owner groups records owned by a system image, app, or other contributor.
+`without_owner` returns a snapshot with new lists that exclude records owned by
+that exact owner. Other records keep their requirements and references. Retained
 record objects are shared with the original snapshot; copy a record before
 modifying its fields.
 
 ```python
-from system_runtime import RuntimeDirectories, check_components, without_origin
+from system_runtime import RuntimeDirectories, check_components, without_owner
 from system_runtime.models.component import ComponentDeclaration
 
 current = RuntimeDirectories.standard().load()
-candidate = without_origin(current, "rugix.system")
+candidate = without_owner(current, "rugix.system")
 candidate.components.append(
-    ComponentDeclaration(id="example.system", origin="rugix.system", version="2.0")
+    ComponentDeclaration(id="example.system", owner="rugix.system", version="2.0")
 )
 report = check_components(candidate.components)
 print(report.consistent)
 ```
 
-The current records must already carry origins. Discovery does not infer
+The current records must already carry owners. Discovery does not infer
 ownership from paths; attribute imported records before assembling the snapshot.
 This operation changes only the in-memory candidate. After activation, evaluate
 health using fresh records from the running system.
 
-### Import Records Without Origins
+### Import Records Without Owners
 
-For existing records without origins, load each set of directories once before
+For existing records without owners, load each set of directories once before
 constructing a candidate. This example builds a snapshot of components from
 system-image and device-local directories without loading directory configuration
 files:
@@ -110,7 +110,7 @@ current = RuntimeDirectories(
 ).load()
 image = RuntimeDirectories(components=["/usr/lib/rugix/components"]).load()
 for component in image.components:
-    component.origin = "rugix.system"
+    component.owner = "rugix.system"
 current.components.extend(image.components)
 ```
 
@@ -120,7 +120,7 @@ any components from standard directories that the system relies on. Load health
 nodes and statuses separately for health evaluation. Read each set of directories
 once; combining this import with a standard load of the same files would
 duplicate records. The assignments change only in-memory records. Device-local
-records without an origin survive replacement.
+records without an owner survive replacement.
 
 ## Transport a Health Snapshot
 

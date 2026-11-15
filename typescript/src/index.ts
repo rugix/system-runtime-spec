@@ -7,4 +7,4 @@ export * as health from "./generated/health.js";
 export { checkComponents } from "./components.js";
 export { evaluateHealth } from "./health.js";
 export { statusTimestamp } from "./clock.js";
-export { withoutOrigin } from "./snapshot.js";
+export { withoutOwner } from "./snapshot.js";

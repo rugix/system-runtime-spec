@@ -125,7 +125,7 @@ def evaluate_health(
                 state = "degraded"
             results[id] = HealthNodeResult(
                 id=id,
-                origin=node.origin,
+                owner=node.owner,
                 state=_state(state),
                 inputs=[input.node for input in node.rule.inputs],
             )
@@ -156,8 +156,8 @@ def _observe(
         reason = "Missing status"
     elif status.boot_id != context.boot_id:
         reason = "Status belongs to another boot"
-    elif node.origin is not None and status.origin != node.origin:
-        reason = "Status origin does not match"
+    elif node.owner is not None and status.owner != node.owner:
+        reason = "Status owner does not match"
     elif rule.expected_tag is not None and status.tag != rule.expected_tag:
         reason = "Status tag does not match"
     elif status.observed_at_ms > context.now_ms:
@@ -170,7 +170,7 @@ def _observe(
     if reason is not None:
         return HealthNodeResult(
             id=node.id,
-            origin=node.origin,
+            owner=node.owner,
             state=_state("unknown"),
             inputs=[],
             message=reason,
@@ -178,7 +178,7 @@ def _observe(
     assert status is not None
     return HealthNodeResult(
         id=node.id,
-        origin=node.origin,
+        owner=node.owner,
         state=status.state,
         inputs=[],
         message=status.message,

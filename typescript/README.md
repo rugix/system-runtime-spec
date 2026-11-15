@@ -44,35 +44,35 @@ a report with `consistent: false`.
 
 ## Check an Update Candidate
 
-An origin groups records owned by a system image, app, or other contributor.
-`withoutOrigin` returns a snapshot with new arrays that exclude records owned by
-that exact origin. Other records keep their requirements and references. Retained
+An owner groups records owned by a system image, app, or other contributor.
+`withoutOwner` returns a snapshot with new arrays that exclude records owned by
+that exact owner. Other records keep their requirements and references. Retained
 record objects are shared with the original snapshot; copy a record before
 modifying its fields:
 
 ```typescript
-import { checkComponents, filesystem, withoutOrigin } from "system-runtime-spec";
+import { checkComponents, filesystem, withoutOwner } from "system-runtime-spec";
 
 const current: filesystem.RuntimeSnapshot = {
   components: [
-    { id: "example.runtime", origin: "rugix.system", version: "3.2" },
+    { id: "example.runtime", owner: "rugix.system", version: "3.2" },
     {
       id: "example.app",
-      origin: "rugix.apps.example",
+      owner: "rugix.apps.example",
       requires: [{ id: "example.runtime", version: ">=3" }],
     },
   ],
   healthNodes: [],
   healthStatuses: [],
 };
-const candidate = withoutOrigin(current, "rugix.system");
+const candidate = withoutOwner(current, "rugix.system");
 candidate.components.push({
-  id: "example.runtime", origin: "rugix.system", version: "3.3",
+  id: "example.runtime", owner: "rugix.system", version: "3.3",
 });
 console.log(checkComponents(candidate.components).consistent);
 ```
 
-The current records must already carry origins. This operation changes only the
+The current records must already carry owners. This operation changes only the
 in-memory candidate. After activation, evaluate health using fresh records from
 the running system.
 

@@ -15,7 +15,7 @@ import * as __schema_value from "./value.js";
                                                         "id": __sidex_types.builtins.String, /**
                                             * Ownership group for replacement or removal, matched exactly.
                                             */
-                                                        "origin"?: __sidex_types.builtins.String, /**
+                                                        "owner"?: __sidex_types.builtins.String, /**
                                             * Component version, also provided as an implicit capability.
                                             */
                                                         "version"?: __sidex_types.builtins.String, /**
@@ -33,7 +33,7 @@ import * as __schema_value from "./value.js";
                                                         "conflicts"?: CapabilitySelectorDeclaration[] };
 
 export const ComponentDeclaration = {
-    ...__sidex_types.checker<ComponentDeclaration>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false], ["origin", __sidex_types.builtin("string"), true], ["version", __sidex_types.builtin("string"), true], ["provides", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilityDeclaration)), true], ["claims", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimDeclaration)), true], ["requires", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["conflicts", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true]], [])),
+    ...__sidex_types.checker<ComponentDeclaration>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false], ["owner", __sidex_types.builtin("string"), true], ["version", __sidex_types.builtin("string"), true], ["provides", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilityDeclaration)), true], ["claims", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimDeclaration)), true], ["requires", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["conflicts", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true]], [])),
 };
 /**
  * An exclusive resource key.

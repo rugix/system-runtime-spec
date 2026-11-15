@@ -5,7 +5,7 @@ record ComponentDeclaration {
     /// Unique component ID within the composition.
     id: string,
     /// Ownership group for replacement or removal, matched exactly.
-    origin?: string,
+    owner?: string,
     /// Component version, also provided as an implicit capability.
     version?: string,
     /// Explicit capabilities.

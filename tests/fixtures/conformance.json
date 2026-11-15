@@ -2933,14 +2933,14 @@
       }
     },
     {
-      "name": "matching origin",
+      "name": "matching owner",
       "nodes": [
         {
           "id": "app.health",
           "rule": {
             "rule": "observed"
           },
-          "origin": "rugix.apps.example"
+          "owner": "rugix.apps.example"
         }
       ],
       "statuses": [
@@ -2950,7 +2950,7 @@
           "bootId": "boot",
           "observedAtMs": 3500,
           "maxAgeMs": 2000,
-          "origin": "rugix.apps.example"
+          "owner": "rugix.apps.example"
         }
       ],
       "context": {
@@ -2961,7 +2961,7 @@
         "nodes": [
           {
             "id": "app.health",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "state": "healthy",
             "inputs": []
           }
@@ -2969,14 +2969,14 @@
       }
     },
     {
-      "name": "wrong origin",
+      "name": "wrong owner",
       "nodes": [
         {
           "id": "app.health",
           "rule": {
             "rule": "observed"
           },
-          "origin": "rugix.apps.example"
+          "owner": "rugix.apps.example"
         }
       ],
       "statuses": [
@@ -2986,7 +2986,7 @@
           "bootId": "boot",
           "observedAtMs": 3500,
           "maxAgeMs": 2000,
-          "origin": "rugix.system"
+          "owner": "rugix.system"
         }
       ],
       "context": {
@@ -2997,23 +2997,23 @@
         "nodes": [
           {
             "id": "app.health",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "state": "unknown",
             "inputs": [],
-            "message": "Status origin does not match"
+            "message": "Status owner does not match"
           }
         ]
       }
     },
     {
-      "name": "missing origin",
+      "name": "missing owner",
       "nodes": [
         {
           "id": "app.health",
           "rule": {
             "rule": "observed"
           },
-          "origin": "rugix.apps.example"
+          "owner": "rugix.apps.example"
         }
       ],
       "statuses": [
@@ -3033,20 +3033,20 @@
         "nodes": [
           {
             "id": "app.health",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "state": "unknown",
             "inputs": [],
-            "message": "Status origin does not match"
+            "message": "Status owner does not match"
           }
         ]
       }
     },
     {
-      "name": "aggregate origin inherited",
+      "name": "aggregate owner inherited",
       "nodes": [
         {
           "id": "root",
-          "origin": "rugix.system",
+          "owner": "rugix.system",
           "rule": {
             "rule": "aggregate",
             "inputs": [
@@ -3063,7 +3063,7 @@
           "rule": {
             "rule": "observed"
           },
-          "origin": "rugix.apps.example"
+          "owner": "rugix.apps.example"
         }
       ],
       "statuses": [
@@ -3073,7 +3073,7 @@
           "bootId": "boot",
           "observedAtMs": 3500,
           "maxAgeMs": 2000,
-          "origin": "rugix.apps.example"
+          "owner": "rugix.apps.example"
         }
       ],
       "context": {
@@ -3084,7 +3084,7 @@
         "nodes": [
           {
             "id": "root",
-            "origin": "rugix.system",
+            "owner": "rugix.system",
             "state": "healthy",
             "inputs": [
               "app.health"
@@ -3092,7 +3092,7 @@
           },
           {
             "id": "app.health",
-            "origin": "rugix.apps.example",
+            "owner": "rugix.apps.example",
             "state": "healthy",
             "inputs": []
           }
@@ -3104,7 +3104,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3127,7 +3127,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3135,7 +3135,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3151,7 +3151,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "healthy",
             "inputs": []
           }
@@ -3163,7 +3163,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3186,7 +3186,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3194,7 +3194,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 75,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3210,7 +3210,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "healthy",
             "inputs": []
           }
@@ -3222,7 +3222,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3245,7 +3245,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3253,7 +3253,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 80,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3269,7 +3269,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           }
@@ -3281,7 +3281,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3304,7 +3304,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3312,7 +3312,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 90,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3328,7 +3328,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           }
@@ -3340,7 +3340,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3363,7 +3363,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3371,7 +3371,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 91,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3387,7 +3387,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unhealthy",
             "inputs": []
           }
@@ -3399,7 +3399,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3422,7 +3422,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3430,7 +3430,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": -12.5,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3446,7 +3446,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "healthy",
             "inputs": []
           }
@@ -3458,7 +3458,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3481,7 +3481,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3489,7 +3489,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3506,7 +3506,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "healthy",
             "inputs": [],
             "message": "CPU sensor"
@@ -3519,7 +3519,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3542,7 +3542,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3556,7 +3556,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Missing value observation"
@@ -3569,7 +3569,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3592,7 +3592,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3600,7 +3600,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3616,7 +3616,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Value has expired"
@@ -3629,7 +3629,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3652,7 +3652,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3660,7 +3660,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "old",
           "observedAtMs": 100,
@@ -3676,7 +3676,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Value belongs to another boot"
@@ -3689,7 +3689,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3712,7 +3712,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3720,7 +3720,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 101,
@@ -3736,7 +3736,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Value is in the future"
@@ -3749,7 +3749,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3772,7 +3772,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3780,7 +3780,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "other",
+          "owner": "other",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3796,10 +3796,10 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
-            "message": "Value origin does not match"
+            "message": "Value owner does not match"
           }
         ]
       }
@@ -3809,7 +3809,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3832,7 +3832,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3840,7 +3840,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3856,7 +3856,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Value tag does not match"
@@ -3869,7 +3869,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3892,7 +3892,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1",
           "maxAgeMs": 5
@@ -3901,7 +3901,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3917,7 +3917,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Value has expired"
@@ -3930,7 +3930,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -3954,7 +3954,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -3962,7 +3962,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -3978,7 +3978,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Value has expired"
@@ -3991,7 +3991,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4014,7 +4014,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4022,7 +4022,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 75,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4038,7 +4038,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           }
@@ -4050,7 +4050,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4073,7 +4073,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4081,7 +4081,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 90,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4097,7 +4097,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unhealthy",
             "inputs": []
           }
@@ -4109,7 +4109,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4132,7 +4132,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "bytes",
           "expectedTag": "v1"
         }
@@ -4140,7 +4140,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 52428800,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4156,7 +4156,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           }
@@ -4168,7 +4168,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4199,7 +4199,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4207,7 +4207,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 4.6,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4223,7 +4223,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           }
@@ -4235,7 +4235,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4248,7 +4248,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4256,7 +4256,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": -50,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4272,7 +4272,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "healthy",
             "inputs": []
           }
@@ -4284,7 +4284,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4308,7 +4308,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4327,7 +4327,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4350,13 +4350,13 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         },
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4364,7 +4364,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4383,7 +4383,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4406,7 +4406,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4414,7 +4414,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4423,7 +4423,7 @@
         },
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4442,7 +4442,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4465,7 +4465,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1",
           "maxAgeMs": 0
@@ -4474,7 +4474,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4493,7 +4493,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4516,7 +4516,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4524,7 +4524,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4543,7 +4543,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4567,7 +4567,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4575,7 +4575,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4594,7 +4594,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4616,7 +4616,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4624,7 +4624,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4643,7 +4643,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4665,7 +4665,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4673,7 +4673,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4692,7 +4692,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4715,7 +4715,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4723,7 +4723,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4742,7 +4742,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4760,7 +4760,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4768,7 +4768,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4787,7 +4787,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4810,7 +4810,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4818,7 +4818,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4837,7 +4837,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4868,7 +4868,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4876,7 +4876,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4895,7 +4895,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4931,7 +4931,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -4939,7 +4939,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 80,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -4955,7 +4955,7 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           },
@@ -4974,7 +4974,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -4994,7 +4994,7 @@
         },
         {
           "id": "commit",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5017,7 +5017,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5025,7 +5025,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5041,13 +5041,13 @@
         "nodes": [
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "healthy",
             "inputs": []
           },
           {
             "id": "commit",
-            "origin": "policy",
+            "owner": "policy",
             "state": "degraded",
             "inputs": []
           }
@@ -5059,7 +5059,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5082,7 +5082,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5090,7 +5090,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": "NaN",
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5109,7 +5109,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5132,7 +5132,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5140,7 +5140,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5159,7 +5159,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5182,7 +5182,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5190,7 +5190,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": "Infinity",
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5209,7 +5209,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5232,7 +5232,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5240,7 +5240,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5259,7 +5259,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5282,7 +5282,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5290,7 +5290,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": "-Infinity",
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5309,7 +5309,7 @@
       "nodes": [
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5332,7 +5332,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5340,7 +5340,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 72,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -5499,7 +5499,7 @@
         },
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -5530,7 +5530,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -5557,7 +5557,7 @@
           },
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unknown",
             "inputs": [],
             "message": "Missing value observation"
@@ -6640,7 +6640,7 @@
         },
         {
           "id": "thermal",
-          "origin": "policy",
+          "owner": "policy",
           "rule": {
             "rule": "threshold",
             "value": "cpu.temperature",
@@ -6677,7 +6677,7 @@
       "values": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "unit": "celsius",
           "expectedTag": "v1"
         }
@@ -6685,7 +6685,7 @@
       "valueObservations": [
         {
           "id": "cpu.temperature",
-          "origin": "sensor",
+          "owner": "sensor",
           "value": 91,
           "bootId": "boot",
           "observedAtMs": 100,
@@ -6709,7 +6709,7 @@
           },
           {
             "id": "thermal",
-            "origin": "policy",
+            "owner": "policy",
             "state": "unhealthy",
             "inputs": []
           },

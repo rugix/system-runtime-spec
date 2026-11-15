@@ -57,7 +57,7 @@ fn fixtures() -> Fixtures {
 fn component(id: &str) -> ComponentDeclaration {
     ComponentDeclaration {
         id: id.into(),
-        origin: None,
+        owner: None,
         version: None,
         provides: None,
         claims: None,

@@ -1,6 +1,6 @@
 {
   "id": "storage.free",
-  "origin": "rugix.system",
+  "owner": "rugix.system",
   "label": "Free storage",
   "unit": "bytes"
 }
