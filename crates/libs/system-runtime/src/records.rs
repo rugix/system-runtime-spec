@@ -127,15 +127,17 @@ impl Records {
 
     /// Health nodes, in the order in which they were added.
     ///
-    /// A node with an unknown rule type has no rule, and unknown input modes are `Counted`;
-    /// evaluation reports such nodes as unsupported.
+    /// Unknown rule types are removed, and unknown input modes are `Counted`. Evaluation
+    /// reports a node with an unknown rule type or input mode as unsupported, and an
+    /// aggregate node that a node attaches to with an unknown mode.
     pub fn health_nodes(&self) -> impl ExactSizeIterator<Item = &HealthNode> {
         values(&self.health_nodes)
     }
 
     /// Status records, in the order in which they were added.
     ///
-    /// Unknown states are `Unknown`; evaluation reports such records as unsupported.
+    /// Unknown states are `Unknown`. Evaluation reports the node of a fresh status record
+    /// with an unknown state as unsupported.
     pub fn health_statuses(&self) -> impl ExactSizeIterator<Item = &HealthStatus> {
         values(&self.health_statuses)
     }
@@ -199,7 +201,7 @@ pub(crate) fn to_json<T: sidex::Encode + ?Sized>(value: &T) -> JsonValue {
 
 /// Implement conversions for an ID wrapper, whose generated field is private to the crate.
 ///
-/// Converting does not validate the ID; evaluation skips records with invalid IDs.
+/// Converting does not validate the ID; adding the record to `Records` validates it.
 macro_rules! id_conversions {
     ($($id:ty),*) => {$(
         impl $id {

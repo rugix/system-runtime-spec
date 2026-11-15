@@ -10,9 +10,11 @@ evaluates health, and sends records to other systems as snapshots.
 ```toml
 [dependencies]
 system-runtime-spec = "0.2"
+sidex = "0.5"
 ```
 
-Import the crate as `system_runtime_spec`. `Records` holds the records of a system and the
+Import the crate as `system_runtime_spec`. The `sidex` crate provides the JSON values and
+functions that some examples use. `Records` holds the records of a system and the
 diagnostics about them. The models in `types` are generated from the specification's schemas.
 
 ## Read and Check a System
