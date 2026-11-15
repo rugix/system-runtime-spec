@@ -42,9 +42,9 @@ class Version:
         return cls(release, prerelease)
 
     def compare(self, other: "Version") -> int:
-        for left, right in zip_longest(self.release, other.release, fillvalue=0):
-            if left != right:
-                return 1 if left > right else -1
+        release = _compare_release(self.release, other.release)
+        if release != 0:
+            return release
         if not self.prerelease or not other.prerelease:
             return (not self.prerelease) - (not other.prerelease)
         for left_id, right_id in zip(self.prerelease, other.prerelease, strict=False):

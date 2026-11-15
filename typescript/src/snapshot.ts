@@ -2,7 +2,9 @@
 
 import { Diagnostic } from "./generated/common.js";
 import { HealthClockSample } from "./generated/health.js";
-import { KINDS, type JsonObject, type Records, SPEC_VERSION, parseSpecVersion } from "./records.js";
+import {
+  KINDS, type JsonObject, type Records, SPEC_VERSION, SUPPORTED_MAJOR, isObject, parseSpecVersion,
+} from "./records.js";
 
 const HEALTH = ["healthNodes", "healthStatuses", "metrics", "metricSamples"] as const;
 const TIMESTAMP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:([0-9]{2})(\.[0-9]+)?Z$/;
@@ -34,7 +36,7 @@ export function makeSnapshot(
 /** Read a snapshot, applying the fallbacks to its diagnostics. Throw for snapshots of an unsupported version or with an invalid structure. */
 export function readSnapshot(value: JsonObject): Snapshot {
   const version = parseSpecVersion(value.specVersion);
-  if (version === undefined || version[0] !== 1n) {
+  if (version === undefined || version[0] !== SUPPORTED_MAJOR) {
     throw new Error(`unsupported snapshot version ${JSON.stringify(value.specVersion)}`);
   }
   const clock = value.clock as JsonObject | undefined;
@@ -54,10 +56,8 @@ export function readSnapshot(value: JsonObject): Snapshot {
     return [...value[field]];
   };
   const diagnostics = list("diagnostics").map((item): Diagnostic => {
-    if (typeof item !== "object" || item === null || Array.isArray(item)) {
-      throw new Error("diagnostic is not an object");
-    }
-    const { kind, severity } = item as JsonObject;
+    if (!isObject(item)) throw new Error("diagnostic is not an object");
+    const { kind, severity } = item;
     const diagnostic = {
       ...item,
       kind: KINDS.includes(kind as Diagnostic["kind"]) ? kind : "DirectoryConfig",

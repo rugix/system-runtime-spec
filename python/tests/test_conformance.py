@@ -24,13 +24,17 @@ FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures"
 CASES = json.loads((FIXTURES / "conformance.json").read_text())
 
 
-def brief(report: Any) -> dict[str, Any]:
+def brief_diagnostics(values: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Keep the severity and kind of diagnostics, whose messages are not specified."""
-    value: dict[str, Any] = json.loads(report.model_dump_json())
-    value["diagnostics"] = sorted(
-        ({"severity": d["severity"], "kind": d["kind"]} for d in value["diagnostics"]),
+    return sorted(
+        ({"severity": d["severity"], "kind": d["kind"]} for d in values),
         key=lambda d: (d["kind"], d["severity"]),
     )
+
+
+def brief(report: Any) -> dict[str, Any]:
+    value: dict[str, Any] = json.loads(report.model_dump_json())
+    value["diagnostics"] = brief_diagnostics(value["diagnostics"])
     return value
 
 
@@ -98,16 +102,8 @@ def test_snapshots(case: dict[str, Any]) -> None:
             read_snapshot(case["snapshot"])
         return
     snapshot = read_snapshot(case["snapshot"])
-    assert (
-        sorted(
-            (
-                {"severity": d.severity.root, "kind": d.kind.root}
-                for d in snapshot.records.diagnostics
-            ),
-            key=lambda d: (d["kind"], d["severity"]),
-        )
-        == case["diagnostics"]
-    )
+    found = [json.loads(d.model_dump_json()) for d in snapshot.records.diagnostics]
+    assert brief_diagnostics(found) == case["diagnostics"]
     again = read_snapshot(
         make_snapshot(
             snapshot.records,

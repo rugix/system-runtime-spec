@@ -10,21 +10,13 @@ import { parseRequirement, parseVersion } from "./version.js";
 
 /** Version of the specification that this package implements. */
 export const SPEC_VERSION = "1.0";
-const SUPPORTED_MAJOR = 1n;
+export const SUPPORTED_MAJOR = 1n;
 const SUPPORTED_MINOR = 0n;
 const U64_MAX = (1n << 64n) - 1n;
 
 const RULE_TYPES = ["Observed", "Threshold", "Aggregate"];
 const STATES = ["Healthy", "Degraded", "Unhealthy", "Unknown"];
 const MODES = ["Counted", "Mandatory", "Optional"];
-export const KINDS: readonly RecordKind[] = [
-  "ComponentDeclaration",
-  "HealthNode",
-  "HealthStatus",
-  "MetricDefinition",
-  "MetricSample",
-  "DirectoryConfig",
-];
 
 /** A JSON object. */
 export type JsonObject = { [key: string]: unknown };
@@ -70,10 +62,11 @@ const CHECKERS: Record<RecordKind, Checker<unknown>> = {
   MetricSample,
   DirectoryConfig,
 };
+export const KINDS = Object.keys(CHECKERS) as RecordKind[];
 
 class InvalidRecord extends Error {}
 
-function isObject(value: unknown): value is JsonObject {
+export function isObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -213,8 +206,8 @@ function checkCapability(value: JsonObject, version: boolean): void {
   if (typeof value.version === "string") parse(version ? parseVersion : parseRequirement, value.version);
 }
 
-type Bound = { value: number; inclusive: boolean };
-type Range = { lower?: Bound; upper?: Bound };
+/** A range with bounds whose values are finite numbers. */
+export type Range = { lower?: { value: number; inclusive: boolean }; upper?: { value: number; inclusive: boolean } };
 
 function checkRanges(healthy: Range, usable: Range): void {
   for (const range of [healthy, usable]) {

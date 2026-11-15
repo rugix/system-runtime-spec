@@ -68,9 +68,7 @@ def make_snapshot(
             ("HealthNode", "HealthStatus", "MetricDefinition", "MetricSample")
         )
     diagnostics = [
-        to_json(item)
-        for item in records.diagnostics
-        if to_json(item)["kind"] in included
+        item for item in map(to_json, records.diagnostics) if item["kind"] in included
     ]
     if diagnostics:
         snapshot["diagnostics"] = diagnostics

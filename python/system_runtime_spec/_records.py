@@ -29,14 +29,6 @@ _U64_MAX = 2**64 - 1
 RULE_TYPES = ("Observed", "Threshold", "Aggregate")
 STATES = ("Healthy", "Degraded", "Unhealthy", "Unknown")
 MODES = ("Counted", "Mandatory", "Optional")
-KINDS = (
-    "ComponentDeclaration",
-    "HealthNode",
-    "HealthStatus",
-    "MetricDefinition",
-    "MetricSample",
-    "DirectoryConfig",
-)
 
 _MODELS: dict[str, type[pydantic.BaseModel]] = {
     "ComponentDeclaration": ComponentDeclaration,
@@ -46,6 +38,7 @@ _MODELS: dict[str, type[pydantic.BaseModel]] = {
     "MetricSample": MetricSample,
     "DirectoryConfig": DirectoryConfig,
 }
+KINDS = tuple(_MODELS)
 
 
 class InvalidRecord(ValueError):

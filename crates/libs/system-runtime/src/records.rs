@@ -13,7 +13,7 @@ use crate::types::metric::{MetricDefinition, MetricSample};
 
 /// Version of the specification that this crate implements.
 pub const SPEC_VERSION: &str = "1.0";
-const SUPPORTED_MAJOR: u64 = 1;
+pub(crate) const SUPPORTED_MAJOR: u64 = 1;
 const SUPPORTED_MINOR: u64 = 0;
 
 const RULE_TYPES: [&str; 3] = ["Observed", "Threshold", "Aggregate"];

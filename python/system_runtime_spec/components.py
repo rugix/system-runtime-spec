@@ -101,14 +101,13 @@ def check_components(
                     "selector": _declared(selector),
                 }
             )
-    consistent = not problems and not any(
-        to_json(item)["severity"] == "Error" for item in all_diagnostics
-    )
+    reported = [to_json(item) for item in all_diagnostics]
     return CompatibilityReport.model_validate(
         {
-            "consistent": consistent,
+            "consistent": not problems
+            and all(item["severity"] != "Error" for item in reported),
             "problems": problems,
-            "diagnostics": [to_json(item) for item in all_diagnostics],
+            "diagnostics": reported,
         }
     )
 
@@ -133,9 +132,9 @@ def candidate_composition(
     """
     replaced = set(owners)
     result = [
-        to_json(component)
-        for component in components
-        if to_json(component).get("owner") not in replaced
+        component
+        for component in map(to_json, components)
+        if component.get("owner") not in replaced
     ]
     result_diagnostics = list(diagnostics)
     for declaration in declarations:

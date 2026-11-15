@@ -3,7 +3,7 @@
 use sidex::types::{JsonValue, Map, Str};
 
 use crate::Error;
-use crate::records::{Records, SPEC_VERSION, parse_spec_version, to_json};
+use crate::records::{Records, SPEC_VERSION, SUPPORTED_MAJOR, parse_spec_version, to_json};
 use crate::types::common::{Diagnostic, RecordKind};
 use crate::types::health::HealthClockSample;
 
@@ -115,7 +115,7 @@ fn list(value: &JsonValue, field: &str) -> Result<Vec<JsonValue>, Error> {
 /// Fail for snapshots of an unsupported version or with an invalid structure.
 pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, Error> {
     let version = value.get("specVersion").and_then(JsonValue::as_str);
-    if version.and_then(parse_spec_version).map(|(major, _)| major) != Some(1) {
+    if version.and_then(parse_spec_version).map(|(major, _)| major) != Some(SUPPORTED_MAJOR) {
         return Err(Error::Invalid(format!(
             "unsupported snapshot version {version:?}"
         )));

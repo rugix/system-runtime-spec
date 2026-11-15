@@ -4,11 +4,9 @@ import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
 import type {
   Answer, HealthContext, HealthNodeId, HealthNodeResult, HealthReport, InputMode, Reason,
 } from "./generated/health.js";
-import { type Decoded, type JsonObject, type Records, decodeAll, diagnostic } from "./records.js";
+import { type Decoded, type Range, type JsonObject, type Records, decodeAll, diagnostic } from "./records.js";
 
 type Answers = [Answer, Answer];
-type Bound = { value: number; inclusive: boolean };
-type Range = { lower?: Bound; upper?: Bound };
 
 const UNKNOWN: Answers = ["Unknown", "Unknown"];
 const STATE_ANSWERS: Record<string, Answers> = {
