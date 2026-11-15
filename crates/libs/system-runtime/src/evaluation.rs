@@ -62,7 +62,7 @@ pub fn evaluate_health_with_values(
         }
         if indices
             .get(&status.id)
-            .is_some_and(|i| !matches!(nodes[*i].rule, HealthRule::Observed(_)))
+            .is_some_and(|i| !matches!(node_rule(&nodes[*i]), HealthRule::Observed(_)))
         {
             return Err(Error::Invalid(format!(
                 "status supplied for derived node {:?}",
@@ -73,7 +73,7 @@ pub fn evaluate_health_with_values(
     let mut remaining = vec![0usize; nodes.len()];
     let mut dependents = vec![Vec::new(); nodes.len()];
     for (index, node) in nodes.iter().enumerate() {
-        match &node.rule {
+        match node_rule(node) {
             HealthRule::Observed(rule) => {
                 if rule.max_age_ms == Some(0) {
                     return Err(Error::Invalid(format!(
@@ -129,7 +129,7 @@ pub fn evaluate_health_with_values(
     let mut results: Vec<Option<HealthNodeResult>> = vec![None; nodes.len()];
     while let Some(index) = ready.pop_front() {
         let node = &nodes[index];
-        results[index] = Some(match &node.rule {
+        results[index] = Some(match node_rule(node) {
             HealthRule::Observed(rule) => {
                 observe(node, rule, observations.get(&node.id).copied(), context)
             }
@@ -213,6 +213,17 @@ fn observe(
         inputs: Vec::new(),
         message: status.message.clone(),
     }
+}
+
+/// Rule of nodes that omit their rule: observed without constraints.
+const OBSERVED: HealthRule = HealthRule::Observed(ObservationRule {
+    max_age_ms: None,
+    expected_tag: None,
+});
+
+/// Resolve a node's rule, treating an omitted rule as observed.
+fn node_rule(node: &HealthNode) -> &HealthRule {
+    node.rule.as_ref().unwrap_or(&OBSERVED)
 }
 
 /// Check whether an input only affects the desired criteria.

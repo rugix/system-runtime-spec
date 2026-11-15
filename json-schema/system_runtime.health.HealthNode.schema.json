@@ -24,8 +24,7 @@
     }
   },
   "required": [
-    "id",
-    "rule"
+    "id"
   ],
   "unevaluatedProperties": false,
   "$defs": {

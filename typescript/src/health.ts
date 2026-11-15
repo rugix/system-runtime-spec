@@ -5,8 +5,16 @@ import type { ValueDefinition, ValueObservation } from "./generated/value.js";
 
 import { HealthStatus, HealthContext, HealthNode } from "./generated/health.js";
 import type {
-  AggregationRule, HealthNodeId, HealthNodeResult, HealthReport, HealthState, ObservationRule,
+  AggregationRule, HealthNodeId, HealthNodeResult, HealthReport, HealthRule, HealthState, ObservationRule,
 } from "./generated/health.js";
+
+/** Rule of nodes that omit their rule: observed without constraints. */
+const OBSERVED: HealthRule = { type: "observed" };
+
+/** Resolve a node's rule, treating an omitted rule as observed. */
+function nodeRule(node: HealthNode): HealthRule {
+  return node.rule ?? OBSERVED;
+}
 
 /** Validate the graph, then evaluate every node in declaration order. */
 export function evaluateHealth(
@@ -30,7 +38,7 @@ export function evaluateHealth(
     if (observations.has(status.id)) throw new Error("Duplicate health status ID");
     if (!status.maxAgeMs) throw new Error(`Status ${status.id} has zero maxAgeMs`);
     const node = byId.get(status.id);
-    if (node !== undefined && node.rule.type !== "observed") {
+    if (node !== undefined && nodeRule(node).type !== "observed") {
       throw new Error(`Status supplied for derived node ${status.id}`);
     }
     observations.set(status.id, status);
@@ -38,7 +46,7 @@ export function evaluateHealth(
   const remaining = new Map<HealthNodeId, number>();
   const dependents = new Map(nodes.map((node) => [node.id, [] as HealthNodeId[]]));
   for (const node of nodes) {
-    const rule = node.rule;
+    const rule = nodeRule(node);
     if (rule.type === "observed") {
       if (rule.maxAgeMs === 0) throw new Error(`Node ${node.id} has zero maxAgeMs`);
       remaining.set(node.id, 0);
@@ -68,12 +76,13 @@ export function evaluateHealth(
     const id = ready[position];
     const node = byId.get(id)!;
     let result: HealthNodeResult;
-    if (node.rule.type === "observed") {
-      result = observe(id, node.rule, observations.get(id), context, node.owner);
-    } else if (node.rule.type === "threshold") {
-      result = evidence.evaluate(node, node.rule, context);
+    const rule = nodeRule(node);
+    if (rule.type === "observed") {
+      result = observe(id, rule, observations.get(id), context, node.owner);
+    } else if (rule.type === "threshold") {
+      result = evidence.evaluate(node, rule, context);
     } else {
-      result = aggregate(id, node.rule, node.rule.inputs.map((input) => results.get(input.node)!));
+      result = aggregate(id, rule, rule.inputs.map((input) => results.get(input.node)!));
     }
     if (node.owner !== undefined) result.owner = node.owner;
     results.set(id, result);
