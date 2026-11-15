@@ -231,15 +231,17 @@ fn read_diagnostic(item: JsonValue) -> Result<Diagnostic, SnapshotError> {
     let JsonValue::Map(mut item) = item else {
         return Err(SnapshotError::InvalidDiagnostic("not an object".into()));
     };
-    let known = |item: &Map<Str, JsonValue>, field: &str, values: &[&str]| {
+    let string = |field: &str| {
         item.get(field)
             .and_then(JsonValue::as_str)
-            .is_some_and(|value| values.contains(&value))
+            .map(str::to_owned)
+            .ok_or_else(|| SnapshotError::InvalidDiagnostic(format!("{field} is not a string")))
     };
-    if !known(&item, "kind", &KINDS) {
+    let (kind, severity) = (string("kind")?, string("severity")?);
+    if !KINDS.contains(&kind.as_str()) {
         item.insert("kind".into(), "DirectoryConfig".into());
     }
-    if !known(&item, "severity", &["Warning"]) {
+    if severity != "Warning" {
         item.insert("severity".into(), "Error".into());
     }
     sidex::formats::json::from_value(&JsonValue::Map(item))

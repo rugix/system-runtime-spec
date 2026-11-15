@@ -111,6 +111,9 @@ export class Snapshot {
 function readDiagnostic(item: unknown): Diagnostic {
   if (!isObject(item)) throw new SnapshotError("diagnostic is not an object");
   const { kind, severity } = item;
+  for (const [name, value] of [["kind", kind], ["severity", severity]]) {
+    if (typeof value !== "string") throw new SnapshotError(`diagnostic ${name} is not a string`);
+  }
   const diagnostic = {
     ...item,
     kind: KINDS.includes(kind as Diagnostic["kind"]) ? kind : "DirectoryConfig",

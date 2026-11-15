@@ -158,9 +158,12 @@ def _read_diagnostic(item: Json) -> Diagnostic:
     if not isinstance(item, dict):
         raise SnapshotError("diagnostic is not an object")
     item = dict(item)
-    if item.get("kind") not in KINDS.values():
+    for name in ("kind", "severity"):
+        if not isinstance(item.get(name), str):
+            raise SnapshotError(f"diagnostic {name} is not a string")
+    if item["kind"] not in KINDS.values():
         item["kind"] = "DirectoryConfig"
-    if item.get("severity") != "Warning":
+    if item["severity"] != "Warning":
         item["severity"] = "Error"
     try:
         return Diagnostic.model_validate(item)

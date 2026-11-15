@@ -10804,6 +10804,47 @@
       "valid": false
     },
     {
+      "name": "diagnostic without a kind",
+      "snapshot": {
+        "specVersion": "1.0",
+        "clock": {
+          "context": {
+            "bootId": "boot",
+            "nowMs": 1000
+          },
+          "timestamp": "2026-10-14T12:00:00Z"
+        },
+        "diagnostics": [
+          {
+            "severity": "Error",
+            "message": "broken"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "diagnostic whose severity is not a string",
+      "snapshot": {
+        "specVersion": "1.0",
+        "clock": {
+          "context": {
+            "bootId": "boot",
+            "nowMs": 1000
+          },
+          "timestamp": "2026-10-14T12:00:00Z"
+        },
+        "diagnostics": [
+          {
+            "severity": 1,
+            "kind": "HealthNode",
+            "message": "broken"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
       "name": "null clock is invalid",
       "snapshot": {
         "specVersion": "1.0",
