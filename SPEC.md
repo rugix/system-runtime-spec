@@ -551,8 +551,7 @@ to the evaluator has the answers `Unknown`/`Unknown`, with the reason `Unsupport
 
 The inputs of aggregate nodes, including attached inputs, form directed edges from each aggregate
 node to its inputs. The graph SHOULD be acyclic; nodes on a cycle are not evaluated
-([Section 6.8](#68-evaluation-and-reports)). Nodes that are no input of any other node are
-_roots_.
+([Section 6.8](#68-evaluation-and-reports)).
 
 The node with the ID `system` represents the whole system. It is a convenience: contributors
 attach their nodes to it, and tools show it as the overall health of a device. A consumer that
