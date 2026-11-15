@@ -39,7 +39,7 @@ pub fn estimate_timestamp(evidence: &JsonValue, clock: &HealthClockSample) -> Op
     if !(MIN_TIMESTAMP_MS..=MAX_TIMESTAMP_MS).contains(&millis) {
         return None;
     }
-    // The bounds above keep the seconds within `i64` and the remainder within `0..1000`.
+    // The bounds above keep the seconds within `i64`; the remainder lies within `0..1000`.
     Timestamp::from_unix(
         millis.div_euclid(1_000) as i64,
         millis.rem_euclid(1_000) as u32 * 1_000_000,

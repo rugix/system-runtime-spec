@@ -1,6 +1,6 @@
 /** Send records to another system as snapshots. */
 
-import type { Diagnostic } from "./generated/common.js";
+import { Diagnostic } from "./generated/common.js";
 import { HealthClockSample } from "./generated/health.js";
 import { KINDS, type JsonObject, type Records, SPEC_VERSION, parseSpecVersion } from "./records.js";
 
@@ -48,12 +48,25 @@ export function readSnapshot(value: JsonObject): Snapshot {
   if (present.some(Boolean) && !present.every(Boolean)) {
     throw new Error("snapshot includes only some lists of the health part");
   }
-  const diagnostics = ((value.diagnostics as JsonObject[] | undefined) ?? []).map((item): Diagnostic => ({
-    ...item,
-    kind: KINDS.includes(item.kind as Diagnostic["kind"]) ? item.kind : "DirectoryConfig",
-    severity: item.severity === "Error" || item.severity === "Warning" ? item.severity : "Error",
-  }) as Diagnostic);
-  const list = (field: string) => [...((value[field] as unknown[] | undefined) ?? [])];
+  const list = (field: string): unknown[] => {
+    if (value[field] === undefined) return [];
+    if (!Array.isArray(value[field])) throw new Error(`${field} is not a list`);
+    return [...value[field]];
+  };
+  const diagnostics = list("diagnostics").map((item): Diagnostic => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      throw new Error("diagnostic is not an object");
+    }
+    const { kind, severity } = item as JsonObject;
+    const diagnostic = {
+      ...item,
+      kind: KINDS.includes(kind as Diagnostic["kind"]) ? kind : "DirectoryConfig",
+      severity: severity === "Error" || severity === "Warning" ? severity : "Error",
+    };
+    const report = Diagnostic.check(diagnostic);
+    if (report.isErr()) throw new Error(report.toString());
+    return diagnostic as Diagnostic;
+  });
   return {
     records: {
       components: list("components"),

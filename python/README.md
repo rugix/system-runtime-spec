@@ -14,8 +14,8 @@ python -m pip install system-runtime-spec
 ```
 
 Import the package as `system_runtime_spec`. Records are JSON objects (`dict`), so that snapshots
-carry them unchanged and records of newer minor versions keep working. The functions also accept
-the generated Pydantic models in `system_runtime_spec.models`.
+carry them unchanged and records of newer minor versions keep working. Records may also be the
+generated Pydantic models in `system_runtime_spec.models`.
 
 ## Read and Check a System
 

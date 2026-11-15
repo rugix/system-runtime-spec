@@ -50,12 +50,16 @@ def make_snapshot(
     """
     snapshot: JsonObject = {"specVersion": SPEC_VERSION, "clock": to_json(clock)}
     if components:
-        snapshot["components"] = list(records.components)
+        snapshot["components"] = [to_json(record) for record in records.components]
     if health:
-        snapshot["healthNodes"] = list(records.health_nodes)
-        snapshot["healthStatuses"] = list(records.health_statuses)
-        snapshot["metrics"] = list(records.metrics)
-        snapshot["metricSamples"] = list(records.metric_samples)
+        snapshot["healthNodes"] = [to_json(record) for record in records.health_nodes]
+        snapshot["healthStatuses"] = [
+            to_json(record) for record in records.health_statuses
+        ]
+        snapshot["metrics"] = [to_json(record) for record in records.metrics]
+        snapshot["metricSamples"] = [
+            to_json(record) for record in records.metric_samples
+        ]
     included = {"DirectoryConfig"}
     if components:
         included.add("ComponentDeclaration")
@@ -81,16 +85,22 @@ def read_snapshot(value: Mapping[str, Json]) -> Snapshot:
     version = parse_spec_version(value.get("specVersion"))
     if version is None or version[0] != SUPPORTED_MAJOR:
         raise ValueError(f"unsupported snapshot version {value.get('specVersion')!r}")
-    timestamp = value.get("clock", {}).get("timestamp")
+    for name in ("components", *_HEALTH, "diagnostics"):
+        if name in value and not isinstance(value[name], list):
+            raise ValueError(f"{name} is not a list")
+    clock = value.get("clock")
+    timestamp = clock.get("timestamp") if isinstance(clock, dict) else None
     match = _TIMESTAMP.fullmatch(timestamp) if isinstance(timestamp, str) else None
     if match is None or match[1] == "60":
         raise ValueError(f"invalid clock timestamp {timestamp!r}")
-    clock = HealthClockSample.model_validate(value["clock"])
+    sample = HealthClockSample.model_validate(clock)
     present = [name in value for name in _HEALTH]
     if any(present) and not all(present):
         raise ValueError("snapshot includes only some lists of the health part")
     diagnostics = []
-    for item in value.get("diagnostics") or []:
+    for item in value.get("diagnostics", []):
+        if not isinstance(item, dict):
+            raise ValueError("diagnostic is not an object")
         item = dict(item)
         if item.get("kind") not in KINDS:
             item["kind"] = "DirectoryConfig"
@@ -98,11 +108,11 @@ def read_snapshot(value: Mapping[str, Json]) -> Snapshot:
             item["severity"] = "Error"
         diagnostics.append(Diagnostic.model_validate(item))
     records = Records(
-        components=list(value.get("components") or []),
-        health_nodes=list(value.get("healthNodes") or []),
-        health_statuses=list(value.get("healthStatuses") or []),
-        metrics=list(value.get("metrics") or []),
-        metric_samples=list(value.get("metricSamples") or []),
+        components=list(value.get("components", [])),
+        health_nodes=list(value.get("healthNodes", [])),
+        health_statuses=list(value.get("healthStatuses", [])),
+        metrics=list(value.get("metrics", [])),
+        metric_samples=list(value.get("metricSamples", [])),
         diagnostics=diagnostics,
     )
-    return Snapshot(records, clock, "components" in value, all(present))
+    return Snapshot(records, sample, "components" in value, all(present))

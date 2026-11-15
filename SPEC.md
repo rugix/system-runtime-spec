@@ -71,8 +71,8 @@ The specification distinguishes five roles:
 
 An implementation conforms to the specification for a role if it satisfies all requirements of
 this document that apply to that role. The [conformance suite](tests/fixtures/) in this repository
-contains test cases for compatibility checkers, health evaluators, and version matching. Passing
-it is evidence of conformance, but does not replace the requirements of this document. If a test
+contains test cases for version matching, compatibility checking, candidate compositions, health
+evaluation, snapshots, clock correlation, and discovery. Passing it is evidence of conformance, but does not replace the requirements of this document. If a test
 case contradicts this document, the document applies, and the test case is wrong.
 
 ## 3. Records

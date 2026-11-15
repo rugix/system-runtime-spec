@@ -82,11 +82,10 @@ fn number(text: &str) -> Option<u64> {
     valid.then(|| text.parse().ok()).flatten()
 }
 
-/// Read integral JSON numbers, such as `1.0`, as integers.
+/// Read integral JSON numbers that fit integer fields, such as `1.0`, as integers.
 fn integral(value: &JsonValue) -> JsonValue {
     match value {
         JsonValue::Number(number) if number.is_f64() => {
-            // Integers in records are unsigned; other values remain floats.
             let float = number.as_f64();
             if float.fract() == 0.0 && (0.0..18_446_744_073_709_551_616.0).contains(&float) {
                 JsonValue::from(float as u64)

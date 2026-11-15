@@ -10762,6 +10762,46 @@
         }
       },
       "valid": false
+    },
+    {
+      "name": "list that is not an array",
+      "snapshot": {
+        "specVersion": "1.0",
+        "clock": {
+          "context": {
+            "bootId": "boot",
+            "nowMs": 1000
+          },
+          "timestamp": "2026-10-14T12:00:00Z"
+        },
+        "components": "abc"
+      },
+      "valid": false
+    },
+    {
+      "name": "diagnostic that is not an object",
+      "snapshot": {
+        "specVersion": "1.0",
+        "clock": {
+          "context": {
+            "bootId": "boot",
+            "nowMs": 1000
+          },
+          "timestamp": "2026-10-14T12:00:00Z"
+        },
+        "diagnostics": [
+          "x"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "missing clock",
+      "snapshot": {
+        "specVersion": "1.0",
+        "clock": null
+      },
+      "valid": false
     }
   ],
   "timestamps": [

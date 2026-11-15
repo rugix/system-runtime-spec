@@ -19,7 +19,7 @@ function trim(text: string): string {
   return text.slice(start, end);
 }
 
-/** Parse numeric releases and prereleases, ignoring build metadata in ordering. */
+/** Parse a version into its release components and prerelease identifiers. */
 export function parseVersion(text: string): Version {
   const match = grammar.exec(trim(text));
   if (!match) throw new Error(`Invalid version: ${text}`);

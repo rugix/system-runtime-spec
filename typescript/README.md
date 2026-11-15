@@ -57,8 +57,9 @@ console.log(report.nodes);
 Evaluating a snapshot gives health at the time of its clock sample. `estimateTimestamp` places
 evidence in wall-clock time for display.
 
-Integers beyond `Number.MAX_SAFE_INTEGER` are decimal strings in JSON; the functions accept both
-forms.
+Fields defined as integers, such as `observedAtMs` and `maxAgeMs`, hold values beyond
+`Number.MAX_SAFE_INTEGER` as decimal strings, so that they keep their precision; the functions
+accept both forms.
 
 ## License
 

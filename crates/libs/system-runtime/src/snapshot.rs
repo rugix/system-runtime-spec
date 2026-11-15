@@ -102,12 +102,12 @@ fn valid_timestamp(text: &str) -> bool {
                 && fraction[1..].iter().all(u8::is_ascii_digit)))
 }
 
-fn list(value: &JsonValue, field: &str) -> Vec<JsonValue> {
-    value
-        .get(field)
-        .and_then(JsonValue::as_seq)
-        .map(|items| items.to_vec())
-        .unwrap_or_default()
+fn list(value: &JsonValue, field: &str) -> Result<Vec<JsonValue>, Error> {
+    match value.get(field) {
+        None => Ok(Vec::new()),
+        Some(JsonValue::Seq(items)) => Ok(items.to_vec()),
+        Some(_) => Err(Error::Invalid(format!("{field} is not a list"))),
+    }
 }
 
 /// Read a snapshot, applying the fallbacks to its diagnostics.
@@ -136,8 +136,10 @@ pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, Error> {
         ));
     }
     let mut diagnostics = Vec::new();
-    for item in list(value, "diagnostics") {
-        let mut item = item.as_map().cloned().unwrap_or_default();
+    for item in list(value, "diagnostics")? {
+        let Some(mut item) = item.as_map().cloned() else {
+            return Err(Error::Invalid("diagnostic is not an object".into()));
+        };
         let known = |item: &Map<Str, JsonValue>, field: &str, values: &[&str]| {
             item.get(field)
                 .and_then(JsonValue::as_str)
@@ -155,11 +157,11 @@ pub fn read_snapshot(value: &JsonValue) -> Result<Snapshot, Error> {
     }
     Ok(Snapshot {
         records: Records {
-            components: list(value, "components"),
-            health_nodes: list(value, "healthNodes"),
-            health_statuses: list(value, "healthStatuses"),
-            metrics: list(value, "metrics"),
-            metric_samples: list(value, "metricSamples"),
+            components: list(value, "components")?,
+            health_nodes: list(value, "healthNodes")?,
+            health_statuses: list(value, "healthStatuses")?,
+            metrics: list(value, "metrics")?,
+            metric_samples: list(value, "metricSamples")?,
             diagnostics,
         },
         clock,
