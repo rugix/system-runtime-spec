@@ -176,16 +176,16 @@ def _health_node_fallbacks(record: JsonObject, result: Decoded) -> None:
         elif rule_type == "Aggregate":
             inputs = rule.get("inputs")
             for entry in inputs if isinstance(inputs, list) else []:
-                if isinstance(entry, dict) and _unknown_mode(entry):
+                if isinstance(entry, dict) and _apply_mode_fallback(entry):
                     result.unsupported = True
     attachments = record.get("partOf")
     for entry in attachments if isinstance(attachments, list) else []:
-        if isinstance(entry, dict) and _unknown_mode(entry):
+        if isinstance(entry, dict) and _apply_mode_fallback(entry):
             if isinstance(entry.get("node"), str):
                 result.unsupported_attachments.add(entry["node"])
 
 
-def _unknown_mode(entry: JsonObject) -> bool:
+def _apply_mode_fallback(entry: JsonObject) -> bool:
     """Replace an unknown input mode with `Counted`; return whether it was unknown."""
     mode = entry.get("mode")
     if mode is None or mode in MODES:
@@ -220,21 +220,21 @@ def _check_finite(value: Json, what: str) -> None:
 def _validate_component(record: JsonObject) -> None:
     _check_ids(record, "id", "owner")
     for capability in record.get("provides") or []:
-        _check_capability(capability, version=True)
+        _check_capability(capability, provided=True)
     for claim in record.get("claims") or []:
         _check_id(claim["id"], "claim ID")
     for selector in [*(record.get("requires") or []), *(record.get("conflicts") or [])]:
-        _check_capability(selector, version=False)
+        _check_capability(selector, provided=False)
     if "version" in record:
         _parse(Version.parse, record["version"])
 
 
-def _check_capability(value: JsonObject, *, version: bool) -> None:
+def _check_capability(value: JsonObject, *, provided: bool) -> None:
     _check_id(value["id"], "capability ID")
     if "version" in value and "value" in value:
         raise InvalidRecord(f"capability {value['id']!r} has both version and value")
     if "version" in value:
-        _parse(Version.parse if version else parse_requirement, value["version"])
+        _parse(Version.parse if provided else parse_requirement, value["version"])
 
 
 def _parse(parser: Any, text: str) -> None:

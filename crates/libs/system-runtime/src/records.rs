@@ -135,7 +135,7 @@ fn string<'a>(value: &'a JsonValue, what: &str) -> Result<&'a str, String> {
 }
 
 /// Replace an unknown input mode with `Counted`; return whether it was unknown.
-fn unknown_mode(entry: &mut Map<Str, JsonValue>) -> Result<bool, String> {
+fn apply_mode_fallback(entry: &mut Map<Str, JsonValue>) -> Result<bool, String> {
     let Some(mode) = entry.get("mode") else {
         return Ok(false);
     };
@@ -169,7 +169,7 @@ pub(crate) fn decode<T: sidex::Decode>(
                         for entry in inputs.iter() {
                             if let JsonValue::Map(entry) = entry {
                                 let mut entry = entry.clone();
-                                unsupported |= unknown_mode(&mut entry)?;
+                                unsupported |= apply_mode_fallback(&mut entry)?;
                                 entries.push(JsonValue::Map(entry));
                             } else {
                                 entries.push(entry.clone());
@@ -185,7 +185,7 @@ pub(crate) fn decode<T: sidex::Decode>(
                 for entry in attachments.iter() {
                     if let JsonValue::Map(entry) = entry {
                         let mut entry = entry.clone();
-                        if unknown_mode(&mut entry)?
+                        if apply_mode_fallback(&mut entry)?
                             && let Some(node) = entry.get("node").and_then(JsonValue::as_str)
                         {
                             unsupported_attachments.insert(node.to_owned());
@@ -356,7 +356,7 @@ fn validate(kind: RecordKind, record: &JsonValue) -> Result<(), String> {
     Ok(())
 }
 
-fn check_capability(value: &JsonValue, version: bool) -> Result<(), String> {
+fn check_capability(value: &JsonValue, provided: bool) -> Result<(), String> {
     check_id(get(value, "id"), "capability ID")?;
     if get(value, "version").is_some() && get(value, "value").is_some() {
         return Err(format!(
@@ -365,7 +365,7 @@ fn check_capability(value: &JsonValue, version: bool) -> Result<(), String> {
         ));
     }
     if let Some(text) = get(value, "version").and_then(JsonValue::as_str) {
-        if version {
+        if provided {
             Version::parse(text).map_err(|error| error.to_string())?;
         } else {
             VersionReq::parse(text).map_err(|error| error.to_string())?;

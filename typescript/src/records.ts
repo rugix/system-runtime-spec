@@ -94,7 +94,7 @@ function checkVersion(kind: RecordKind, record: JsonObject): void {
 }
 
 /** Replace an unknown input mode with `Counted`; return whether it was unknown. */
-function unknownMode(entry: JsonObject): boolean {
+function applyModeFallback(entry: JsonObject): boolean {
   if (entry.mode === undefined) return false;
   if (typeof entry.mode !== "string") throw new InvalidRecord("mode is not a string");
   if (MODES.includes(entry.mode)) return false;
@@ -121,13 +121,13 @@ function decode(kind: RecordKind, value: unknown): Decoded {
         delete record.rule;
       } else if (rule.type === "Aggregate" && Array.isArray(rule.inputs)) {
         for (const entry of rule.inputs) {
-          if (isObject(entry) && unknownMode(entry)) result.unsupported = true;
+          if (isObject(entry) && applyModeFallback(entry)) result.unsupported = true;
         }
       }
     }
     if (Array.isArray(record.partOf)) {
       for (const entry of record.partOf) {
-        if (isObject(entry) && unknownMode(entry) && typeof entry.node === "string") {
+        if (isObject(entry) && applyModeFallback(entry) && typeof entry.node === "string") {
           result.unsupportedAttachments.add(entry.node);
         }
       }
@@ -194,18 +194,18 @@ function parse(parser: (text: string) => unknown, text: string): void {
   }
 }
 
-function checkCapability(value: JsonObject, version: boolean): void {
+function checkCapability(value: JsonObject, provided: boolean): void {
   checkId(value.id, "capability ID");
   if (value.version !== undefined && value.value !== undefined) {
     throw new InvalidRecord(`capability ${JSON.stringify(value.id)} has both version and value`);
   }
-  if (typeof value.version === "string") parse(version ? parseVersion : parseRequirement, value.version);
+  if (typeof value.version === "string") parse(provided ? parseVersion : parseRequirement, value.version);
 }
 
 /** A range with bounds whose values are finite numbers. */
-export type Range = { lower?: { value: number; inclusive: boolean }; upper?: { value: number; inclusive: boolean } };
+export type FiniteMetricRange = { lower?: { value: number; inclusive: boolean }; upper?: { value: number; inclusive: boolean } };
 
-function checkRanges(healthy: Range, usable: Range): void {
+function checkRanges(healthy: FiniteMetricRange, usable: FiniteMetricRange): void {
   for (const range of [healthy, usable]) {
     for (const bound of [range.lower, range.upper]) {
       if (bound !== undefined) finite(bound.value, "range bound");
@@ -260,7 +260,7 @@ function validate(kind: RecordKind, record: JsonObject): void {
       checkPositive(rule, "maxAgeMs");
       if (rule.type === "Threshold") {
         checkId(rule.metric, "metric");
-        checkRanges(rule.healthy as Range, rule.usable as Range);
+        checkRanges(rule.healthy as FiniteMetricRange, rule.usable as FiniteMetricRange);
       } else if (rule.type === "Aggregate") {
         for (const input of items(rule, "inputs")) checkId(input.node, "input node");
       }

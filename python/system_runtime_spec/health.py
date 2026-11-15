@@ -59,7 +59,7 @@ def _conjunction(answers: list[str]) -> str:
     return "Yes"
 
 
-def _count(minimum: int, answers: list[str]) -> str:
+def _count_answer(minimum: int, answers: list[str]) -> str:
     yes = answers.count("Yes")
     if yes >= minimum:
         return "Yes"
@@ -260,7 +260,7 @@ class _Evaluation:
         if reason is not None:
             result["reason"] = reason
 
-    def _fresh(
+    def _freshness_reason(
         self,
         evidence: JsonObject,
         owner: str | None,
@@ -314,7 +314,7 @@ class _Evaluation:
             self._set(result, _UNKNOWN, "Missing")
             return
         status = statuses[0]
-        reason = self._fresh(
+        reason = self._freshness_reason(
             status.record,
             node.get("owner"),
             rule.get("expectedTag"),
@@ -357,7 +357,7 @@ class _Evaluation:
             self._set(result, _UNKNOWN, "Missing")
             return
         sample = samples[0].record
-        reason = self._fresh(
+        reason = self._freshness_reason(
             sample,
             definition.get("owner"),
             definition.get("expectedTag"),
@@ -385,14 +385,14 @@ class _Evaluation:
         min_usable = int(rule.get("minUsable", min_healthy))
         usable = _conjunction(
             [
-                _count(min_usable, [usable for usable, _ in counted]),
+                _count_answer(min_usable, [usable for usable, _ in counted]),
                 *(usable for usable, _ in mandatory),
             ]
         )
         healthy = _conjunction(
             [
                 usable,
-                _count(min_healthy, [healthy for _, healthy in counted]),
+                _count_answer(min_healthy, [healthy for _, healthy in counted]),
                 *(healthy for _, healthy in mandatory),
                 *(healthy for _, healthy in optional),
             ]

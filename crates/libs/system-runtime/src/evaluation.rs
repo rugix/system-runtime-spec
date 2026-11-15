@@ -54,7 +54,7 @@ fn conjunction(answers: impl IntoIterator<Item = Answer>) -> Answer {
     result
 }
 
-fn count(minimum: u64, answers: &[Answer]) -> Answer {
+fn count_answer(minimum: u64, answers: &[Answer]) -> Answer {
     let yes = answers.iter().filter(|a| **a == Answer::Yes).count() as u64;
     let unknown = answers.iter().filter(|a| **a == Answer::Unknown).count() as u64;
     if yes >= minimum {
@@ -388,7 +388,7 @@ impl<'a> Evaluation<'a> {
     }
 
     /// Return why evidence is not fresh, or None if it is fresh.
-    fn fresh(
+    fn freshness_reason(
         &self,
         evidence: &Evidence<'_>,
         owner: Option<&str>,
@@ -441,7 +441,7 @@ impl<'a> Evaluation<'a> {
             owner: record.owner.as_deref(),
             tag: record.tag.as_deref(),
         };
-        if let Some(reason) = self.fresh(
+        if let Some(reason) = self.freshness_reason(
             &evidence,
             owner,
             rule.expected_tag.as_deref(),
@@ -514,7 +514,7 @@ impl<'a> Evaluation<'a> {
             owner: record.owner.as_deref(),
             tag: record.tag.as_deref(),
         };
-        if let Some(reason) = self.fresh(
+        if let Some(reason) = self.freshness_reason(
             &evidence,
             definition.owner.as_deref(),
             definition.expected_tag.as_deref(),
@@ -556,11 +556,11 @@ impl<'a> Evaluation<'a> {
         let usable_answers: Vec<_> = counted.iter().map(|(usable, _)| *usable).collect();
         let healthy_answers: Vec<_> = counted.iter().map(|(_, healthy)| *healthy).collect();
         let usable = conjunction(
-            std::iter::once(count(min_usable, &usable_answers))
+            std::iter::once(count_answer(min_usable, &usable_answers))
                 .chain(with_mode(InputMode::Mandatory).map(|(usable, _)| usable)),
         );
         let healthy = conjunction(
-            [usable, count(min_healthy, &healthy_answers)]
+            [usable, count_answer(min_healthy, &healthy_answers)]
                 .into_iter()
                 .chain(with_mode(InputMode::Mandatory).map(|(_, healthy)| healthy))
                 .chain(with_mode(InputMode::Optional).map(|(_, healthy)| healthy)),

@@ -187,7 +187,7 @@ impl Reader {
     }
 
     /// Check that a path is a directory; diagnose everything but its absence.
-    fn directory(&mut self, kind: RecordKind, path: &Path) -> bool {
+    fn check_directory(&mut self, kind: RecordKind, path: &Path) -> bool {
         let message = match std::fs::metadata(path) {
             Ok(metadata) if metadata.is_dir() => return true,
             Ok(_) => "path is not a directory".to_owned(),
@@ -273,7 +273,7 @@ impl Reader {
             }
             let mut expanded = Vec::new();
             for path in matches {
-                if self.directory(kind, &path) {
+                if self.check_directory(kind, &path) {
                     expanded.extend(
                         self.list(kind, &path)
                             .into_iter()
@@ -288,7 +288,7 @@ impl Reader {
     }
 
     fn walk(&mut self, kind: RecordKind, source: &Path) -> Vec<PathBuf> {
-        if !self.directory(kind, source) {
+        if !self.check_directory(kind, source) {
             return Vec::new();
         }
         let Some(resolved) = self.resolve(kind, source) else {

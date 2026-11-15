@@ -127,7 +127,7 @@ class _Reader:
             self._report("Error", kind, f"cannot resolve path: {error}", path)
             return None
 
-    def _directory(self, kind: str, path: Path) -> bool:
+    def _check_directory(self, kind: str, path: Path) -> bool:
         """Check that a path is a directory; diagnose everything but its absence."""
         try:
             status = os.stat(path)
@@ -193,14 +193,14 @@ class _Reader:
             matches = [
                 path
                 for match in matches
-                if self._directory(kind, match)
+                if self._check_directory(kind, match)
                 for path, is_directory in self._list(kind, match)
                 if is_directory
             ]
         return matches
 
     def _walk(self, kind: str, source: Path) -> list[Path]:
-        if not self._directory(kind, source):
+        if not self._check_directory(kind, source):
             return []
         resolved = self._resolve(kind, source)
         if resolved is None:

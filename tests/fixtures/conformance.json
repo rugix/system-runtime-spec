@@ -463,7 +463,7 @@
       }
     },
     {
-      "name": "unversioned wildcard",
+      "name": "wildcard requirement does not match an unversioned capability",
       "components": [
         {
           "id": "runtime"
@@ -1401,7 +1401,7 @@
   ],
   "health": [
     {
-      "name": "healthy,healthy 2/2",
+      "name": "Healthy and Healthy inputs with minUsable=2 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1482,7 +1482,7 @@
       }
     },
     {
-      "name": "healthy,degraded 2/2",
+      "name": "Healthy and Degraded inputs with minUsable=2 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1563,7 +1563,7 @@
       }
     },
     {
-      "name": "healthy,unhealthy 2/2",
+      "name": "Healthy and Unhealthy inputs with minUsable=2 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1644,7 +1644,7 @@
       }
     },
     {
-      "name": "healthy,unknown 2/2",
+      "name": "Healthy and Unknown inputs with minUsable=2 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1725,7 +1725,7 @@
       }
     },
     {
-      "name": "unhealthy,unknown 2/2",
+      "name": "Unhealthy and Unknown inputs with minUsable=2 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1806,7 +1806,7 @@
       }
     },
     {
-      "name": "healthy,unhealthy 1/2",
+      "name": "Healthy and Unhealthy inputs with minUsable=1 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1887,7 +1887,7 @@
       }
     },
     {
-      "name": "healthy,unknown 1/2",
+      "name": "Healthy and Unknown inputs with minUsable=1 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -1968,7 +1968,7 @@
       }
     },
     {
-      "name": "healthy,unknown 1/1",
+      "name": "Healthy and Unknown inputs with minUsable=1 and minHealthy=1",
       "records": {
         "healthNodes": [
           {
@@ -2049,7 +2049,7 @@
       }
     },
     {
-      "name": "degraded,unknown 1/1",
+      "name": "Degraded and Unknown inputs with minUsable=1 and minHealthy=1",
       "records": {
         "healthNodes": [
           {
@@ -2130,7 +2130,7 @@
       }
     },
     {
-      "name": "degraded,unhealthy 1/1",
+      "name": "Degraded and Unhealthy inputs with minUsable=1 and minHealthy=1",
       "records": {
         "healthNodes": [
           {
@@ -2211,7 +2211,7 @@
       }
     },
     {
-      "name": "unhealthy,unknown 1/1",
+      "name": "Unhealthy and Unknown inputs with minUsable=1 and minHealthy=1",
       "records": {
         "healthNodes": [
           {
@@ -2292,7 +2292,7 @@
       }
     },
     {
-      "name": "unhealthy,unhealthy 1/1",
+      "name": "Unhealthy and Unhealthy inputs with minUsable=1 and minHealthy=1",
       "records": {
         "healthNodes": [
           {
@@ -2373,7 +2373,7 @@
       }
     },
     {
-      "name": "unknown,unknown 1/2",
+      "name": "Unknown and Unknown inputs with minUsable=1 and minHealthy=2",
       "records": {
         "healthNodes": [
           {
@@ -2454,7 +2454,7 @@
       }
     },
     {
-      "name": "nested availability evidence",
+      "name": "nested aggregates preserve confirmed usability and unknown health",
       "records": {
         "healthNodes": [
           {
@@ -2744,7 +2744,7 @@
       }
     },
     {
-      "name": "consumer age cap",
+      "name": "Observed rule shortens status validity",
       "records": {
         "healthNodes": [
           {
@@ -2783,7 +2783,7 @@
       }
     },
     {
-      "name": "large clock metrics",
+      "name": "status freshness preserves large boot-time integers",
       "records": {
         "healthNodes": [
           {
@@ -3335,7 +3335,7 @@
       }
     },
     {
-      "name": "omitted required defaults to healthy count",
+      "name": "omitted minUsable defaults to minHealthy",
       "records": {
         "healthNodes": [
           {
@@ -3438,7 +3438,7 @@
       }
     },
     {
-      "name": "omitted required fails below healthy count",
+      "name": "omitted minUsable fails below minHealthy",
       "records": {
         "healthNodes": [
           {
@@ -3541,7 +3541,7 @@
       }
     },
     {
-      "name": "omitted healthy defaults to all inputs",
+      "name": "omitted minHealthy defaults to all counted inputs",
       "records": {
         "healthNodes": [
           {
@@ -3930,7 +3930,7 @@
       }
     },
     {
-      "name": "unknown optional input only degrades",
+      "name": "unknown optional input preserves usability and leaves health unknown",
       "records": {
         "healthNodes": [
           {
@@ -4720,7 +4720,7 @@
       }
     },
     {
-      "name": "zero node age",
+      "name": "zero Observed maxAgeMs is invalid",
       "records": {
         "healthNodes": [
           {
@@ -4748,7 +4748,7 @@
       }
     },
     {
-      "name": "zero status age",
+      "name": "zero status maxAgeMs is invalid",
       "records": {
         "healthNodes": [
           {
@@ -4997,7 +4997,7 @@
       }
     },
     {
-      "name": "aggregate owner inherited",
+      "name": "aggregate keeps its own owner independently of input owners",
       "records": {
         "healthNodes": [
           {
@@ -7138,7 +7138,7 @@
       }
     },
     {
-      "name": "nonfinite NaN in observation",
+      "name": "nonfinite NaN in metric sample",
       "records": {
         "healthNodes": [
           {
@@ -7267,7 +7267,7 @@
       }
     },
     {
-      "name": "nonfinite Infinity in observation",
+      "name": "nonfinite Infinity in metric sample",
       "records": {
         "healthNodes": [
           {
@@ -7396,7 +7396,7 @@
       }
     },
     {
-      "name": "nonfinite -Infinity in observation",
+      "name": "nonfinite -Infinity in metric sample",
       "records": {
         "healthNodes": [
           {
@@ -7525,7 +7525,7 @@
       }
     },
     {
-      "name": "expired replica preserves minimum and propagates warning",
+      "name": "expired replica preserves usability and propagates unknown health",
       "records": {
         "healthNodes": [
           {
@@ -7749,7 +7749,7 @@
       }
     },
     {
-      "name": "required input cannot be replaced by healthy workers",
+      "name": "mandatory input cannot be replaced by healthy workers",
       "records": {
         "healthNodes": [
           {
@@ -7854,7 +7854,7 @@
       }
     },
     {
-      "name": "missing required input prevents confirmed functioning despite healthy workers",
+      "name": "missing mandatory evidence prevents confirmed usability despite healthy workers",
       "records": {
         "healthNodes": [
           {
@@ -7944,7 +7944,7 @@
       }
     },
     {
-      "name": "degraded required input prevents full health despite enough healthy workers",
+      "name": "degraded mandatory input prevents full health despite enough healthy workers",
       "records": {
         "healthNodes": [
           {
@@ -8049,7 +8049,7 @@
       }
     },
     {
-      "name": "required input counts toward minimum with degraded worker",
+      "name": "mandatory input counts toward minimum with degraded worker",
       "records": {
         "healthNodes": [
           {
@@ -8154,7 +8154,7 @@
       }
     },
     {
-      "name": "required healthy input allows full health despite optional failure",
+      "name": "healthy mandatory input allows full health despite a failed counted worker",
       "records": {
         "healthNodes": [
           {
@@ -8259,7 +8259,7 @@
       }
     },
     {
-      "name": "impossible minimum count overrides unknown required input",
+      "name": "impossible minimum count overrides unknown mandatory input",
       "records": {
         "healthNodes": [
           {
@@ -8564,7 +8564,7 @@
       }
     },
     {
-      "name": "mandatory aggregate preserves a nested warning",
+      "name": "mandatory aggregate propagates a degraded input",
       "records": {
         "healthNodes": [
           {
@@ -8946,7 +8946,7 @@
       }
     },
     {
-      "name": "attachment with mode",
+      "name": "unhealthy Optional attachment preserves usability but prevents full health",
       "records": {
         "healthNodes": [
           {
@@ -10796,7 +10796,7 @@
       "valid": false
     },
     {
-      "name": "missing clock",
+      "name": "null clock is invalid",
       "snapshot": {
         "specVersion": "1.0",
         "clock": null

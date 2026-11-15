@@ -4,7 +4,7 @@ import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
 import type {
   Answer, HealthContext, HealthNodeId, HealthNodeResult, HealthReport, InputMode, Reason,
 } from "./generated/health.js";
-import { type Decoded, type Range, type JsonObject, type Records, decodeAll, diagnostic } from "./records.js";
+import { type Decoded, type FiniteMetricRange, type JsonObject, type Records, decodeAll, diagnostic } from "./records.js";
 
 type Answers = [Answer, Answer];
 
@@ -22,7 +22,7 @@ function conjunction(answers: Answer[]): Answer {
   return "Yes";
 }
 
-function count(minimum: bigint, answers: Answer[]): Answer {
+function countAnswer(minimum: bigint, answers: Answer[]): Answer {
   const yes = BigInt(answers.filter((a) => a === "Yes").length);
   const unknown = BigInt(answers.filter((a) => a === "Unknown").length);
   if (yes >= minimum) return "Yes";
@@ -30,7 +30,7 @@ function count(minimum: bigint, answers: Answer[]): Answer {
   return "Unknown";
 }
 
-function contains(range: Range, value: number): boolean {
+function contains(range: FiniteMetricRange, value: number): boolean {
   const { lower, upper } = range;
   return (lower === undefined || value > lower.value || (value === lower.value && lower.inclusive))
     && (upper === undefined || value < upper.value || (value === upper.value && upper.inclusive));
@@ -45,7 +45,7 @@ function group(items: Decoded[]): Map<string, Decoded[]> {
   return groups;
 }
 
-function int(value: unknown): bigint {
+function toBigInt(value: unknown): bigint {
   return BigInt(value as string | number);
 }
 
@@ -218,16 +218,16 @@ class Evaluation {
   }
 
   /** Return why evidence is not fresh, or undefined if it is fresh. */
-  private fresh(
+  private freshnessReason(
     evidence: JsonObject, owner: unknown, tag: unknown, maxAges: unknown[],
   ): Reason | undefined {
     if (evidence.bootId !== this.context.bootId) return "OtherBoot";
     if (owner !== undefined && evidence.owner !== owner) return "OwnerMismatch";
     if (tag !== undefined && evidence.tag !== tag) return "TagMismatch";
-    const now = int(this.context.nowMs);
-    const observed = int(evidence.observedAtMs);
+    const now = toBigInt(this.context.nowMs);
+    const observed = toBigInt(evidence.observedAtMs);
     if (observed > now) return "Future";
-    const limits = [evidence.maxAgeMs, ...maxAges.filter((age) => age !== undefined)].map(int);
+    const limits = [evidence.maxAgeMs, ...maxAges.filter((age) => age !== undefined)].map(toBigInt);
     if (limits.some((limit) => now - observed >= limit)) return "Expired";
     return undefined;
   }
@@ -250,7 +250,7 @@ class Evaluation {
       return;
     }
     const [status] = statuses;
-    const reason = this.fresh(status.record, node.owner, rule.expectedTag, [rule.maxAgeMs]);
+    const reason = this.freshnessReason(status.record, node.owner, rule.expectedTag, [rule.maxAgeMs]);
     if (reason !== undefined) {
       result.reason = reason;
       return;
@@ -285,15 +285,15 @@ class Evaluation {
       return;
     }
     const sample = samples[0].record;
-    const reason = this.fresh(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
+    const reason = this.freshnessReason(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
     if (reason !== undefined) {
       result.reason = reason;
       return;
     }
     const value = sample.value as number;
-    [result.usable, result.healthy] = contains(rule.healthy as Range, value)
+    [result.usable, result.healthy] = contains(rule.healthy as FiniteMetricRange, value)
       ? ["Yes", "Yes"]
-      : contains(rule.usable as Range, value) ? ["Yes", "No"] : ["No", "No"];
+      : contains(rule.usable as FiniteMetricRange, value) ? ["Yes", "No"] : ["No", "No"];
     this.carry(result, sample);
   }
 
@@ -301,15 +301,15 @@ class Evaluation {
     const inputs = (this.inputs.get(result.id) as [string, InputMode][]).map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
     const counted = inputs.filter(([mode]) => mode !== "Optional").map(([, answers]) => answers);
     const withMode = (wanted: InputMode) => inputs.filter(([mode]) => mode === wanted).map(([, answers]) => answers);
-    const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : int(rule.minHealthy);
-    const minUsable = rule.minUsable === undefined ? minHealthy : int(rule.minUsable);
+    const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : toBigInt(rule.minHealthy);
+    const minUsable = rule.minUsable === undefined ? minHealthy : toBigInt(rule.minUsable);
     const usable = conjunction([
-      count(minUsable, counted.map(([u]) => u)),
+      countAnswer(minUsable, counted.map(([u]) => u)),
       ...withMode("Mandatory").map(([u]) => u),
     ]);
     const healthy = conjunction([
       usable,
-      count(minHealthy, counted.map(([, h]) => h)),
+      countAnswer(minHealthy, counted.map(([, h]) => h)),
       ...withMode("Mandatory").map(([, h]) => h),
       ...withMode("Optional").map(([, h]) => h),
     ]);
