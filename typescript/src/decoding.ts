@@ -1,7 +1,6 @@
 import { type Checker, builtins } from "@sidex/types";
 import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
 import { ComponentDeclaration } from "./generated/component.js";
-import { DirectoryConfig } from "./generated/filesystem.js";
 import { HealthNode, HealthStatus } from "./generated/health.js";
 import { MetricDefinition, type MetricRange, MetricSample } from "./generated/metric.js";
 import { parseRequirement, parseVersion } from "./version.js";
@@ -28,16 +27,15 @@ export interface RecordModels {
 /** Kind of record that `Records` holds. */
 export type RecordModelKind = keyof RecordModels;
 
-const CHECKERS: { [K in RecordKind]: Checker<unknown> } = {
+const CHECKERS: { [K in RecordModelKind]: Checker<unknown> } = {
   ComponentDeclaration,
   HealthNode,
   HealthStatus,
   MetricDefinition,
   MetricSample,
-  DirectoryConfig,
 };
 
-export const KINDS = Object.keys(CHECKERS) as RecordKind[];
+export const KINDS: readonly RecordKind[] = [...Object.keys(CHECKERS) as RecordModelKind[], "DirectoryConfig"];
 
 /**
  * A valid record with its original JSON and its model, normalized for evaluation.
@@ -48,7 +46,6 @@ export const KINDS = Object.keys(CHECKERS) as RecordKind[];
 export type Record<T> = {
   readonly json: unknown;
   readonly value: T;
-  readonly newer: boolean;
   readonly unsupported: boolean;
   readonly unsupportedAttachments: ReadonlySet<string>;
 };
@@ -76,18 +73,16 @@ export function parseSpecVersion(text: unknown): [bigint, bigint] | undefined {
   return major > U64_MAX || minor > U64_MAX ? undefined : [major, minor];
 }
 
-/** Check a record's version; return whether it is a newer minor version. */
-function checkVersion(kind: RecordKind, record: JsonObject): boolean {
-  if (!("specVersion" in record)) return false;
+/** Check a record's version; component declarations of newer minor versions are invalid. */
+function checkVersion(kind: RecordModelKind, record: JsonObject): void {
+  if (!("specVersion" in record)) return;
   const version = parseSpecVersion(record.specVersion);
   if (version === undefined) throw new InvalidRecord(`invalid specVersion ${JSON.stringify(record.specVersion)}`);
   const [major, minor] = version;
   if (major !== SUPPORTED_MAJOR) throw new InvalidRecord(`unsupported specVersion ${record.specVersion}`);
-  if (minor <= SUPPORTED_MINOR) return false;
-  if (kind === "ComponentDeclaration") {
+  if (minor > SUPPORTED_MINOR && kind === "ComponentDeclaration") {
     throw new InvalidRecord(`component declaration of newer specVersion ${record.specVersion}`);
   }
-  return true;
 }
 
 /** Replace an unknown input mode with `Counted`; return whether it was unknown. */
@@ -100,13 +95,11 @@ function applyModeFallback(entry: JsonObject): boolean {
 }
 
 /** Decode and validate a record; throw `InvalidRecord` if it is not valid. */
-export function decode<K extends RecordKind>(
-  kind: K, json: unknown,
-): Record<K extends RecordModelKind ? RecordModels[K] : DirectoryConfig> {
+export function decode<K extends RecordModelKind>(kind: K, json: unknown): Record<RecordModels[K]> {
   if (!isObject(json)) throw new InvalidRecord("record is not a JSON object");
   const original = structuredClone(json);
   const data = structuredClone(json);
-  const newer = checkVersion(kind, data);
+  checkVersion(kind, data);
   let unsupported = false;
   const unsupportedAttachments = new Set<string>();
   if (kind === "HealthNode") {
@@ -141,13 +134,11 @@ export function decode<K extends RecordKind>(
     const [error] = report.errors;
     throw new InvalidRecord(`${error.path}: ${error.message}`);
   }
-  if (kind !== "DirectoryConfig") {
-    const { id, owner } = data as RecordModels[RecordModelKind];
-    checkId(id, "id");
-    checkId(owner, "owner");
-  }
+  const { id, owner } = data as RecordModels[RecordModelKind];
+  checkId(id, "id");
+  checkId(owner, "owner");
   VALIDATORS[kind](data as never);
-  return { json: original, value: data as never, newer, unsupported, unsupportedAttachments };
+  return { json: original, value: data as never, unsupported, unsupportedAttachments };
 }
 
 function checkId(value: string | undefined, what: string): void {
@@ -204,16 +195,7 @@ function checkRanges(healthy: MetricRange, usable: MetricRange): void {
   }
 }
 
-function checkDirectoryPath(path: string): void {
-  if (!path.startsWith("/")) throw new InvalidRecord(`path is not absolute: ${path}`);
-  if (path.includes("\0")) throw new InvalidRecord(`path contains a NUL character: ${JSON.stringify(path)}`);
-  for (const segment of path.split("/")) {
-    if (segment === "..") throw new InvalidRecord(`path contains '..': ${path}`);
-    if (segment.includes("*") && segment !== "*") throw new InvalidRecord(`path contains a partial wildcard: ${path}`);
-  }
-}
-
-const VALIDATORS: { [K in RecordKind]: (record: K extends RecordModelKind ? RecordModels[K] : DirectoryConfig) => void } = {
+const VALIDATORS: { [K in RecordModelKind]: (record: RecordModels[K]) => void } = {
   ComponentDeclaration(record) {
     if (record.version !== undefined) parse(parseVersion, record.version);
     for (const claim of record.claims ?? []) checkId(claim.id, "claim ID");
@@ -249,10 +231,5 @@ const VALIDATORS: { [K in RecordKind]: (record: K extends RecordModelKind ? Reco
   MetricSample(record) {
     finite(record.value, "value");
     checkPositive(record.maxAgeMs, "maxAgeMs");
-  },
-  DirectoryConfig(record) {
-    for (const paths of [record.components, record.healthNodes, record.healthStatuses, record.metrics, record.metricSamples]) {
-      for (const path of paths ?? []) checkDirectoryPath(path);
-    }
   },
 };
