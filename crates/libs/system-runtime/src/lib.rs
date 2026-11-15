@@ -1,37 +1,40 @@
-//! System component compatibility, health graphs, and file discovery.
+//! Compatibility checking, health evaluation, and discovery for the
+//! [System Runtime Specification](https://github.com/rugix/system-runtime-spec/blob/main/SPEC.md).
 //!
-//! Specification models live in [`types`]. Use [`compatibility::check_components`]
-//! and [`evaluation::evaluate_health`] with in-memory declarations, or load file
-//! contributions with [`discovery::RuntimeDirectories`].
+//! Records are JSON values ([`JsonValue`](sidex::types::JsonValue)), so that snapshots carry
+//! them unchanged and records of newer minor versions keep working. The typed models in
+//! [`types`] describe their structure; [`records::to_json`] converts them.
+//!
+//! - [`compatibility::check_components`] checks a composition, and
+//!   [`compatibility::candidate_composition`] predicts the composition after an update.
+//! - [`evaluation::evaluate_health`] evaluates health in a health context.
+//! - [`discovery::read_records`] reads the records of a Linux system.
+//! - [`snapshot::make_snapshot`] and [`snapshot::read_snapshot`] send records to another
+//!   system, and [`clock::estimate_timestamp`] places evidence in wall-clock time.
 
 pub mod clock;
 pub mod compatibility;
+#[cfg(target_os = "linux")]
 pub mod discovery;
 pub mod evaluation;
-mod node_id;
+pub mod records;
 pub mod snapshot;
-mod threshold;
-/// Specification models generated from the shared Sidex schemas.
+/// Models generated from the Sidex schemas.
 pub mod types;
 
-/// Failure to validate a specification or read a file contribution.
+/// Failure to read the system's clock or a snapshot.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// A declaration cannot be evaluated.
-    #[error("invalid specification: {0}")]
+    /// A snapshot is not valid.
+    #[error("invalid snapshot: {0}")]
     Invalid(String),
-    /// A directory or contribution could not be read.
+    /// A file could not be read.
     #[error("failed to read {path}: {source}")]
     Io {
+        /// Path of the file.
         path: std::path::PathBuf,
+        /// Underlying error.
         #[source]
         source: std::io::Error,
-    },
-    /// A contribution has invalid syntax or fields.
-    #[error("failed to parse {path}: {source}")]
-    Decode {
-        path: std::path::PathBuf,
-        #[source]
-        source: sidex::DecodeError,
     },
 }
