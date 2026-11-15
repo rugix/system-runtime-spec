@@ -812,7 +812,7 @@
       }
     },
     {
-      "name": "warnings keep a composition consistent",
+      "name": "warnings and diagnostics about health records keep a composition consistent",
       "components": [
         {
           "id": "a"
@@ -824,6 +824,11 @@
           "kind": "DirectoryConfig",
           "message": "newer",
           "path": "/etc/system-runtime/directories/x.json"
+        },
+        {
+          "severity": "Error",
+          "kind": "HealthNode",
+          "message": "broken"
         }
       ],
       "report": {
@@ -861,26 +866,6 @@
             "kind": "DirectoryConfig"
           }
         ]
-      }
-    },
-    {
-      "name": "diagnostics about health records do not affect compatibility",
-      "components": [
-        {
-          "id": "a"
-        }
-      ],
-      "diagnostics": [
-        {
-          "severity": "Error",
-          "kind": "HealthNode",
-          "message": "broken"
-        }
-      ],
-      "report": {
-        "consistent": true,
-        "problems": [],
-        "diagnostics": []
       }
     },
     {
@@ -10490,7 +10475,7 @@
       }
     },
     {
-      "name": "input diagnostics are reported",
+      "name": "input diagnostics about health records and directory configurations are reported",
       "records": {
         "healthNodes": [
           {
@@ -10516,6 +10501,11 @@
           {
             "severity": "Error",
             "kind": "DirectoryConfig",
+            "message": "broken"
+          },
+          {
+            "severity": "Error",
+            "kind": "ComponentDeclaration",
             "message": "broken"
           }
         ]
@@ -10543,47 +10533,6 @@
             "kind": "HealthNode"
           }
         ]
-      }
-    },
-    {
-      "name": "diagnostics about component declarations do not affect health",
-      "records": {
-        "healthNodes": [
-          {
-            "id": "a"
-          }
-        ],
-        "healthStatuses": [
-          {
-            "id": "a",
-            "state": "Healthy",
-            "bootId": "boot",
-            "observedAtMs": 900,
-            "maxAgeMs": 500
-          }
-        ],
-        "diagnostics": [
-          {
-            "severity": "Error",
-            "kind": "ComponentDeclaration",
-            "message": "broken"
-          }
-        ]
-      },
-      "context": {
-        "bootId": "boot",
-        "nowMs": 1000
-      },
-      "report": {
-        "nodes": [
-          {
-            "id": "a",
-            "usable": "Yes",
-            "healthy": "Yes",
-            "inputs": []
-          }
-        ],
-        "diagnostics": []
       }
     },
     {

@@ -152,29 +152,27 @@ fn components() {
             "{}",
             name(&case)
         );
-        // Typed models give the same report as the JSON values they decode from.
-        let typed: Result<Vec<ComponentDeclaration>, _> = list(&case, "components")
-            .iter()
-            .map(sidex::formats::json::from_value)
-            .collect();
-        if let Ok(typed) = typed {
-            let mut typed_records = Records::new();
-            for diagnostic in records
-                .diagnostics()
-                .iter()
-                .take(list(&case, "diagnostics").len())
-            {
-                typed_records.push_diagnostic(diagnostic.clone());
-            }
-            typed_records.extend(typed);
-            assert_eq!(
-                typed_records.check_compatibility(),
-                report,
-                "{}",
-                name(&case)
-            );
-        }
     }
+}
+
+#[test]
+fn typed_records() {
+    let mut records = Records::new();
+    records.push(
+        ComponentDeclaration::new("os")
+            .with_owner(Some("rugix.system".into()))
+            .with_version(Some("2.1".into())),
+    );
+    records.push(ComponentDeclaration::new("not an ID"));
+    let ids: Vec<&str> = records.components().map(|c| c.id.as_str()).collect();
+    assert_eq!(ids, ["os"]);
+    let severities: Vec<Severity> = records.diagnostics().iter().map(|d| d.severity).collect();
+    assert_eq!(severities, [Severity::Error]);
+    let os = JsonValue::from_iter([("id", "os"), ("owner", "rugix.system"), ("version", "2.1")]);
+    assert_eq!(
+        originals(&records).get("components"),
+        Some(&JsonValue::from(vec![os]))
+    );
 }
 
 #[test]

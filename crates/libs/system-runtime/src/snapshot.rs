@@ -189,7 +189,8 @@ impl Snapshot {
         let clock: HealthClockSample = sidex::formats::json::from_value(&clock)
             .map_err(|error| SnapshotError::InvalidClock(error.to_string()))?;
         let present = HEALTH.map(|field| value.get(field).is_some());
-        if present.iter().any(|p| *p) && !present.iter().all(|p| *p) {
+        let health = present.iter().all(|p| *p);
+        if present.iter().any(|p| *p) && !health {
             return Err(SnapshotError::PartialHealth);
         }
         let mut records = Records::new();
@@ -203,7 +204,7 @@ impl Snapshot {
         push_all::<MetricSample>(&mut records, list(value, "metricSamples")?);
         let parts = Parts {
             components: value.get("components").is_some(),
-            health: present.iter().all(|p| *p),
+            health,
         };
         Ok(Self {
             records,
@@ -240,7 +241,7 @@ fn read_diagnostic(item: JsonValue) -> Result<Diagnostic, SnapshotError> {
     if !known(&item, "kind", &KINDS) {
         item.insert("kind".into(), "DirectoryConfig".into());
     }
-    if !known(&item, "severity", &["Error", "Warning"]) {
+    if !known(&item, "severity", &["Warning"]) {
         item.insert("severity".into(), "Error".into());
     }
     sidex::formats::json::from_value(&JsonValue::Map(item))

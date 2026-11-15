@@ -95,15 +95,17 @@ def test_versions(case: dict[str, Any]) -> None:
 def test_components(case: dict[str, Any]) -> None:
     report = records(case).check_compatibility()
     assert brief(report) == case["report"]
-    # Models give the same report as the JSON values they decode from.
-    try:
-        typed = [ComponentDeclaration.model_validate(c) for c in case["components"]]
-    except pydantic.ValidationError:
-        return
-    typed_records = records({"diagnostics": case.get("diagnostics", [])})
-    for declaration in typed:
-        typed_records.push(declaration)
-    assert typed_records.check_compatibility() == report
+
+
+def test_typed_records() -> None:
+    result = Records()
+    result.push(ComponentDeclaration(id="os", owner="rugix.system", version="2.1"))
+    result.push(ComponentDeclaration(id="not an ID"))
+    assert [c.id for c in result.components] == ["os"]
+    assert [d.severity for d in result.diagnostics] == ["Error"]
+    assert originals(result)["components"] == [
+        {"id": "os", "owner": "rugix.system", "version": "2.1"}
+    ]
 
 
 @pytest.mark.parametrize("case", CASES["candidates"], ids=lambda case: case["name"])

@@ -87,7 +87,8 @@ export class Snapshot {
     const check = HealthClockSample.check(clock);
     if (check.isErr()) throw new SnapshotError(`invalid clock sample: ${check}`);
     const present = HEALTH.map((field) => value[field] !== undefined);
-    if (present.some(Boolean) && !present.every(Boolean)) {
+    const health = present.every(Boolean);
+    if (present.some(Boolean) && !health) {
       throw new SnapshotError("snapshot includes only some lists of the health part");
     }
     const list = (field: string): unknown[] => {
@@ -103,7 +104,7 @@ export class Snapshot {
     const snapshot = new Snapshot(records, clock as HealthClockSample);
     // Keep all received diagnostics, also those about parts the snapshot omits.
     return Object.assign(snapshot, {
-      records, parts: { components: value.components !== undefined, health: present.every(Boolean) },
+      records, parts: { components: value.components !== undefined, health },
     });
   }
 }
@@ -115,7 +116,7 @@ function readDiagnostic(item: unknown): Diagnostic {
   const diagnostic = {
     ...item,
     kind: KINDS.includes(kind as Diagnostic["kind"]) ? kind : "DirectoryConfig",
-    severity: severity === "Error" || severity === "Warning" ? severity : "Error",
+    severity: severity === "Warning" ? "Warning" : "Error",
   };
   const report = Diagnostic.check(diagnostic);
   if (report.isErr()) throw new SnapshotError(`invalid diagnostic: ${report}`);

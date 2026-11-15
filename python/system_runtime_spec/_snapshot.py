@@ -122,7 +122,8 @@ class Snapshot:
         except pydantic.ValidationError as error:
             raise SnapshotError(f"invalid clock sample: {error}") from None
         present = [name in value for name in _HEALTH]
-        if any(present) and not all(present):
+        health = all(present)
+        if any(present) and not health:
             raise SnapshotError("snapshot includes only some lists of the health part")
         records = Records()
         for item in value.get("diagnostics", []):
@@ -133,7 +134,7 @@ class Snapshot:
         # Keep all received diagnostics, also those about parts the snapshot omits.
         snapshot = cls(records, sample)
         snapshot._components = "components" in value
-        snapshot._health = all(present)
+        snapshot._health = health
         return snapshot
 
     def __eq__(self, other: object) -> bool:
@@ -161,7 +162,7 @@ def _read_diagnostic(item: Json) -> Diagnostic:
     item = dict(item)
     if item.get("kind") not in KINDS.values():
         item["kind"] = "DirectoryConfig"
-    if item.get("severity") not in ("Error", "Warning"):
+    if item.get("severity") != "Warning":
         item["severity"] = "Error"
     try:
         return Diagnostic.model_validate(item)
