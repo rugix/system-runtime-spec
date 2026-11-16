@@ -77,6 +77,16 @@ An implementation can take several roles. For example, an update controller read
 the compatibility of an update, writes the records of the update, and decides whether to commit it.
 Records come from _contributors_, such as a system image or an app, whose writers publish them.
 
+The sections that matter most for each role are:
+
+| Role | Sections |
+| --- | --- |
+| Writer | [3](#3-records), [5.1–5.3](#51-component-declarations) for component declarations, [6.1–6.7](#61-health-answers) for health records, and [8.1–8.2](#81-directories) |
+| Reader | [3](#3-records), [8](#8-discovery), and [9](#9-transport) |
+| Compatibility checker | [3](#3-records), [4](#4-versions-and-version-requirements), and [5](#5-components) |
+| Health evaluator | [3](#3-records) and [6](#6-health) |
+| Consumer | [5.5](#55-compatibility-reports), [6.1](#61-health-answers), [6.8](#68-evaluation-and-reports), and [10](#10-limitations) |
+
 An implementation conforms to the specification for a role if it satisfies all requirements that
 apply to that role. The [conformance suite](tests/fixtures/) in this repository
 contains test cases for version matching, compatibility checking, candidate compositions, health
@@ -85,6 +95,10 @@ does not replace the requirements of the specification. If a test case contradic
 specification, the specification applies, and the test case is wrong.
 
 ## 3. Records
+
+Records are small JSON documents that the parts of a system publish about themselves. This section
+defines what all records have in common: their encoding, how problems with them are reported, their
+IDs and owners, data for other tools, and how the format evolves.
 
 ### 3.1 Encoding
 
@@ -573,6 +587,23 @@ a capability it matches. Problems MUST appear in this order:
    component, requirements precede conflicts, each in declaration order. A conflict that matches
    several capabilities produces one problem per capability, in the order of the providing
    components, with each component's implicit capability before its explicit ones.
+
+> **Example:** An app requires `{"id": "docker.compose", "version": ">=2.20,<3"}`. If an update of
+> the system image removes Docker Compose 2, the report of the candidate composition is:
+>
+> ```json
+> {
+>   "consistent": false,
+>   "problems": [
+>     {
+>       "problem": "UnsatisfiedRequirement",
+>       "component": "telemetry",
+>       "selector": { "id": "docker.compose", "version": ">=2.20,<3" }
+>     }
+>   ],
+>   "diagnostics": []
+> }
+> ```
 
 Problems contain the selectors and capabilities as declared, with the fields that the schema
 defines. Two problems are _equal_ if they have the same kind and equal fields. Two diagnostics are
@@ -1248,6 +1279,25 @@ The reasons are:
   ([Section 3.6](#36-evolution)).
 
 Other results of aggregate nodes have no reason; their inputs explain them.
+
+> **Example:** An app's observed node `telemetry` attaches itself to `device.apps`, an aggregate
+> node without own inputs. If the app's status record expires, the report is:
+>
+> ```json
+> {
+>   "nodes": [
+>     { "id": "device.apps", "usable": "Unknown", "healthy": "Unknown", "inputs": ["telemetry"] },
+>     {
+>       "id": "telemetry",
+>       "usable": "Unknown",
+>       "healthy": "Unknown",
+>       "inputs": [],
+>       "reason": "Expired"
+>     }
+>   ],
+>   "diagnostics": []
+> }
+> ```
 
 A skipped node or directory configuration can have provided inputs of other nodes, which then appear
 healthier than they are. A consumer that makes a decision, such as whether to commit an update,
