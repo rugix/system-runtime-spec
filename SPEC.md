@@ -684,8 +684,8 @@ variant HealthRule {
 the associated components.
 
 The inputs of aggregate nodes, including attached inputs, form directed edges from each aggregate
-node to its inputs. The graph SHOULD be acyclic; nodes on a cycle are not evaluated
-([Section 8.8](#88-evaluation-and-reports)).
+node to its inputs. Nodes on a cycle are not evaluated ([Section 8.8](#88-evaluation-and-reports)),
+so contributors avoid cycles.
 
 Nodes that are no input of any other node are _roots_. Tools can show the roots of a graph as the
 overall health of a device. Which aggregate nodes contributors attach to is a convention of the
