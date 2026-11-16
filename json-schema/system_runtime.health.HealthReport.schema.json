@@ -4,7 +4,7 @@
   "type": "object",
   "description": "Result of evaluating health.",
   "properties": {
-    "nodes": {
+    "results": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/system_runtime.health.HealthNodeResult"
@@ -18,7 +18,7 @@
     }
   },
   "required": [
-    "nodes",
+    "results",
     "diagnostics"
   ],
   "unevaluatedProperties": false,

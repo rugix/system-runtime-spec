@@ -4840,13 +4840,13 @@ pub mod health {
     #[derive(Clone, Debug, PartialEq)]
     pub struct HealthReport {
         #[doc = "One result per node ID, in the order of the node definitions.\n"]
-        pub nodes: ::std::vec::Vec<HealthNodeResult>,
+        pub results: ::std::vec::Vec<HealthNodeResult>,
         #[doc = "Diagnostics about health records and directory configurations, and those added during\nevaluation.\n"]
         pub diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthReport {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthReport" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < HealthNodeResult , > > ,) . with_docs ("One result per node ID, in the order of the node definitions.\n") , :: sidex :: shape :: FieldShape :: new ("diagnostics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < super :: common :: Diagnostic , > > ,) . with_docs ("Diagnostics about health records and directory configurations, and those added during\nevaluation.\n")]))) . with_docs ("Result of evaluating health.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthReport" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("results" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < HealthNodeResult , > > ,) . with_docs ("One result per node ID, in the order of the node definitions.\n") , :: sidex :: shape :: FieldShape :: new ("diagnostics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < super :: common :: Diagnostic , > > ,) . with_docs ("Diagnostics about health records and directory configurations, and those added during\nevaluation.\n")]))) . with_docs ("Result of evaluating health.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for HealthReport {
@@ -4862,7 +4862,7 @@ pub mod health {
         }
         fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
             match index {
-                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.nodes)),
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.results)),
                 1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.diagnostics)),
                 _ => ::std::option::Option::None,
             }
@@ -4898,8 +4898,8 @@ pub mod health {
                 ::std::result::Result::Ok(())
             })?;
             ::std::result::Result::Ok(Self {
-                nodes: __field_0
-                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `nodes`"))?,
+                results: __field_0
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `results`"))?,
                 diagnostics: __field_1
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `diagnostics`"))?,
             })
@@ -4925,22 +4925,22 @@ pub mod health {
     impl HealthReport {
         #[doc = "Creates a new [`HealthReport`]."]
         pub fn new(
-            nodes: ::std::vec::Vec<HealthNodeResult>,
+            results: ::std::vec::Vec<HealthNodeResult>,
             diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
         ) -> Self {
             Self {
-                nodes: nodes,
+                results: results,
                 diagnostics: diagnostics,
             }
         }
-        #[doc = "Sets the value of `nodes`."]
-        pub fn set_nodes(&mut self, nodes: ::std::vec::Vec<HealthNodeResult>) -> &mut Self {
-            self.nodes = nodes;
+        #[doc = "Sets the value of `results`."]
+        pub fn set_results(&mut self, results: ::std::vec::Vec<HealthNodeResult>) -> &mut Self {
+            self.results = results;
             self
         }
-        #[doc = "Sets the value of `nodes`."]
-        pub fn with_nodes(mut self, nodes: ::std::vec::Vec<HealthNodeResult>) -> Self {
-            self.nodes = nodes;
+        #[doc = "Sets the value of `results`."]
+        pub fn with_results(mut self, results: ::std::vec::Vec<HealthNodeResult>) -> Self {
+            self.results = results;
             self
         }
         #[doc = "Sets the value of `diagnostics`."]

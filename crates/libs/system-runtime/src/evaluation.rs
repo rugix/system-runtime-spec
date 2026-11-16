@@ -305,10 +305,10 @@ impl<'a> Evaluation<'a> {
     }
 
     fn report(mut self) -> HealthReport {
-        let mut nodes = Vec::new();
+        let mut results = Vec::new();
         for id in self.order.clone() {
             if self.conflicts.contains(&id) {
-                nodes.push(HealthNodeResult {
+                results.push(HealthNodeResult {
                     id: HealthNodeId(id),
                     owner: None,
                     usable: Answer::Unknown,
@@ -319,11 +319,11 @@ impl<'a> Evaluation<'a> {
                     annotations: None,
                 });
             } else {
-                nodes.push(self.result(&id));
+                results.push(self.result(&id));
             }
         }
         HealthReport {
-            nodes,
+            results,
             diagnostics: self.diagnostics,
         }
     }

@@ -28,8 +28,8 @@ fn main() -> std::io::Result<()> {
     let compatibility = records.check_compatibility();
     let health = records.evaluate_health(&HealthContext::current()?);
     println!("consistent: {}", compatibility.consistent);
-    for node in &health.nodes {
-        println!("{}: usable {:?}, healthy {:?}", node.id, node.usable, node.healthy);
+    for result in &health.results {
+        println!("{}: usable {:?}, healthy {:?}", result.id, result.usable, result.healthy);
     }
     Ok(())
 }
@@ -104,7 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for status in received.records().health_statuses() {
         println!("{}: {:?}", status.id, received.clock().estimate_timestamp(status));
     }
-    println!("{:?}", report.nodes);
+    println!("{:?}", report.results);
     Ok(())
 }
 ```

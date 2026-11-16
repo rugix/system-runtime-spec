@@ -1126,7 +1126,7 @@ The evaluator produces a health report:
 /// Result of evaluating health.
 record HealthReport {
     /// One result per node ID, in the order of the node definitions.
-    nodes: [HealthNodeResult],
+    results: [HealthNodeResult],
     /// Diagnostics about health records and directory configurations, and those added during
     /// evaluation.
     diagnostics: [Diagnostic],
@@ -1171,7 +1171,7 @@ answers.
 >
 > ```json
 > {
->   "nodes": [
+>   "results": [
 >     { "id": "device.apps", "usable": "Unknown", "healthy": "Unknown", "inputs": ["telemetry"] },
 >     {
 >       "id": "telemetry",

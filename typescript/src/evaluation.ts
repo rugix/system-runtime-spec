@@ -191,11 +191,11 @@ class Evaluation {
   }
 
   report(): HealthReport {
-    const nodes = this.order.map((id): HealthNodeResult =>
+    const results = this.order.map((id): HealthNodeResult =>
       this.conflicts.has(id)
         ? { id: id as HealthNodeId, usable: "Unknown", healthy: "Unknown", inputs: [], problem: "Conflict" }
         : this.result(id));
-    return { nodes, diagnostics: this.diagnostics };
+    return { results, diagnostics: this.diagnostics };
   }
 
   private answers(id: string): Answers {

@@ -237,14 +237,14 @@ export const HealthClockSample = {
  export type HealthReport = { /**
                                             * One result per node ID, in the order of the node definitions.
                                             */
-                                                        "nodes": HealthNodeResult[], /**
+                                                        "results": HealthNodeResult[], /**
                                             * Diagnostics about health records and directory configurations, and those added during
                                             * evaluation.
                                             */
                                                         "diagnostics": __schema_common.Diagnostic[] };
 
 export const HealthReport = {
-    ...__sidex_types.checker<HealthReport>((): __sidex_types.Check => __sidex_types.record([["nodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeResult)), false], ["diagnostics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_common.Diagnostic)), false]], [])),
+    ...__sidex_types.checker<HealthReport>((): __sidex_types.Check => __sidex_types.record([["results", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeResult)), false], ["diagnostics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_common.Diagnostic)), false]], [])),
 };
 /**
  * Answers of one node.

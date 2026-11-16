@@ -113,7 +113,7 @@ class HealthReport(_sidex.Model):
     """Result of evaluating health."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    nodes: list[HealthNodeResult] = pydantic.Field(description="One result per node ID, in the order of the node definitions.")
+    results: list[HealthNodeResult] = pydantic.Field(description="One result per node ID, in the order of the node definitions.")
     diagnostics: list[_schema_common.Diagnostic] = pydantic.Field(description="Diagnostics about health records and directory configurations, and those added during\nevaluation.")
 
 

@@ -65,7 +65,7 @@ impl Default for Parts {
 ///
 /// let received = Snapshot::from_json(&json).unwrap();
 /// let report = received.records().evaluate_health(&received.clock().context);
-/// assert_eq!(report.nodes.len(), 1);
+/// assert_eq!(report.results.len(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {

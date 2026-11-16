@@ -32,7 +32,7 @@ const snapshot = Snapshot.fromJSON({
   metricSamples: [],
 });
 const report = snapshot.records.evaluateHealth(snapshot.clock.context);
-console.log(report.nodes);
+console.log(report.results);
 ```
 
 `Snapshot.fromJSON` throws a `SnapshotError` for snapshots of an unsupported version or with an

@@ -20,8 +20,8 @@
 //! let compatibility = records.check_compatibility();
 //! let health = records.evaluate_health(&HealthContext::current()?);
 //! println!("consistent: {}", compatibility.consistent);
-//! for node in &health.nodes {
-//!     println!("{}: usable {:?}, healthy {:?}", node.id, node.usable, node.healthy);
+//! for result in &health.results {
+//!     println!("{}: usable {:?}, healthy {:?}", result.id, result.usable, result.healthy);
 //! }
 //! # Ok::<(), std::io::Error>(())
 //! ```

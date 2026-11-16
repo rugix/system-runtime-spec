@@ -196,7 +196,7 @@ class _Evaluation:
         return on_cycle
 
     def report(self) -> HealthReport:
-        nodes = [
+        results = [
             HealthNodeResult(
                 id=id,
                 usable="Unknown",
@@ -208,7 +208,7 @@ class _Evaluation:
             else self._result(id)
             for id in self.order
         ]
-        return HealthReport(nodes=nodes, diagnostics=self.diagnostics)
+        return HealthReport(results=results, diagnostics=self.diagnostics)
 
     def _answers(self, id: str) -> Answers:
         if id in self.nodes:

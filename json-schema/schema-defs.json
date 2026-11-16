@@ -646,7 +646,7 @@
     "type": "object",
     "description": "Result of evaluating health.",
     "properties": {
-      "nodes": {
+      "results": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/system_runtime.health.HealthNodeResult"
@@ -660,7 +660,7 @@
       }
     },
     "required": [
-      "nodes",
+      "results",
       "diagnostics"
     ],
     "unevaluatedProperties": false
