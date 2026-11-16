@@ -62,7 +62,8 @@ cargo cyclonedx --manifest-path crates/apps/system-runtime/Cargo.toml --format j
 rm crates/libs/system-runtime/system-runtime-spec.cdx.json
 sbom=crates/apps/system-runtime/system-runtime.cdx.json
 python3 scripts/sbom.py "$sbom" "$version"
-name="system-runtime-$version-$usage_target"
+# Asset names omit the version, so that `releases/latest/download/<name>` URLs stay stable.
+name="system-runtime-$usage_target"
 rm -rf "dist/$name" "dist/$name.tar.gz"
 mkdir -p "dist/$name"
 cp "target/$usage_target/release/system-runtime" LICENSE-APACHE LICENSE-MIT "dist/$name/"

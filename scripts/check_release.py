@@ -117,8 +117,9 @@ def release_notes(release: Release, spec_version: str) -> str:
     lines += [
         "",
         f"The assets contain the `system-runtime` command-line tool {release.tag}"
-        " as static Linux binaries. Each archive also contains a CycloneDX SBOM of the tool,"
-        " and `SHA256SUMS` contains the checksums of the archives.",
+        " as static Linux binaries. Each archive contains a CycloneDX SBOM of the tool and has"
+        " a GitHub build provenance attestation. `SHA256SUMS` contains the checksums of the"
+        " archives.",
     ]
     return "\n".join(lines) + "\n"
 
