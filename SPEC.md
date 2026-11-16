@@ -51,7 +51,7 @@ The [JSON Schemas](json-schema/) generated from the schemas are informative.
 ## 2. Concepts
 
 The parts of a system, such as its system image and its apps, are _contributors_ that publish
-_records_ about themselves. There are six kinds of records, each with a record type in the
+_records_ about themselves. There are five kinds of records, each with a record type in the
 schemas:
 
 - A **component declaration** (`ComponentDeclaration`) describes a component of the system, such as
@@ -61,7 +61,6 @@ schemas:
 - A **status record** (`HealthStatus`) holds the result of a check.
 - A **metric definition** (`MetricDefinition`) declares a measurement, such as a CPU temperature.
 - A **metric sample** (`MetricSample`) holds the current value of a metric.
-- A **directory configuration** (`DirectoryConfig`) adds directories in which records are found.
 
 Status records and metric samples are _evidence_: results of checks and measurements on the running
 system, which are valid for a limited time.
@@ -78,7 +77,8 @@ accompany the records that tools read and are part of every output.
 
 The specification distinguishes five roles:
 
-- A **writer** publishes records or snapshots.
+- A **writer** publishes records, snapshots, or directory configurations
+  ([Section 10.4](#104-directory-configurations)).
 - A **reader** discovers and parses records, or receives snapshots, and provides the records with
   their diagnostics.
 - A **compatibility checker** checks component declarations and produces compatibility reports.
@@ -108,7 +108,7 @@ the two parts refer to each other.
 The sections that matter most for each role are:
 
 - **Writers:** [Sections 4](#4-records), [7.1–7.3](#71-component-declarations) for component
-  declarations, [8.1–8.7](#81-health-answers) for health records, and [10.1–10.2](#101-directories).
+  declarations, [8.1–8.7](#81-health-answers) for health records, and [10](#10-discovery).
 - **Readers:** [Sections 4](#4-records), [5](#5-diagnostics), [10](#10-discovery),
   [11](#11-transport), and [12](#12-evolution).
 - **Compatibility checkers:** [Sections 4](#4-records), [5](#5-diagnostics),
@@ -145,11 +145,11 @@ publish invalid records.
 ### 4.2 Identifiers
 
 Component declarations, health nodes, and metric definitions are identified by IDs; status records
-refer to health nodes by their IDs, metric samples refer to metrics, and directory configurations
-have no IDs. IDs, owners ([Section 4.3](#43-owners)), and the IDs of
-capabilities and claims ([Section 7](#7-components)) are non-empty strings of ASCII letters, digits,
-and ASCII punctuation characters, such as `.`, `-`, and `_`. They contain no spaces and no other
-characters. They are case-sensitive, compared by exact equality, and sorted by their bytes.
+refer to health nodes by their IDs, and metric samples refer to metrics. IDs, owners
+([Section 4.3](#43-owners)), and the IDs of capabilities and claims ([Section 7](#7-components)) are
+non-empty strings of ASCII letters, digits, and ASCII punctuation characters, such as `.`, `-`, and
+`_`. They contain no spaces and no other characters. They are case-sensitive, compared by exact
+equality, and sorted by their bytes.
 
 Components, health nodes, and metrics each have their own namespace: a component, a health node, and
 a metric MAY share an ID without referring to each other. Within a namespace, the records of all
@@ -205,8 +205,8 @@ diagnostic has the following structure:
 record Diagnostic {
     /// Whether the results may not reflect the records concerned.
     severity: Severity,
-    /// Kind of records concerned.
-    kind: RecordKind,
+    /// Kind of the records or directory configurations concerned.
+    kind: DiagnosticKind,
     /// Description of the problem; not specified and differs between implementations.
     message: string,
     /// Path of the file or directory concerned.
@@ -222,9 +222,9 @@ variant Severity {
     Warning,
 }
 
-/// Kind of records, named after the record types.
+/// Kind of the files that a diagnostic concerns, named after their types.
 #[json(tagged = externally)]
-variant RecordKind {
+variant DiagnosticKind {
     /// Component declarations.
     ComponentDeclaration,
     /// Health nodes.
@@ -242,9 +242,9 @@ variant RecordKind {
 
 A diagnostic has the kind of the records it concerns. A diagnostic about a directory has the kind of
 the records in that directory, and the kind `DirectoryConfig` is only for problems with directory
-configurations themselves. Compatibility checking and health evaluation define how diagnostics
-affect their results ([Sections 7.4](#74-consistency) and
-[8.8](#88-evaluation-and-reports)). The order of diagnostics is not specified.
+configurations ([Section 10.4](#104-directory-configurations)) themselves. Compatibility checking
+and health evaluation define how diagnostics affect their results ([Sections 7.4](#74-consistency)
+and [8.8](#88-evaluation-and-reports)). The order of diagnostics is not specified.
 
 ## 6. Versions and Version Requirements
 
@@ -1222,11 +1222,13 @@ concern an app.
 ## 10. Discovery
 
 This section defines how writers publish records as files on Linux and how readers discover them.
+Directory configurations ([Section 10.4](#104-directory-configurations)), which add directories, are
+published and read like records.
 
 ### 10.1 Directories
 
-Each kind of record has standard directories below `/usr/lib/system-runtime`, `/etc/system-runtime`,
-and `/run/system-runtime`:
+Records and directory configurations have standard directories below `/usr/lib/system-runtime`,
+`/etc/system-runtime`, and `/run/system-runtime`:
 
 - component declarations in `components`,
 - health nodes in `health/nodes`,
@@ -1262,10 +1264,9 @@ files.
 
 ### 10.3 Reading
 
-To read the records of one kind, a reader first reads the directory configurations
-([Section 10.4](#104-directory-configurations)) like any other records. It then visits the standard
-directories in the order `/usr/lib`, `/etc`, `/run`, followed by the directories that the
-configurations add for that kind, in the order in which it read the configurations. It traverses
+To read the records of one kind, a reader first reads the directory configurations. It then visits
+the standard directories in the order `/usr/lib`, `/etc`, `/run`, followed by the directories that
+the configurations add for that kind, in the order in which it read the configurations. It traverses
 each directory depth-first, visiting the entries of a directory in the order of the bytes of their
 names and descending into a subdirectory when it visits it. While doing so, the reader:
 
@@ -1290,8 +1291,7 @@ records of the same kind with the same ID and the same owner from lower levels: 
 reader keeps only those from the highest level, at their own positions. Two records have the same
 owner if both have none or both have equal owners. Records with the same ID and different owners do
 not override each other; like evidence with the same ID, they are subject to the rules of their
-part. Invalid records do not override other records. Directory configurations have no IDs and cannot
-be overridden.
+part. Invalid records do not override other records.
 
 > **Note:** An override carries the owner of the record it overrides, so the next update of that
 > owner removes it ([Section 4.3](#43-owners)) and it cannot outlive the record it changes. Whoever
@@ -1308,7 +1308,8 @@ directories.
 ### 10.4 Directory Configurations
 
 A directory configuration adds directories for other contributors, such as apps that ship records
-in their installation directories:
+in their installation directories. It is encoded, validated, and versioned like a record
+([Sections 4.1](#41-encoding) and [4.5](#45-specification-versions)):
 
 ```sidex
 /// Directories that a contributor adds, as absolute paths without `..` segments.

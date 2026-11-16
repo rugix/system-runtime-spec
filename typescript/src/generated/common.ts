@@ -14,9 +14,9 @@ import * as __schema_metric from "./metric.js";
                                             * Whether the results may not reflect the records concerned.
                                             */
                                                         "severity": Severity, /**
-                                            * Kind of records concerned.
+                                            * Kind of the records or directory configurations concerned.
                                             */
-                                                        "kind": RecordKind, /**
+                                                        "kind": DiagnosticKind, /**
                                             * Description of the problem; not specified and differs between implementations.
                                             */
                                                         "message": __sidex_types.builtins.String, /**
@@ -25,7 +25,7 @@ import * as __schema_metric from "./metric.js";
                                                         "path"?: __sidex_types.builtins.String };
 
 export const Diagnostic = {
-    ...__sidex_types.checker<Diagnostic>((): __sidex_types.Check => __sidex_types.record([["severity", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Severity), false], ["kind", __sidex_types.lazy((): __sidex_types.Checker<unknown> => RecordKind), false], ["message", __sidex_types.builtin("string"), false], ["path", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<Diagnostic>((): __sidex_types.Check => __sidex_types.record([["severity", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Severity), false], ["kind", __sidex_types.lazy((): __sidex_types.Checker<unknown> => DiagnosticKind), false], ["message", __sidex_types.builtin("string"), false], ["path", __sidex_types.builtin("string"), true]], [])),
 };
 /**
  * Effect of a diagnostic on the results.
@@ -36,10 +36,10 @@ export const Severity = {
     ...__sidex_types.checker<Severity>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Error", null, null], ["Warning", null, null]])),
 };
 /**
- * Kind of records, named after the record types.
+ * Kind of the files that a diagnostic concerns, named after their types.
  */
- export type RecordKind = ("ComponentDeclaration" | "HealthNode" | "HealthStatus" | "MetricDefinition" | "MetricSample" | "DirectoryConfig");
+ export type DiagnosticKind = ("ComponentDeclaration" | "HealthNode" | "HealthStatus" | "MetricDefinition" | "MetricSample" | "DirectoryConfig");
 
-export const RecordKind = {
-    ...__sidex_types.checker<RecordKind>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["ComponentDeclaration", null, null], ["HealthNode", null, null], ["HealthStatus", null, null], ["MetricDefinition", null, null], ["MetricSample", null, null], ["DirectoryConfig", null, null]])),
+export const DiagnosticKind = {
+    ...__sidex_types.checker<DiagnosticKind>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["ComponentDeclaration", null, null], ["HealthNode", null, null], ["HealthStatus", null, null], ["MetricDefinition", null, null], ["MetricSample", null, null], ["DirectoryConfig", null, null]])),
 };

@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::Records;
 use crate::records::Record;
-use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::common::{Diagnostic, DiagnosticKind, Severity};
 use crate::types::health::*;
 use crate::types::metric::{MetricDefinition, MetricRange, MetricSample};
 
@@ -123,11 +123,11 @@ struct Evaluation<'a> {
 impl<'a> Evaluation<'a> {
     fn new(records: &Records, context: &'a HealthContext) -> Self {
         let diagnostics = records.diagnostics_about(&[
-            RecordKind::HealthNode,
-            RecordKind::HealthStatus,
-            RecordKind::MetricDefinition,
-            RecordKind::MetricSample,
-            RecordKind::DirectoryConfig,
+            DiagnosticKind::HealthNode,
+            DiagnosticKind::HealthStatus,
+            DiagnosticKind::MetricDefinition,
+            DiagnosticKind::MetricSample,
+            DiagnosticKind::DirectoryConfig,
         ]);
         let nodes = &records.health_nodes;
         let mut order = Vec::new();
@@ -156,7 +156,7 @@ impl<'a> Evaluation<'a> {
             if group.len() > 1 {
                 evaluation.diagnose(
                     Severity::Error,
-                    RecordKind::HealthNode,
+                    DiagnosticKind::HealthNode,
                     format!("several nodes have the ID {id:?}"),
                 );
                 evaluation.conflicts.insert(id);
@@ -173,7 +173,7 @@ impl<'a> Evaluation<'a> {
         evaluation
     }
 
-    fn diagnose(&mut self, severity: Severity, kind: RecordKind, message: String) {
+    fn diagnose(&mut self, severity: Severity, kind: DiagnosticKind, message: String) {
         if self.reported.insert(message.clone()) {
             self.diagnostics
                 .push(Diagnostic::new(severity, kind, message));
@@ -232,7 +232,7 @@ impl<'a> Evaluation<'a> {
             self.inputs.insert(id.clone(), inputs);
         }
         for message in missing {
-            self.diagnose(Severity::Warning, RecordKind::HealthNode, message);
+            self.diagnose(Severity::Warning, DiagnosticKind::HealthNode, message);
         }
     }
 
@@ -417,7 +417,7 @@ impl<'a> Evaluation<'a> {
         if count > 1 {
             self.diagnose(
                 Severity::Warning,
-                RecordKind::HealthStatus,
+                DiagnosticKind::HealthStatus,
                 format!("several status records for {id:?}"),
             );
             result.reason = Some(Reason::Conflict);
@@ -466,13 +466,13 @@ impl<'a> Evaluation<'a> {
         let mut conflicts = Vec::new();
         if definitions > 1 {
             conflicts.push((
-                RecordKind::MetricDefinition,
+                DiagnosticKind::MetricDefinition,
                 format!("several definitions of {metric:?}"),
             ));
         }
         if samples > 1 {
             conflicts.push((
-                RecordKind::MetricSample,
+                DiagnosticKind::MetricSample,
                 format!("several samples of {metric:?}"),
             ));
         }
@@ -482,7 +482,7 @@ impl<'a> Evaluation<'a> {
             .is_some_and(|unit| *unit != definition.unit)
         {
             conflicts.push((
-                RecordKind::HealthNode,
+                DiagnosticKind::HealthNode,
                 format!("unit of {id:?} differs from {metric:?}"),
             ));
         }

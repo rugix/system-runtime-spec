@@ -8,7 +8,7 @@ from typing import Any, cast
 import pydantic
 
 from ._version import Version, parse_requirement
-from .models.common import Diagnostic, RecordKind, Severity
+from .models.common import Diagnostic, DiagnosticKind, Severity
 from .models.component import ComponentDeclaration
 from .models.filesystem import DirectoryConfig
 from .models.health import (
@@ -31,7 +31,7 @@ type RecordModel = (
 
 type Json = Any
 
-KINDS: dict[type[pydantic.BaseModel], RecordKind] = {
+KINDS: dict[type[pydantic.BaseModel], DiagnosticKind] = {
     ComponentDeclaration: "ComponentDeclaration",
     HealthNode: "HealthNode",
     HealthStatus: "HealthStatus",
@@ -73,7 +73,7 @@ def to_json(model: pydantic.BaseModel) -> Json:
 
 
 def diagnostic(
-    severity: Severity, kind: RecordKind, message: str, path: str | None = None
+    severity: Severity, kind: DiagnosticKind, message: str, path: str | None = None
 ) -> Diagnostic:
     return Diagnostic(severity=severity, kind=kind, message=message, path=path)
 
@@ -125,7 +125,7 @@ def parse_spec_version(text: object) -> tuple[int, int] | None:
     return major, minor
 
 
-def _check_version(kind: RecordKind, record: dict[str, Json]) -> bool:
+def _check_version(kind: DiagnosticKind, record: dict[str, Json]) -> bool:
     """Check a record's version; return whether it is a newer minor version."""
     if "specVersion" not in record:
         return False
@@ -305,7 +305,7 @@ def check_directory_path(path: str) -> None:
             raise InvalidRecord(f"path contains a partial wildcard: {path!r}")
 
 
-_VALIDATORS: dict[RecordKind, Callable[[Any], None]] = {
+_VALIDATORS: dict[DiagnosticKind, Callable[[Any], None]] = {
     "ComponentDeclaration": _validate_component,
     "HealthNode": _validate_node,
     "HealthStatus": _validate_status,

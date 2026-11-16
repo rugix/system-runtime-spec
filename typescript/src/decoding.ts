@@ -1,5 +1,5 @@
 import { type Checker, builtins } from "@sidex/types";
-import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
+import type { Diagnostic, DiagnosticKind, Severity } from "./generated/common.js";
 import { ComponentDeclaration } from "./generated/component.js";
 import { HealthNode, HealthStatus } from "./generated/health.js";
 import { MetricDefinition, type MetricRange, MetricSample } from "./generated/metric.js";
@@ -35,7 +35,7 @@ const CHECKERS: { [K in RecordModelKind]: Checker<unknown> } = {
   MetricSample,
 };
 
-export const KINDS: readonly RecordKind[] = [...Object.keys(CHECKERS) as RecordModelKind[], "DirectoryConfig"];
+export const KINDS: readonly DiagnosticKind[] = [...Object.keys(CHECKERS) as RecordModelKind[], "DirectoryConfig"];
 
 /**
  * A valid record with its original JSON and its model, normalized for evaluation.
@@ -60,7 +60,7 @@ export function isObject(value: unknown): value is JsonObject {
 }
 
 export function diagnostic(
-  severity: Severity, kind: RecordKind, message: string, path?: string,
+  severity: Severity, kind: DiagnosticKind, message: string, path?: string,
 ): Diagnostic {
   return path === undefined ? { severity, kind, message } : { severity, kind, message, path };
 }

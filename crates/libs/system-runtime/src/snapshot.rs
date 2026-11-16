@@ -2,7 +2,7 @@ use sidex::types::{JsonValue, Map, Str};
 
 use crate::Records;
 use crate::records::{RecordModel, SPEC_VERSION, SUPPORTED_MAJOR, parse_spec_version, to_json};
-use crate::types::common::{Diagnostic, RecordKind};
+use crate::types::common::{Diagnostic, DiagnosticKind};
 use crate::types::component::ComponentDeclaration;
 use crate::types::health::{HealthClockSample, HealthNode, HealthStatus};
 use crate::types::metric::{MetricDefinition, MetricSample};
@@ -33,10 +33,10 @@ impl Parts {
         health: true,
     };
 
-    fn includes(self, kind: RecordKind) -> bool {
+    fn includes(self, kind: DiagnosticKind) -> bool {
         match kind {
-            RecordKind::DirectoryConfig => true,
-            RecordKind::ComponentDeclaration => self.components,
+            DiagnosticKind::DirectoryConfig => true,
+            DiagnosticKind::ComponentDeclaration => self.components,
             _ => self.health,
         }
     }

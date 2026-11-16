@@ -8,7 +8,7 @@
       "$ref": "#/$defs/system_runtime.common.Severity"
     },
     "kind": {
-      "$ref": "#/$defs/system_runtime.common.RecordKind"
+      "$ref": "#/$defs/system_runtime.common.DiagnosticKind"
     },
     "message": {
       "type": "string"
@@ -24,7 +24,7 @@
   ],
   "unevaluatedProperties": false,
   "$defs": {
-    "system_runtime.common.RecordKind": {
+    "system_runtime.common.DiagnosticKind": {
       "enum": [
         "ComponentDeclaration",
         "HealthNode",
@@ -33,7 +33,7 @@
         "MetricSample",
         "DirectoryConfig"
       ],
-      "description": "Kind of records, named after the record types."
+      "description": "Kind of the files that a diagnostic concerns, named after their types."
     },
     "system_runtime.common.Severity": {
       "enum": [

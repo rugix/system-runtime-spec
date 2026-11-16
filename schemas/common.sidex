@@ -4,8 +4,8 @@
 record Diagnostic {
     /// Whether the results may not reflect the records concerned.
     severity: Severity,
-    /// Kind of records concerned.
-    kind: RecordKind,
+    /// Kind of the records or directory configurations concerned.
+    kind: DiagnosticKind,
     /// Description of the problem; not specified and differs between implementations.
     message: string,
     /// Path of the file or directory concerned.
@@ -22,10 +22,10 @@ variant Severity {
     Warning,
 }
 
-/// Kind of records, named after the record types.
+/// Kind of the files that a diagnostic concerns, named after their types.
 #[json(tagged = externally)]
 #[rust(derive(Copy, Eq))]
-variant RecordKind {
+variant DiagnosticKind {
     /// Component declarations.
     ComponentDeclaration,
     /// Health nodes.

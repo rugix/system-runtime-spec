@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use anyver::{Version, VersionReq};
 use sidex::types::{JsonValue, Map, Str};
 
-use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::common::{Diagnostic, DiagnosticKind, Severity};
 use crate::types::component::ComponentDeclaration;
 use crate::types::health::{HealthNode, HealthStatus};
 use crate::types::metric::{MetricDefinition, MetricSample};
@@ -50,7 +50,7 @@ pub struct Records {
 /// [`MetricDefinition`], and [`MetricSample`].
 pub trait RecordModel: sealed::Storage {
     /// Kind of the record, which diagnostics about it carry.
-    const KIND: RecordKind;
+    const KIND: DiagnosticKind;
 }
 
 pub(crate) mod sealed {
@@ -68,7 +68,7 @@ pub(crate) mod sealed {
 macro_rules! record_models {
     ($($model:ident => $field:ident, $key:expr;)*) => {$(
         impl RecordModel for $model {
-            const KIND: RecordKind = RecordKind::$model;
+            const KIND: DiagnosticKind = DiagnosticKind::$model;
         }
 
         impl sealed::Storage for $model {
@@ -160,7 +160,7 @@ impl Records {
         &self.diagnostics
     }
 
-    pub(crate) fn diagnostics_about(&self, kinds: &[RecordKind]) -> Vec<Diagnostic> {
+    pub(crate) fn diagnostics_about(&self, kinds: &[DiagnosticKind]) -> Vec<Diagnostic> {
         self.diagnostics
             .iter()
             .filter(|diagnostic| kinds.contains(&diagnostic.kind))
@@ -261,7 +261,7 @@ fn object(value: &JsonValue) -> Result<Map<Str, JsonValue>, String> {
 }
 
 /// Check a record's version; return whether it is a newer minor version.
-fn check_version(kind: RecordKind, record: &Map<Str, JsonValue>) -> Result<bool, String> {
+fn check_version(kind: DiagnosticKind, record: &Map<Str, JsonValue>) -> Result<bool, String> {
     let Some(version) = record.get("specVersion") else {
         return Ok(false);
     };
@@ -272,7 +272,7 @@ fn check_version(kind: RecordKind, record: &Map<Str, JsonValue>) -> Result<bool,
         return Err(format!("unsupported specVersion {version}"));
     }
     let newer = minor > SUPPORTED_MINOR;
-    if newer && kind == RecordKind::ComponentDeclaration {
+    if newer && kind == DiagnosticKind::ComponentDeclaration {
         return Err(format!(
             "component declaration of newer specVersion {version}"
         ));
@@ -300,7 +300,7 @@ fn apply_mode_fallback(entry: &mut Map<Str, JsonValue>) -> Result<bool, String> 
 
 /// Decode a record with fallbacks and validate it.
 pub(crate) fn decode<T: sidex::Decode>(
-    kind: RecordKind,
+    kind: DiagnosticKind,
     json: JsonValue,
 ) -> Result<Record<T>, String> {
     let mut record = object(&json)?;
@@ -308,7 +308,7 @@ pub(crate) fn decode<T: sidex::Decode>(
     let mut unsupported = false;
     let mut unsupported_parents = BTreeSet::new();
     match kind {
-        RecordKind::HealthNode => {
+        DiagnosticKind::HealthNode => {
             if let Some(JsonValue::Map(rule)) = record.get("rule").cloned() {
                 let mut rule = rule;
                 let rule_type = string(rule.get("type").unwrap_or(&JsonValue::Null), "rule.type")?;
@@ -350,7 +350,7 @@ pub(crate) fn decode<T: sidex::Decode>(
                 record.insert("partOf".into(), JsonValue::from(entries));
             }
         }
-        RecordKind::HealthStatus => {
+        DiagnosticKind::HealthStatus => {
             let state = string(record.get("state").unwrap_or(&JsonValue::Null), "state")?;
             if !STATES.contains(&state) {
                 unsupported = true;
@@ -406,16 +406,16 @@ fn finite(value: Option<&JsonValue>, what: &str) -> Result<f64, String> {
         .ok_or_else(|| format!("{what} is not finite"))
 }
 
-fn validate(kind: RecordKind, record: &JsonValue) -> Result<(), String> {
+fn validate(kind: DiagnosticKind, record: &JsonValue) -> Result<(), String> {
     check_id(get(record, "id"), "id")?;
     check_id(get(record, "owner"), "owner")?;
     for component in items(record, "components") {
-        if kind != RecordKind::DirectoryConfig {
+        if kind != DiagnosticKind::DirectoryConfig {
             check_id(Some(component), "component ID")?;
         }
     }
     match kind {
-        RecordKind::ComponentDeclaration => {
+        DiagnosticKind::ComponentDeclaration => {
             for capability in items(record, "provides") {
                 check_capability(capability, true)?;
             }
@@ -432,7 +432,7 @@ fn validate(kind: RecordKind, record: &JsonValue) -> Result<(), String> {
                 Version::parse(version).map_err(|error| error.to_string())?;
             }
         }
-        RecordKind::HealthNode => {
+        DiagnosticKind::HealthNode => {
             for attachment in items(record, "partOf") {
                 check_id(get(attachment, "node"), "attachment node")?;
             }
@@ -455,14 +455,14 @@ fn validate(kind: RecordKind, record: &JsonValue) -> Result<(), String> {
                 }
             }
         }
-        RecordKind::HealthStatus | RecordKind::MetricDefinition => {
+        DiagnosticKind::HealthStatus | DiagnosticKind::MetricDefinition => {
             check_positive(record, "maxAgeMs")?;
         }
-        RecordKind::MetricSample => {
+        DiagnosticKind::MetricSample => {
             finite(get(record, "value"), "value")?;
             check_positive(record, "maxAgeMs")?;
         }
-        RecordKind::DirectoryConfig => {
+        DiagnosticKind::DirectoryConfig => {
             for key in [
                 "components",
                 "healthNodes",

@@ -7,7 +7,7 @@ use sidex::types::JsonValue;
 
 use crate::Records;
 use crate::records::{Record, RecordModel, decode};
-use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::common::{Diagnostic, DiagnosticKind, Severity};
 use crate::types::component::ComponentDeclaration;
 use crate::types::filesystem::DirectoryConfig;
 use crate::types::health::{HealthNode, HealthStatus};
@@ -24,7 +24,7 @@ const PREFIXES: [(&str, u8); 3] = [
     ("/run/system-runtime", RUN),
 ];
 
-fn standard(kind: RecordKind) -> Vec<(String, u8)> {
+fn standard(kind: DiagnosticKind) -> Vec<(String, u8)> {
     let below = |suffix: &str| {
         PREFIXES
             .iter()
@@ -32,12 +32,12 @@ fn standard(kind: RecordKind) -> Vec<(String, u8)> {
             .collect()
     };
     match kind {
-        RecordKind::ComponentDeclaration => below("components"),
-        RecordKind::HealthNode => below("health/nodes"),
-        RecordKind::HealthStatus => vec![("/run/system-runtime/health/status".into(), RUN)],
-        RecordKind::MetricDefinition => below("metrics/definitions"),
-        RecordKind::MetricSample => vec![("/run/system-runtime/metrics/samples".into(), RUN)],
-        RecordKind::DirectoryConfig => below("directories"),
+        DiagnosticKind::ComponentDeclaration => below("components"),
+        DiagnosticKind::HealthNode => below("health/nodes"),
+        DiagnosticKind::HealthStatus => vec![("/run/system-runtime/health/status".into(), RUN)],
+        DiagnosticKind::MetricDefinition => below("metrics/definitions"),
+        DiagnosticKind::MetricSample => vec![("/run/system-runtime/metrics/samples".into(), RUN)],
+        DiagnosticKind::DirectoryConfig => below("directories"),
     }
 }
 
@@ -55,11 +55,11 @@ impl Records {
         };
         let mut configs = Vec::new();
         for file in reader.read(
-            RecordKind::DirectoryConfig,
-            &standard(RecordKind::DirectoryConfig),
+            DiagnosticKind::DirectoryConfig,
+            &standard(DiagnosticKind::DirectoryConfig),
         ) {
             if let Some(config) =
-                reader.decode::<DirectoryConfig>(RecordKind::DirectoryConfig, &file)
+                reader.decode::<DirectoryConfig>(DiagnosticKind::DirectoryConfig, &file)
             {
                 configs.push(config.value);
             }
@@ -101,7 +101,7 @@ struct Reader {
 }
 
 impl Reader {
-    fn report(&mut self, severity: Severity, kind: RecordKind, message: String, path: &Path) {
+    fn report(&mut self, severity: Severity, kind: DiagnosticKind, message: String, path: &Path) {
         self.records.push_diagnostic(
             Diagnostic::new(severity, kind, message).with_path(Some(path.display().to_string())),
         );
@@ -109,7 +109,7 @@ impl Reader {
 
     /// Decode the record of a file, reporting an error if it is invalid and a warning if it
     /// is of a newer minor version.
-    fn decode<T: sidex::Decode>(&mut self, kind: RecordKind, file: &File) -> Option<Record<T>> {
+    fn decode<T: sidex::Decode>(&mut self, kind: DiagnosticKind, file: &File) -> Option<Record<T>> {
         match decode::<T>(kind, file.json.clone()) {
             Ok(record) => {
                 if record.newer {
@@ -158,7 +158,7 @@ impl Reader {
         }
     }
 
-    fn read(&mut self, kind: RecordKind, directories: &[(String, u8)]) -> Vec<File> {
+    fn read(&mut self, kind: DiagnosticKind, directories: &[(String, u8)]) -> Vec<File> {
         let mut files: Vec<(PathBuf, PathBuf, u8)> = Vec::new();
         for (directory, level) in directories {
             for source in self.expand(kind, directory) {
@@ -186,7 +186,7 @@ impl Reader {
     }
 
     /// Resolve a path; paths that disappeared resolve to None.
-    fn resolve(&mut self, kind: RecordKind, path: &Path) -> Option<PathBuf> {
+    fn resolve(&mut self, kind: DiagnosticKind, path: &Path) -> Option<PathBuf> {
         match std::fs::canonicalize(path) {
             Ok(resolved) => Some(resolved),
             Err(error) if not_found(&error) => None,
@@ -203,7 +203,7 @@ impl Reader {
     }
 
     /// Check that a path is a directory; diagnose everything but its absence.
-    fn check_directory(&mut self, kind: RecordKind, path: &Path) -> bool {
+    fn check_directory(&mut self, kind: DiagnosticKind, path: &Path) -> bool {
         let message = match std::fs::metadata(path) {
             Ok(metadata) if metadata.is_dir() => return true,
             Ok(_) => "path is not a directory".to_owned(),
@@ -221,7 +221,7 @@ impl Reader {
     }
 
     /// List a directory in byte order, skipping hidden entries and symlinks.
-    fn list(&mut self, kind: RecordKind, directory: &Path) -> Vec<Entry> {
+    fn list(&mut self, kind: DiagnosticKind, directory: &Path) -> Vec<Entry> {
         let entries = match std::fs::read_dir(directory) {
             Ok(entries) => entries,
             Err(error) if not_found(&error) => return Vec::new(),
@@ -278,7 +278,7 @@ impl Reader {
     }
 
     /// Expand whole `*` segments over directories that are no symlinks.
-    fn expand(&mut self, kind: RecordKind, directory: &str) -> Vec<PathBuf> {
+    fn expand(&mut self, kind: DiagnosticKind, directory: &str) -> Vec<PathBuf> {
         let mut matches = vec![self.root.clone()];
         for segment in directory.split('/').filter(|segment| !segment.is_empty()) {
             if segment != "*" {
@@ -303,7 +303,7 @@ impl Reader {
         matches
     }
 
-    fn walk(&mut self, kind: RecordKind, source: &Path) -> Vec<PathBuf> {
+    fn walk(&mut self, kind: DiagnosticKind, source: &Path) -> Vec<PathBuf> {
         if !self.check_directory(kind, source) {
             return Vec::new();
         }
@@ -315,7 +315,7 @@ impl Reader {
         files
     }
 
-    fn traverse(&mut self, kind: RecordKind, directory: &Path, files: &mut Vec<PathBuf>) {
+    fn traverse(&mut self, kind: DiagnosticKind, directory: &Path, files: &mut Vec<PathBuf>) {
         for entry in self.list(kind, directory) {
             if entry.directory {
                 self.traverse(kind, &entry.path, files);
@@ -329,7 +329,7 @@ impl Reader {
         }
     }
 
-    fn load(&mut self, kind: RecordKind, path: &Path) -> Option<JsonValue> {
+    fn load(&mut self, kind: DiagnosticKind, path: &Path) -> Option<JsonValue> {
         let mut text = Vec::new();
         let result = std::fs::OpenOptions::new()
             .read(true)

@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use anyver::{Version, VersionReq};
 
 use crate::Records;
-use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::common::{Diagnostic, DiagnosticKind, Severity};
 use crate::types::component::*;
 
 impl Records {
@@ -15,8 +15,8 @@ impl Records {
     #[tracing::instrument(level = "debug", skip_all, fields(components = self.components.len()))]
     pub fn check_compatibility(&self) -> CompatibilityReport {
         let diagnostics = self.diagnostics_about(&[
-            RecordKind::ComponentDeclaration,
-            RecordKind::DirectoryConfig,
+            DiagnosticKind::ComponentDeclaration,
+            DiagnosticKind::DirectoryConfig,
         ]);
         let declarations: Vec<&ComponentDeclaration> = self.components().collect();
         check(&declarations, diagnostics)
@@ -58,14 +58,14 @@ impl Records {
             .retain(|record| !replaced(&record.value));
         candidate
             .diagnostics
-            .extend(update.diagnostics_about(&[RecordKind::ComponentDeclaration]));
+            .extend(update.diagnostics_about(&[DiagnosticKind::ComponentDeclaration]));
         for record in &update.components {
             if replaced(&record.value) {
                 candidate.components.push(record.clone());
             } else {
                 candidate.diagnostics.push(Diagnostic::new(
                     Severity::Error,
-                    RecordKind::ComponentDeclaration,
+                    DiagnosticKind::ComponentDeclaration,
                     format!(
                         "new declaration {:?} does not have a replaced owner",
                         record.value.id

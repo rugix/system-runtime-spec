@@ -1,5 +1,5 @@
 import { builtins } from "@sidex/types";
-import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
+import type { Diagnostic, DiagnosticKind, Severity } from "./generated/common.js";
 import type {
   AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthReport, HealthState,
   HealthStatus, InputMode, ObservationRule, Reason, ThresholdRule,
@@ -98,7 +98,7 @@ class Evaluation {
     this.onCycle = this.findCycles();
   }
 
-  private diagnose(severity: Severity, kind: RecordKind, message: string): void {
+  private diagnose(severity: Severity, kind: DiagnosticKind, message: string): void {
     if (this.reported.has(message)) return;
     this.reported.add(message);
     this.diagnostics.push(diagnostic(severity, kind, message));
@@ -282,7 +282,7 @@ class Evaluation {
       return;
     }
     const definition = definitions[0].value;
-    const conflicts: [RecordKind, string][] = [];
+    const conflicts: [DiagnosticKind, string][] = [];
     if (definitions.length > 1) conflicts.push(["MetricDefinition", `several definitions of ${JSON.stringify(metric)}`]);
     if (samples.length > 1) conflicts.push(["MetricSample", `several samples of ${JSON.stringify(metric)}`]);
     if (rule.unit !== undefined && rule.unit !== definition.unit) {

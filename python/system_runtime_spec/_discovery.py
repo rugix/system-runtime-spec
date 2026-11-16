@@ -18,7 +18,7 @@ from ._decoding import (
     decode,
     diagnostic,
 )
-from .models.common import RecordKind, Severity
+from .models.common import DiagnosticKind, Severity
 from .models.component import ComponentDeclaration
 from .models.filesystem import DirectoryConfig
 from .models.health import HealthNode, HealthStatus
@@ -34,7 +34,7 @@ _PREFIXES = (
     ("/etc/system-runtime", _ETC),
     ("/run/system-runtime", _RUN),
 )
-_STANDARD: dict[RecordKind, list[tuple[str, int]]] = {
+_STANDARD: dict[DiagnosticKind, list[tuple[str, int]]] = {
     "ComponentDeclaration": [(f"{p}/components", level) for p, level in _PREFIXES],
     "HealthNode": [(f"{p}/health/nodes", level) for p, level in _PREFIXES],
     "HealthStatus": [("/run/system-runtime/health/status", _RUN)],
@@ -82,7 +82,7 @@ class _Reader:
         self.records = records
 
     def report(
-        self, severity: Severity, kind: RecordKind, message: str, path: Path | str
+        self, severity: Severity, kind: DiagnosticKind, message: str, path: Path | str
     ) -> None:
         self.records.push_diagnostic(diagnostic(severity, kind, message, str(path)))
 
@@ -121,7 +121,9 @@ class _Reader:
         for _, record in accepted:
             self.records._add(record)
 
-    def read(self, kind: RecordKind, directories: list[tuple[str, int]]) -> list[_File]:
+    def read(
+        self, kind: DiagnosticKind, directories: list[tuple[str, int]]
+    ) -> list[_File]:
         files: dict[str, tuple[Path, int]] = {}
         for directory, level in directories:
             for source in self._expand(kind, directory):
@@ -143,7 +145,7 @@ class _Reader:
                 result.append(_File(path, level, value))
         return result
 
-    def _resolve(self, kind: RecordKind, path: Path) -> str | None:
+    def _resolve(self, kind: DiagnosticKind, path: Path) -> str | None:
         """Resolve a path; paths that disappeared resolve to None."""
         try:
             return os.path.realpath(path, strict=True)
@@ -153,7 +155,7 @@ class _Reader:
             self.report("Error", kind, f"cannot resolve path: {error}", path)
             return None
 
-    def _check_directory(self, kind: RecordKind, path: Path) -> bool:
+    def _check_directory(self, kind: DiagnosticKind, path: Path) -> bool:
         """Check that a path is a directory; diagnose everything but its absence."""
         try:
             status = os.stat(path)
@@ -176,7 +178,7 @@ class _Reader:
             return False
         return True
 
-    def _list(self, kind: RecordKind, directory: Path) -> list[tuple[Path, bool]]:
+    def _list(self, kind: DiagnosticKind, directory: Path) -> list[tuple[Path, bool]]:
         """List a directory in byte order, skipping hidden entries and symlinks.
 
         Return the paths of the entries and whether they are directories; regular files
@@ -205,7 +207,7 @@ class _Reader:
                 self.report("Error", kind, f"cannot inspect entry: {error}", child.path)
         return result
 
-    def _expand(self, kind: RecordKind, directory: str) -> list[Path]:
+    def _expand(self, kind: DiagnosticKind, directory: str) -> list[Path]:
         """Expand whole `*` segments over directories that are no symlinks."""
         matches = [self.root]
         for segment in directory.strip("/").split("/"):
@@ -223,7 +225,7 @@ class _Reader:
             ]
         return matches
 
-    def _walk(self, kind: RecordKind, source: Path) -> list[Path]:
+    def _walk(self, kind: DiagnosticKind, source: Path) -> list[Path]:
         if not self._check_directory(kind, source):
             return []
         resolved = self._resolve(kind, source)
@@ -233,14 +235,16 @@ class _Reader:
         self._traverse(kind, Path(resolved), files)
         return files
 
-    def _traverse(self, kind: RecordKind, directory: Path, files: list[Path]) -> None:
+    def _traverse(
+        self, kind: DiagnosticKind, directory: Path, files: list[Path]
+    ) -> None:
         for path, is_directory in self._list(kind, directory):
             if is_directory:
                 self._traverse(kind, path, files)
             elif path.name.endswith(".json"):
                 files.append(path)
 
-    def _load(self, kind: RecordKind, path: Path) -> tuple[bool, Json]:
+    def _load(self, kind: DiagnosticKind, path: Path) -> tuple[bool, Json]:
         """Read a file that contains JSON; return whether it could be read."""
         try:
             descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)

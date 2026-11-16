@@ -14,8 +14,8 @@ pub mod common {
     pub struct Diagnostic {
         #[doc = "Whether the results may not reflect the records concerned.\n"]
         pub severity: Severity,
-        #[doc = "Kind of records concerned.\n"]
-        pub kind: RecordKind,
+        #[doc = "Kind of the records or directory configurations concerned.\n"]
+        pub kind: DiagnosticKind,
         #[doc = "Description of the problem; not specified and differs between implementations.\n"]
         pub message: ::std::string::String,
         #[doc = "Path of the file or directory concerned.\n"]
@@ -23,7 +23,7 @@ pub mod common {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for Diagnostic {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::common::Diagnostic" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("severity" , :: sidex :: shape :: shape_of :: < Severity > ,) . with_docs ("Whether the results may not reflect the records concerned.\n") , :: sidex :: shape :: FieldShape :: new ("kind" , :: sidex :: shape :: shape_of :: < RecordKind > ,) . with_docs ("Kind of records concerned.\n") , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Description of the problem; not specified and differs between implementations.\n") , :: sidex :: shape :: FieldShape :: new ("path" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Path of the file or directory concerned.\n") . optional ()]))) . with_docs ("A record that was skipped or used despite a problem.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::common::Diagnostic" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("severity" , :: sidex :: shape :: shape_of :: < Severity > ,) . with_docs ("Whether the results may not reflect the records concerned.\n") , :: sidex :: shape :: FieldShape :: new ("kind" , :: sidex :: shape :: shape_of :: < DiagnosticKind > ,) . with_docs ("Kind of the records or directory configurations concerned.\n") , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Description of the problem; not specified and differs between implementations.\n") , :: sidex :: shape :: FieldShape :: new ("path" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Path of the file or directory concerned.\n") . optional ()]))) . with_docs ("A record that was skipped or used despite a problem.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for Diagnostic {
@@ -57,7 +57,7 @@ pub mod common {
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
             let mut __field_0 = ::std::option::Option::<Severity>::None;
-            let mut __field_1 = ::std::option::Option::<RecordKind>::None;
+            let mut __field_1 = ::std::option::Option::<DiagnosticKind>::None;
             let mut __field_2 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -69,7 +69,7 @@ pub mod common {
                     }
                     1usize => {
                         __field_1 = ::std::option::Option::Some(
-                            <RecordKind as ::sidex::Decode>::decode(decoder)?,
+                            <DiagnosticKind as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     2usize => {
@@ -117,7 +117,7 @@ pub mod common {
         #[doc = "Creates a new [`Diagnostic`]."]
         pub fn new(
             severity: Severity,
-            kind: RecordKind,
+            kind: DiagnosticKind,
             message: impl ::std::convert::Into<::std::string::String>,
         ) -> Self {
             Self {
@@ -138,12 +138,12 @@ pub mod common {
             self
         }
         #[doc = "Sets the value of `kind`."]
-        pub fn set_kind(&mut self, kind: RecordKind) -> &mut Self {
+        pub fn set_kind(&mut self, kind: DiagnosticKind) -> &mut Self {
             self.kind = kind;
             self
         }
         #[doc = "Sets the value of `kind`."]
-        pub fn with_kind(mut self, kind: RecordKind) -> Self {
+        pub fn with_kind(mut self, kind: DiagnosticKind) -> Self {
             self.kind = kind;
             self
         }
@@ -253,9 +253,9 @@ pub mod common {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "Kind of records, named after the record types.\n"]
+    #[doc = "Kind of the files that a diagnostic concerns, named after their types.\n"]
     #[derive(Clone, Debug, PartialEq, Copy, Eq)]
-    pub enum RecordKind {
+    pub enum DiagnosticKind {
         #[doc = "Component declarations.\n"]
         ComponentDeclaration,
         #[doc = "Health nodes.\n"]
@@ -270,9 +270,9 @@ pub mod common {
         DirectoryConfig,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for RecordKind {
+    impl ::sidex::Shaped for DiagnosticKind {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::common::RecordKind",
+            "::system_runtime::common::DiagnosticKind",
             ::sidex::shape::ShapeKind::Variant(
                 ::sidex::shape::VariantShape::new(&[
                     ::sidex::shape::CaseShape::new(
@@ -294,7 +294,7 @@ pub mod common {
                 .json_tagging(::sidex::formats::json::Tagging::External),
             ),
         )
-        .with_docs("Kind of records, named after the record types.\n")
+        .with_docs("Kind of the files that a diagnostic concerns, named after their types.\n")
         .with_attrs(&[
             ::sidex::shape::Attr::List {
                 path: "json",
@@ -316,14 +316,14 @@ pub mod common {
         ]);
     }
     #[automatically_derived]
-    impl ::sidex::Encode for RecordKind {
+    impl ::sidex::Encode for DiagnosticKind {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Variant(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::VariantView for RecordKind {
+    impl ::sidex::encode::VariantView for DiagnosticKind {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -350,7 +350,7 @@ pub mod common {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for RecordKind {
+    impl ::sidex::Decode for DiagnosticKind {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -375,7 +375,7 @@ pub mod common {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for RecordKind {
+    impl ::serde::Serialize for DiagnosticKind {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -384,7 +384,7 @@ pub mod common {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for RecordKind {
+    impl<'de> ::serde::Deserialize<'de> for DiagnosticKind {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {

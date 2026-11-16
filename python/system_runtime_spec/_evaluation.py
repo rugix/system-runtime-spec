@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from ._decoding import Record, diagnostic
-from .models.common import Diagnostic, RecordKind, Severity
+from .models.common import Diagnostic, DiagnosticKind, Severity
 from .models.health import (
     Answer,
     HealthContext,
@@ -107,7 +107,7 @@ class _Evaluation:
         self.on_cycle = self._find_cycles()
         self.results: dict[str, HealthNodeResult] = {}
 
-    def _diagnose(self, severity: Severity, kind: RecordKind, message: str) -> None:
+    def _diagnose(self, severity: Severity, kind: DiagnosticKind, message: str) -> None:
         if message not in self.reported:
             self.reported.add(message)
             self.diagnostics.append(diagnostic(severity, kind, message))
@@ -304,7 +304,7 @@ class _Evaluation:
             result.reason = "Missing"
             return
         definition = definitions[0].value
-        conflicts: list[tuple[RecordKind, str]] = []
+        conflicts: list[tuple[DiagnosticKind, str]] = []
         if len(definitions) > 1:
             conflicts.append(("MetricDefinition", f"several definitions of {metric!r}"))
         if len(samples) > 1:
