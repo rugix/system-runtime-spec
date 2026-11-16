@@ -768,6 +768,12 @@ until it expires. A writer whose evidence depends on the instance or configurati
 SHOULD set `tag` to identify it, such as the version of an app, and the node and metric
 definitions of the same contributor SHOULD declare the matching `expectedTag`.
 
+> **Note:** Health evaluation uses the current evidence, so it misses problems that occur and
+> disappear between two evaluations. A check that must not miss them reports over a period rather
+> than an instant, for example, the worst answers since its previous status record. Events, such as
+> restarts or failed requests, are best published as metrics that count them since boot, which
+> threshold nodes compare with a limit regardless of when the evaluation takes place.
+
 ### 8.4 Observed Nodes and Status Records
 
 An observed node takes its answers from a status record:
