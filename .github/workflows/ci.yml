@@ -66,7 +66,7 @@ jobs:
       - name: Install Project Tools
         env:
           MISE_GITHUB_TOKEN: ${{ github.token }}
-        run: mise install rust
+        run: mise install rust github:CycloneDX/cyclonedx-rust-cargo
       - name: Build
         env:
           SYSTEM_RUNTIME_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'dev' }}

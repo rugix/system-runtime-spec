@@ -4,6 +4,7 @@ rust = { version = "1.99.0", profile = "minimal", components = ["rustfmt", "clip
 node = "24"
 python = "3.12"
 uv = "0.12.15"
+"github:CycloneDX/cyclonedx-rust-cargo" = "cargo-cyclonedx-0.5.10"
 
 [tasks.generate]
 run = "python scripts/generate.py"
@@ -55,10 +56,17 @@ rustup target add "$usage_target"
 # The tool is pure Rust, so Rust's own linker links it for every musl target.
 export "CARGO_TARGET_$(echo "$usage_target" | tr a-z- A-Z_)_LINKER=rust-lld"
 SYSTEM_RUNTIME_VERSION="$version" cargo build --locked --release -p system-runtime --target "$usage_target"
+# cargo-cyclonedx writes an SBOM next to the manifest of each workspace member. Only the SBOM
+# of the tool goes into the archive.
+cargo cyclonedx --manifest-path crates/apps/system-runtime/Cargo.toml --format json --target "$usage_target"
+rm crates/libs/system-runtime/system-runtime-spec.cdx.json
+sbom=crates/apps/system-runtime/system-runtime.cdx.json
+python3 scripts/sbom.py "$sbom" "$version"
 name="system-runtime-$version-$usage_target"
 rm -rf "dist/$name" "dist/$name.tar.gz"
 mkdir -p "dist/$name"
 cp "target/$usage_target/release/system-runtime" LICENSE-APACHE LICENSE-MIT "dist/$name/"
+mv "$sbom" "dist/$name/"
 tar -czf "dist/$name.tar.gz" -C dist "$name"
 rm -r "dist/$name"
 """

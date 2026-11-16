@@ -18,6 +18,10 @@ tar -xzf system-runtime-2026.11.16-aarch64-unknown-linux-musl.tar.gz
 install system-runtime-2026.11.16-aarch64-unknown-linux-musl/system-runtime /usr/local/bin/
 ```
 
+Each archive also contains `system-runtime.cdx.json`, a software bill of materials (SBOM) in
+[CycloneDX](https://cyclonedx.org) format. It lists the Rust crates that the tool is built from,
+for example, for vulnerability scanners.
+
 ## Components
 
 `system-runtime components list` lists the component declarations:
