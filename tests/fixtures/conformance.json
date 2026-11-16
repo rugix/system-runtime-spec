@@ -2989,7 +2989,12 @@
             "reason": "Cycle"
           }
         ],
-        "diagnostics": []
+        "diagnostics": [
+          {
+            "severity": "Warning",
+            "kind": "HealthNode"
+          }
+        ]
       }
     },
     {
@@ -9838,7 +9843,16 @@
             "inputs": []
           }
         ],
-        "diagnostics": []
+        "diagnostics": [
+          {
+            "severity": "Warning",
+            "kind": "HealthNode"
+          },
+          {
+            "severity": "Warning",
+            "kind": "HealthNode"
+          }
+        ]
       }
     },
     {
@@ -9948,7 +9962,20 @@
             "reason": "Cycle"
           }
         ],
-        "diagnostics": []
+        "diagnostics": [
+          {
+            "severity": "Warning",
+            "kind": "HealthNode"
+          },
+          {
+            "severity": "Warning",
+            "kind": "HealthNode"
+          },
+          {
+            "severity": "Warning",
+            "kind": "HealthNode"
+          }
+        ]
       }
     },
     {

@@ -96,6 +96,11 @@ class Evaluation {
     }
     this.resolveInputs();
     this.onCycle = this.findCycles();
+    for (const id of this.order) {
+      if (this.onCycle.has(id)) {
+        this.diagnose("Warning", "HealthNode", `node ${JSON.stringify(id)} is on a cycle`);
+      }
+    }
   }
 
   private diagnose(severity: Severity, kind: DiagnosticKind, message: string): void {

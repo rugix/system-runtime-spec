@@ -170,6 +170,15 @@ impl<'a> Evaluation<'a> {
         }
         evaluation.resolve_inputs();
         evaluation.on_cycle = evaluation.find_cycles();
+        for id in evaluation.order.clone() {
+            if evaluation.on_cycle.contains(&id) {
+                evaluation.diagnose(
+                    Severity::Warning,
+                    DiagnosticKind::HealthNode,
+                    format!("node {id:?} is on a cycle"),
+                );
+            }
+        }
         evaluation
     }
 

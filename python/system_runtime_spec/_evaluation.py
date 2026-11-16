@@ -105,6 +105,9 @@ class _Evaluation:
         self.inputs: dict[str, list[tuple[str, InputMode]]] = {}
         self._resolve_inputs()
         self.on_cycle = self._find_cycles()
+        for id in self.order:
+            if id in self.on_cycle:
+                self._diagnose("Warning", "HealthNode", f"node {id!r} is on a cycle")
         self.results: dict[str, HealthNodeResult] = {}
 
     def _diagnose(self, severity: Severity, kind: DiagnosticKind, message: str) -> None:

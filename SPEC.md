@@ -684,8 +684,8 @@ variant HealthRule {
 the associated components.
 
 The inputs of aggregate nodes, including attached inputs, form directed edges from each aggregate
-node to its inputs. Nodes on a cycle are not evaluated ([Section 8.8](#88-evaluation-and-reports)),
-so contributors avoid cycles.
+node to its inputs. Nodes on a cycle are not evaluated, and the evaluator reports them
+([Section 8.8](#88-evaluation-and-reports)).
 
 Nodes that are no input of any other node are _roots_. Tools can show the roots of a graph as the
 overall health of a device. Which aggregate nodes contributors attach to is a convention of the
@@ -1133,8 +1133,9 @@ configurations ([Section 5](#5-diagnostics)). It proceeds as follows:
    to their ID are ignored. The evaluator adds a diagnostic with the severity `Error` for the ID.
 3. It adds the attached inputs of the remaining aggregate nodes
    ([Section 8.7](#87-aggregate-nodes)).
-4. It gives every node on a cycle the answers `Unknown`/`Unknown` and the reason `Cycle`. A node is
-   on a cycle if it is an input of itself, directly or through other aggregate nodes.
+4. It gives every node on a cycle the answers `Unknown`/`Unknown` and the reason `Cycle`, and adds
+   a diagnostic with the severity `Warning` for each. A node is on a cycle if it is an input of
+   itself, directly or through other aggregate nodes.
 5. It determines the answers of every other node by the rules of its type.
 
 The evaluator produces a health report:
