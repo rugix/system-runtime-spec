@@ -22,12 +22,14 @@ Pushing a release tag runs the Release workflow. It checks the versions against 
 release, runs the full CI checks, verifies the Cargo package, and builds the Python and npm
 distributions and the command-line tool. All checks must pass before any registry receives a
 package. Python and npm publish the built artifacts; Cargo packages and publishes the same tagged
-source. Once every publishing job has succeeded, the workflow creates the GitHub release. Its notes
-list the specification version and the version of each package, followed by the pull requests
-merged since the previous release. Its assets are an archive of the command-line tool for each
-Linux target, built with `mise run build:cli <target>`, and the archives' checksums in
-`SHA256SUMS`. Each archive also contains a CycloneDX SBOM of the tool, generated with
-[cargo-cyclonedx](https://github.com/CycloneDX/cyclonedx-rust-cargo).
+source. The jobs publish only through trusted publishing: each registry trusts `release.yml` and
+the environment of its publishing job, so renaming either requires updating the trusted publisher
+in the registry's package settings. Once every publishing job has succeeded, the workflow creates
+the GitHub release. Its notes list the specification version and the version of each package,
+followed by the pull requests merged since the previous release. Its assets are an archive of the
+command-line tool for each Linux target, built with `mise run build:cli <target>`, and the
+archives' checksums in `SHA256SUMS`. Each archive also contains a CycloneDX SBOM of the tool,
+generated with [cargo-cyclonedx](https://github.com/CycloneDX/cyclonedx-rust-cargo).
 
 ## Prepare a Release
 
