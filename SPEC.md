@@ -62,8 +62,8 @@ the two parts refer to each other.
 
 The specification distinguishes five roles:
 
-- A **writer** publishes records or snapshots, such as a system image that ships its component
-  declaration or a service that publishes the results of its checks.
+- A **writer** publishes records ([Section 8](#8-discovery)) or snapshots
+  ([Section 9](#9-transport)).
 - A **reader** discovers and parses records ([Section 8](#8-discovery)) or receives snapshots
   ([Section 9](#9-transport)).
 - A **compatibility checker** evaluates component declarations
