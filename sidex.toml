@@ -1,6 +1,6 @@
 [bundle]
 name = "system_runtime"
-version = "0.2.0"
+version = "1.0.0"
 description = "System composition, compatibility, and operational health."
 authors = ["Silitics GmbH <info@silitics.com>"]
 
