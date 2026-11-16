@@ -1,0 +1,21 @@
+[package]
+name = "system-runtime"
+description = "Command-line tool to check the components and health of a system."
+# Releases set the version that `--version` reports; see `VERSION` in `src/cli/mod.rs`.
+version = "0.0.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+clap.workspace = true
+reportify.workspace = true
+sidex.workspace = true
+system-runtime-spec.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

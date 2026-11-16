@@ -114,6 +114,11 @@ def release_notes(release: Release, spec_version: str) -> str:
         status = "New" if package.registry in release.published else "Unchanged"
         link = f"[{version}]({package.url.format(version)})"
         lines.append(f"| {package.language} | {link} | {status} |")
+    lines += [
+        "",
+        f"The assets contain the `system-runtime` command-line tool {release.tag}"
+        " as static Linux binaries, with their checksums in `SHA256SUMS`.",
+    ]
     return "\n".join(lines) + "\n"
 
 

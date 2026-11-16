@@ -49,6 +49,7 @@ for a part to publish its records.
 | [`json-schema/`](json-schema/) | JSON Schemas generated from the Sidex schemas. |
 | [`tests/fixtures/`](tests/fixtures/) | The conformance suite, shared by all implementations. |
 | [`crates/libs/system-runtime/`](crates/libs/system-runtime/) | The Rust implementation. |
+| [`crates/apps/system-runtime/`](crates/apps/system-runtime/) | The command-line tool. |
 | [`python/`](python/) | The Python implementation. |
 | [`typescript/`](typescript/) | The TypeScript implementation. |
 
@@ -65,6 +66,20 @@ and exports the version of the specification that it implements as `SPEC_VERSION
 | Python | [PyPI](https://pypi.org/project/system-runtime-spec/) | 1.0 (draft) since 0.2 | [README](python/README.md) |
 | TypeScript | [npm](https://www.npmjs.com/package/system-runtime-spec) | 1.0 (draft) since 0.2 | [README](typescript/README.md) |
 
+## Command-Line Tool
+
+The `system-runtime` command-line tool lists the components of a Linux system, checks their
+compatibility, also after an update, and evaluates the system's health. Scripts can use its exit
+codes, for example, to decide whether to commit an update:
+
+```sh
+system-runtime health check rugix.apps
+```
+
+Each [release](https://github.com/rugix/system-runtime-spec/releases) has static binaries for
+Linux, versioned with the release. Its [README](crates/apps/system-runtime/README.md) describes
+the commands.
+
 ## Development
 
 The repository uses [mise](https://mise.jdx.dev) for its tooling. To regenerate the models and
@@ -77,7 +92,7 @@ mise run generate
 mise run check
 ```
 
-CI runs the same checks. [RELEASING.md](RELEASING.md) describes how the packages are published.
+CI runs the same checks. [RELEASING.md](RELEASING.md) describes how releases are published.
 
 ## License
 
