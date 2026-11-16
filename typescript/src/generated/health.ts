@@ -270,8 +270,11 @@ export const HealthReport = {
                                                         "reason"?: Reason, /**
                                             * Message of the fresh evidence.
                                             */
-                                                        "message"?: __sidex_types.builtins.String };
+                                                        "message"?: __sidex_types.builtins.String, /**
+                                            * Annotations of the fresh evidence.
+                                            */
+                                                        "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const HealthNodeResult = {
-    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["reason", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Reason), true], ["message", __sidex_types.builtin("string"), true]], [])),
+    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["reason", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Reason), true], ["message", __sidex_types.builtin("string"), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };

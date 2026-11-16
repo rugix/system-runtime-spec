@@ -203,4 +203,6 @@ record HealthNodeResult {
     reason?: Reason,
     /// Message of the fresh evidence.
     message?: string,
+    /// Annotations of the fresh evidence.
+    annotations?: [string: json],
 }

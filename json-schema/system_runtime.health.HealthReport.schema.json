@@ -104,6 +104,10 @@
         },
         "message": {
           "type": "string"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {}
         }
       },
       "required": [

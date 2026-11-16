@@ -2632,7 +2632,10 @@
             "bootId": "boot",
             "observedAtMs": 80,
             "maxAgeMs": 20,
-            "message": "low disk"
+            "message": "low disk",
+            "annotations": {
+              "com.example.free": 12
+            }
           }
         ]
       },
@@ -10378,7 +10381,7 @@
       }
     },
     {
-      "name": "message of fresh evidence",
+      "name": "message and annotations of fresh evidence",
       "records": {
         "healthNodes": [
           {
@@ -10393,7 +10396,10 @@
             "bootId": "boot",
             "observedAtMs": 900,
             "maxAgeMs": 500,
-            "message": "low disk"
+            "message": "low disk",
+            "annotations": {
+              "com.example.free": 12
+            }
           }
         ]
       },
@@ -10408,7 +10414,10 @@
             "usable": "Yes",
             "healthy": "No",
             "inputs": [],
-            "message": "low disk"
+            "message": "low disk",
+            "annotations": {
+              "com.example.free": 12
+            }
           }
         ],
         "diagnostics": []
@@ -10623,7 +10632,7 @@
       }
     },
     {
-      "name": "annotations are ignored",
+      "name": "annotations do not affect answers",
       "records": {
         "healthNodes": [
           {
@@ -10657,7 +10666,10 @@
             "id": "a",
             "usable": "Yes",
             "healthy": "Yes",
-            "inputs": []
+            "inputs": [],
+            "annotations": {
+              "com.example.check": "ping"
+            }
           }
         ],
         "diagnostics": []

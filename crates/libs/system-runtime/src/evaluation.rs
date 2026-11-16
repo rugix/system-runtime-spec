@@ -316,6 +316,7 @@ impl<'a> Evaluation<'a> {
                     inputs: Vec::new(),
                     reason: Some(Reason::Conflict),
                     message: None,
+                    annotations: None,
                 });
             } else {
                 nodes.push(self.result(&id));
@@ -355,6 +356,7 @@ impl<'a> Evaluation<'a> {
                 .collect(),
             reason: None,
             message: None,
+            annotations: None,
         };
         let rule = node.rule.clone();
         if self.on_cycle.contains(id) {
@@ -449,6 +451,7 @@ impl<'a> Evaluation<'a> {
             (result.usable, result.healthy) = (record.usable, record.healthy);
         }
         result.message = record.message.clone();
+        result.annotations = record.annotations.clone();
     }
 
     fn threshold(&mut self, result: &mut HealthNodeResult, id: &str, rule: &ThresholdRule) {
@@ -523,6 +526,7 @@ impl<'a> Evaluation<'a> {
             (Answer::No, Answer::No)
         };
         result.message = record.message.clone();
+        result.annotations = record.annotations.clone();
     }
 
     fn aggregate(&mut self, result: &mut HealthNodeResult, id: &str, rule: &AggregationRule) {

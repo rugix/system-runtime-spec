@@ -4977,6 +4977,10 @@ pub mod health {
         pub reason: ::std::option::Option<Reason>,
         #[doc = "Message of the fresh evidence.\n"]
         pub message: ::std::option::Option<::std::string::String>,
+        #[doc = "Annotations of the fresh evidence.\n"]
+        pub annotations: ::std::option::Option<
+            ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+        >,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthNodeResult {
@@ -5010,6 +5014,17 @@ pub mod health {
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
                 .with_docs("Message of the fresh evidence.\n")
+                .optional(),
+                ::sidex::shape::FieldShape::new(
+                    "annotations",
+                    ::sidex::shape::shape_of::<
+                        ::std::collections::BTreeMap<
+                            ::std::string::String,
+                            ::sidex::types::JsonValue,
+                        >,
+                    >,
+                )
+                .with_docs("Annotations of the fresh evidence.\n")
                 .optional(),
             ])),
         )
@@ -5045,6 +5060,10 @@ pub mod health {
                     .message
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
+                7usize => self
+                    .annotations
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -5062,6 +5081,9 @@ pub mod health {
             let mut __field_4 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
             let mut __field_5 = ::std::option::Option::<Reason>::None;
             let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_7 = ::std::option::Option::<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -5099,6 +5121,14 @@ pub mod health {
                             <::std::string::String as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
+                    7usize => {
+                        __field_7 = ::std::option::Option::Some(<::std::collections::BTreeMap<
+                            ::std::string::String,
+                            ::sidex::types::JsonValue,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -5114,6 +5144,7 @@ pub mod health {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `inputs`"))?,
                 reason: __field_5,
                 message: __field_6,
+                annotations: __field_7,
             })
         }
     }
@@ -5150,6 +5181,7 @@ pub mod health {
                 owner: ::std::default::Default::default(),
                 reason: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
             }
         }
         #[doc = "Sets the value of `id`."]
@@ -5229,6 +5261,26 @@ pub mod health {
             message: ::std::option::Option<::std::string::String>,
         ) -> Self {
             self.message = message;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
+            &mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> &mut Self {
+            self.annotations = annotations;
+            self
+        }
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
+            mut self,
+            annotations: ::std::option::Option<
+                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
+            >,
+        ) -> Self {
+            self.annotations = annotations;
             self
         }
     }

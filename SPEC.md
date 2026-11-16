@@ -176,9 +176,9 @@ readers read. A writer that rolls back an update SHOULD restore the records that
 
 Records can carry `annotations`, data for tools that this specification does not define. Member
 names SHOULD start with a reverse domain name that the writer controls, such as
-`com.example.priority`. Annotations do not affect compatibility checking or health evaluation.
-Writers MUST put data that this specification does not define into annotations and MUST NOT add
-other fields to records.
+`com.example.priority`. Annotations do not affect whether components are compatible or nodes are
+healthy. Writers MUST put data that this specification does not define into annotations and MUST NOT
+add other fields to records.
 
 ### 4.5 Specification Versions
 
@@ -757,7 +757,7 @@ Evidence is _fresh_ if all of the following hold, checked in this order:
 The first condition that does not hold determines the reason. Evidence that is not fresh is not
 used, and the node's answers are `Unknown`/`Unknown` with that reason. If evidence is fresh, the
 rules of the node's type determine the answers from it, and the node's result carries its
-`message`.
+`message` and `annotations`.
 
 > **Example:** A status record observed at 42000 ms with a `maxAgeMs` of 15000 is fresh until
 > just before 57000 ms. If its node declares a `maxAgeMs` of 10000, it is fresh until just before
@@ -1147,6 +1147,8 @@ record HealthNodeResult {
     reason?: Reason,
     /// Message of the fresh evidence.
     message?: string,
+    /// Annotations of the fresh evidence.
+    annotations?: [string: json],
 }
 ```
 
