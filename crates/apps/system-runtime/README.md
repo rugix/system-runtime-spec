@@ -10,17 +10,39 @@ can be installed or committed.
 
 Each [release](https://github.com/rugix/system-runtime-spec/releases) has static binaries for
 `x86_64`, `aarch64`, `armv7`, and `arm` (ARMv6 with hardware floating point) Linux. To install
-the `aarch64` binary of release `2026.11.16`:
+the `aarch64` binary of the latest release:
 
 ```sh
-curl -LO https://github.com/rugix/system-runtime-spec/releases/download/2026.11.16/system-runtime-2026.11.16-aarch64-unknown-linux-musl.tar.gz
-tar -xzf system-runtime-2026.11.16-aarch64-unknown-linux-musl.tar.gz
-install system-runtime-2026.11.16-aarch64-unknown-linux-musl/system-runtime /usr/local/bin/
+curl -LO https://github.com/rugix/system-runtime-spec/releases/latest/download/system-runtime-aarch64-unknown-linux-musl.tar.gz
+tar -xzf system-runtime-aarch64-unknown-linux-musl.tar.gz
+install system-runtime-aarch64-unknown-linux-musl/system-runtime /usr/local/bin/
 ```
+
+To install a specific release, such as one in an image build, replace `latest/download` with
+`download/<release>`.
 
 Each archive also contains `system-runtime.cdx.json`, a software bill of materials (SBOM) in
 [CycloneDX](https://cyclonedx.org) format. It lists the Rust crates that the tool is built from,
 for example, for vulnerability scanners.
+
+`SHA256SUMS` contains the checksums of the archives. To check a downloaded archive:
+
+```sh
+curl -LO https://github.com/rugix/system-runtime-spec/releases/latest/download/SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+Checksums detect corrupted downloads. To verify that the release workflow of this repository
+built an archive, check its GitHub build provenance attestation with the
+[GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify system-runtime-aarch64-unknown-linux-musl.tar.gz \
+  --repo rugix/system-runtime-spec
+```
+
+Release 2026.11.16 predates both conventions: its asset names include the version, and its
+archives have no attestations.
 
 ## Components
 

@@ -29,7 +29,9 @@ the GitHub release. Its notes list the specification version and the version of 
 followed by the pull requests merged since the previous release. Its assets are an archive of the
 command-line tool for each Linux target, built with `mise run build:cli <target>`, and the
 archives' checksums in `SHA256SUMS`. Each archive also contains a CycloneDX SBOM of the tool,
-generated with [cargo-cyclonedx](https://github.com/CycloneDX/cyclonedx-rust-cargo).
+generated with [cargo-cyclonedx](https://github.com/CycloneDX/cyclonedx-rust-cargo), and has a
+GitHub build provenance attestation. The asset names omit the version, so that
+`releases/latest/download/<name>` URLs always point to the latest release.
 
 ## Prepare a Release
 
