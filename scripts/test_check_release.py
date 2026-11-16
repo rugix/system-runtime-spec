@@ -61,8 +61,9 @@ class ReleaseTests(unittest.TestCase):
             " | New |",
             notes,
         )
-        self.assertTrue(notes[-1].startswith("| TypeScript |"))
-        self.assertTrue(notes[-1].endswith("| Unchanged |"))
+        typescript = next(line for line in notes if line.startswith("| TypeScript |"))
+        self.assertTrue(typescript.endswith("| Unchanged |"))
+        self.assertIn("`system-runtime` command-line tool 2026.11.01.1", notes[-1])
 
     def test_release_without_packages(self) -> None:
         """Release a change outside the packages without publishing any of them."""

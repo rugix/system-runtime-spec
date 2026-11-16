@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/libs/system-runtime"]
+members = ["crates/apps/system-runtime", "crates/libs/system-runtime"]
 
 [workspace.package]
 version = "0.2.0"
@@ -11,9 +11,17 @@ repository = "https://github.com/rugix/system-runtime-spec"
 
 [workspace.dependencies]
 anyver = "0.3.0"
+clap = { version = "4.6.7", features = ["derive"] }
+reportify = { version = "0.2.2", default-features = false, features = ["color"] }
 sidex = { version = "0.5.0", features = ["serde-1"] }
+system-runtime-spec = { path = "crates/libs/system-runtime" }
 thiserror = "2"
 tracing = "0.1"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 rustix = { version = "1", features = ["fs", "time"] }
 serde = "1"
 tempfile = "3"
+
+[profile.release]
+strip = true
+lto = true

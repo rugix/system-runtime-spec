@@ -9,20 +9,23 @@ The repository has three version lines:
   package share the name `system-runtime-spec`. Rust and Python users import
   `system_runtime_spec`; TypeScript users import `system-runtime-spec`.
 - **Releases** are tagged with their date, such as `2026.11.16`, or `2026.11.16.1` for a second
-  release on the same day. Each release has one GitHub release.
+  release on the same day. Each release has one GitHub release. The `system-runtime`
+  command-line tool has the version of the release that built it.
 
 A release publishes each package whose files changed since the previous release. These are the
 files below `crates/libs/system-runtime/` and the workspace `Cargo.toml` for Rust, below `python/`
 for Python, and below `typescript/` for TypeScript. A changed package needs a higher version than
-in the previous release. Packages that did not change are not published again.
+in the previous release. Packages that did not change are not published again. Every release
+builds the command-line tool.
 
 Pushing a release tag runs the Release workflow. It checks the versions against the previous
 release, runs the full CI checks, verifies the Cargo package, and builds the Python and npm
-distributions. All checks must pass before any registry receives a package. Python and npm
-publish the built artifacts; Cargo packages and publishes the same tagged source. Once every
-publishing job has succeeded, the workflow creates the GitHub release. Its notes list the
-specification version and the version of each package, followed by the pull requests merged since
-the previous release.
+distributions and the command-line tool. All checks must pass before any registry receives a
+package. Python and npm publish the built artifacts; Cargo packages and publishes the same tagged
+source. Once every publishing job has succeeded, the workflow creates the GitHub release. Its notes
+list the specification version and the version of each package, followed by the pull requests
+merged since the previous release. Its assets are the command-line tool for each Linux target,
+built with `mise run build:cli <target>`, and their checksums in `SHA256SUMS`.
 
 ## Prepare a Release
 
@@ -46,11 +49,11 @@ mise run check
 Merge the release changes. From GitHub Actions, run the Release workflow on that commit's branch
 with `publish` left false. This dry run checks and builds all packages without accessing publishing
 environments or uploading to registries. Download its Python and npm artifacts and verify that they
-install and expose the documented imports. To verify the Rust package locally from a clean release
-commit:
+install and expose the documented imports, and run one of its command-line tool builds. To verify
+the Rust package locally from a clean release commit:
 
 ```sh
-mise exec -- cargo publish --dry-run --locked
+mise exec -- cargo publish --dry-run --locked -p system-runtime-spec
 ```
 
 To preview the release of the checked-out commit, run:
@@ -83,7 +86,8 @@ announcing the release.
 Registry uploads are independent and published versions cannot be overwritten. If only some
 registries succeed, keep the tag unchanged and rerun only failed jobs. To target a remaining
 registry explicitly, run the Release workflow manually, select the same release tag, set `publish`
-to true, and choose that registry. The GitHub release follows once no publishing job has failed.
+to true, and choose that registry. The GitHub release follows once no publishing job has failed;
+rerunning its job uploads missing assets.
 PyPI retries skip files already uploaded, so an interrupted wheel or source archive upload can
 finish. For npm and crates.io, check whether the version reached the registry even if the job
 failed; an existing version cannot be uploaded again. Do not retry a successful registry. Fix

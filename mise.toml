@@ -44,6 +44,24 @@ run = ["npm ci", "npm run check", "npm test", "npm pack"]
 [tasks.check]
 depends = ["check:generated", "check:rust", "check:python", "check:typescript"]
 
+[tasks."build:cli"]
+description = "Build the command-line tool for a Linux target into dist/"
+usage = 'arg "<target>" help="Rust target, such as aarch64-unknown-linux-musl"'
+run = """
+set -euo pipefail
+version="${SYSTEM_RUNTIME_VERSION:-dev}"
+rustup target add "$usage_target"
+# The tool is pure Rust, so Rust's own linker links it for every musl target.
+export "CARGO_TARGET_$(echo "$usage_target" | tr a-z- A-Z_)_LINKER=rust-lld"
+SYSTEM_RUNTIME_VERSION="$version" cargo build --locked --release -p system-runtime --target "$usage_target"
+name="system-runtime-$version-$usage_target"
+rm -rf "dist/$name" "dist/$name.tar.gz"
+mkdir -p "dist/$name"
+cp "target/$usage_target/release/system-runtime" LICENSE-APACHE LICENSE-MIT "dist/$name/"
+tar -czf "dist/$name.tar.gz" -C dist "$name"
+rm -r "dist/$name"
+"""
+
 [tasks.lock]
 description = "Refresh the lockfiles after changing package versions"
 run = [
