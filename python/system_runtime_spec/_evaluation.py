@@ -7,13 +7,13 @@ from .models.health import (
     HealthContext,
     HealthNode,
     HealthNodeResult,
+    HealthProblem,
     HealthReport,
     HealthRule_Aggregate,
     HealthRule_Observed,
     HealthRule_Threshold,
     HealthStatus,
     InputMode,
-    Reason,
 )
 from .models.metric import MetricDefinition, MetricRange, MetricSample
 
@@ -202,7 +202,7 @@ class _Evaluation:
                 usable="Unknown",
                 healthy="Unknown",
                 inputs=[],
-                reason="Conflict",
+                problem="Conflict",
             )
             if id in self.conflicts
             else self._result(id)
@@ -229,9 +229,9 @@ class _Evaluation:
         )
         rule = node.rule
         if id in self.on_cycle:
-            result.reason = "Cycle"
+            result.problem = "Cycle"
         elif id in self.unsupported:
-            result.reason = "Unsupported"
+            result.problem = "Unsupported"
         elif isinstance(rule, HealthRule_Threshold):
             self._threshold(result, node, rule)
         elif isinstance(rule, HealthRule_Aggregate):
@@ -241,13 +241,13 @@ class _Evaluation:
         self.results[id] = result
         return result
 
-    def _freshness_reason(
+    def _freshness_problem(
         self,
         evidence: HealthStatus | MetricSample,
         owner: str | None,
         tag: str | None,
         max_ages: list[int | None],
-    ) -> Reason | None:
+    ) -> HealthProblem | None:
         """Return why evidence is not fresh, or None if it is fresh."""
         if evidence.boot_id != self.context.boot_id:
             return "OtherBoot"
@@ -271,20 +271,20 @@ class _Evaluation:
             self._diagnose(
                 "Warning", "HealthStatus", f"several status records for {node.id!r}"
             )
-            result.reason = "Conflict"
+            result.problem = "Conflict"
             return
         if not statuses:
-            result.reason = "Missing"
+            result.problem = "Missing"
             return
         status = statuses[0]
-        reason = self._freshness_reason(
+        problem = self._freshness_problem(
             status.value, node.owner, rule.expected_tag, [rule.max_age_ms]
         )
-        if reason is not None:
-            result.reason = reason
+        if problem is not None:
+            result.problem = problem
             return
         if status.unsupported:
-            result.reason = "Unsupported"
+            result.problem = "Unsupported"
         else:
             result.usable, result.healthy = status.value.usable, status.value.healthy
         result.message = status.value.message
@@ -297,7 +297,7 @@ class _Evaluation:
         definitions = self.metrics.get(metric, [])
         samples = self.samples.get(metric, [])
         if not definitions:
-            result.reason = "Missing"
+            result.problem = "Missing"
             return
         definition = definitions[0].value
         conflicts: list[tuple[DiagnosticKind, str]] = []
@@ -312,20 +312,20 @@ class _Evaluation:
         if conflicts:
             for kind, message in conflicts:
                 self._diagnose("Warning", kind, message)
-            result.reason = "Conflict"
+            result.problem = "Conflict"
             return
         if not samples:
-            result.reason = "Missing"
+            result.problem = "Missing"
             return
         sample = samples[0].value
-        reason = self._freshness_reason(
+        problem = self._freshness_problem(
             sample,
             definition.owner,
             definition.expected_tag,
             [definition.max_age_ms, rule.max_age_ms],
         )
-        if reason is not None:
-            result.reason = reason
+        if problem is not None:
+            result.problem = problem
             return
         if _contains(rule.healthy, sample.value):
             result.usable, result.healthy = "Yes", "Yes"

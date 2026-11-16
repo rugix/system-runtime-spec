@@ -609,8 +609,8 @@
           "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
         }
       },
-      "reason": {
-        "$ref": "#/components/schemas/system_runtime.health.Reason"
+      "problem": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthProblem"
       },
       "message": {
         "type": "string"
@@ -627,6 +627,20 @@
       "inputs"
     ],
     "unevaluatedProperties": false
+  },
+  "system_runtime.health.HealthProblem": {
+    "enum": [
+      "Missing",
+      "OtherBoot",
+      "OwnerMismatch",
+      "TagMismatch",
+      "Future",
+      "Expired",
+      "Conflict",
+      "Cycle",
+      "Unsupported"
+    ],
+    "description": "Problem that keeps a node's evidence or rule from determining its answers."
   },
   "system_runtime.health.HealthReport": {
     "type": "object",
@@ -837,20 +851,6 @@
     },
     "required": [],
     "unevaluatedProperties": false
-  },
-  "system_runtime.health.Reason": {
-    "enum": [
-      "Missing",
-      "OtherBoot",
-      "OwnerMismatch",
-      "TagMismatch",
-      "Future",
-      "Expired",
-      "Conflict",
-      "Cycle",
-      "Unsupported"
-    ],
-    "description": "Why a node's evidence was not used or its rule was not applied."
   },
   "system_runtime.health.ThresholdRule": {
     "type": "object",

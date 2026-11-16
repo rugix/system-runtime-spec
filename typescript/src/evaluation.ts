@@ -1,8 +1,8 @@
 import { builtins } from "@sidex/types";
 import type { Diagnostic, DiagnosticKind, Severity } from "./generated/common.js";
 import type {
-  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthReport,
-  HealthStatus, InputMode, ObservationRule, Reason, ThresholdRule,
+  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthProblem,
+  HealthReport, HealthStatus, InputMode, ObservationRule, ThresholdRule,
 } from "./generated/health.js";
 import type { MetricDefinition, MetricRange, MetricSample } from "./generated/metric.js";
 import { type Record, diagnostic } from "./decoding.js";
@@ -193,7 +193,7 @@ class Evaluation {
   report(): HealthReport {
     const nodes = this.order.map((id): HealthNodeResult =>
       this.conflicts.has(id)
-        ? { id: id as HealthNodeId, usable: "Unknown", healthy: "Unknown", inputs: [], reason: "Conflict" }
+        ? { id: id as HealthNodeId, usable: "Unknown", healthy: "Unknown", inputs: [], problem: "Conflict" }
         : this.result(id));
     return { nodes, diagnostics: this.diagnostics };
   }
@@ -216,8 +216,8 @@ class Evaluation {
       inputs: (this.inputs.get(id) ?? []).map(([child]) => child as HealthNodeId),
     };
     const rule = node.rule ?? { type: "Observed" };
-    if (this.onCycle.has(id)) result.reason = "Cycle";
-    else if (this.unsupported.has(id)) result.reason = "Unsupported";
+    if (this.onCycle.has(id)) result.problem = "Cycle";
+    else if (this.unsupported.has(id)) result.problem = "Unsupported";
     else if (rule.type === "Observed") this.observe(result, node, rule);
     else if (rule.type === "Threshold") this.threshold(result, node, rule);
     else this.aggregate(result, rule);
@@ -226,12 +226,12 @@ class Evaluation {
   }
 
   /** Return why evidence is not fresh, or undefined if it is fresh. */
-  private freshnessReason(
+  private freshnessProblem(
     evidence: HealthStatus | MetricSample,
     owner: string | undefined,
     tag: string | undefined,
     maxAges: (builtins.U64 | undefined)[],
-  ): Reason | undefined {
+  ): HealthProblem | undefined {
     if (evidence.bootId !== this.context.bootId) return "OtherBoot";
     if (owner !== undefined && evidence.owner !== owner) return "OwnerMismatch";
     if (tag !== undefined && evidence.tag !== tag) return "TagMismatch";
@@ -257,20 +257,20 @@ class Evaluation {
     const statuses = this.statuses.get(node.id) ?? [];
     if (statuses.length > 1) {
       this.diagnose("Warning", "HealthStatus", `several status records for ${JSON.stringify(node.id)}`);
-      result.reason = "Conflict";
+      result.problem = "Conflict";
       return;
     }
     if (statuses.length === 0) {
-      result.reason = "Missing";
+      result.problem = "Missing";
       return;
     }
     const [status] = statuses;
-    const reason = this.freshnessReason(status.value, node.owner, rule.expectedTag, [rule.maxAgeMs]);
-    if (reason !== undefined) {
-      result.reason = reason;
+    const problem = this.freshnessProblem(status.value, node.owner, rule.expectedTag, [rule.maxAgeMs]);
+    if (problem !== undefined) {
+      result.problem = problem;
       return;
     }
-    if (status.unsupported) result.reason = "Unsupported";
+    if (status.unsupported) result.problem = "Unsupported";
     else [result.usable, result.healthy] = [status.value.usable, status.value.healthy];
     this.copyMessageAndAnnotations(result, status.value);
   }
@@ -280,7 +280,7 @@ class Evaluation {
     const definitions = this.metrics.get(metric) ?? [];
     const samples = this.samples.get(metric) ?? [];
     if (definitions.length === 0) {
-      result.reason = "Missing";
+      result.problem = "Missing";
       return;
     }
     const definition = definitions[0].value;
@@ -292,17 +292,17 @@ class Evaluation {
     }
     if (conflicts.length > 0) {
       for (const [kind, message] of conflicts) this.diagnose("Warning", kind, message);
-      result.reason = "Conflict";
+      result.problem = "Conflict";
       return;
     }
     if (samples.length === 0) {
-      result.reason = "Missing";
+      result.problem = "Missing";
       return;
     }
     const sample = samples[0].value;
-    const reason = this.freshnessReason(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
-    if (reason !== undefined) {
-      result.reason = reason;
+    const problem = this.freshnessProblem(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
+    if (problem !== undefined) {
+      result.problem = problem;
       return;
     }
     const value = F64.toNumber(sample.value);

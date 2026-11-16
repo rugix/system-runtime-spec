@@ -196,12 +196,12 @@ export const Answer = {
     ...__sidex_types.checker<Answer>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Yes", null, null], ["No", null, null], ["Unknown", null, null]])),
 };
 /**
- * Why a node's evidence was not used or its rule was not applied.
+ * Problem that keeps a node's evidence or rule from determining its answers.
  */
- export type Reason = ("Missing" | "OtherBoot" | "OwnerMismatch" | "TagMismatch" | "Future" | "Expired" | "Conflict" | "Cycle" | "Unsupported");
+ export type HealthProblem = ("Missing" | "OtherBoot" | "OwnerMismatch" | "TagMismatch" | "Future" | "Expired" | "Conflict" | "Cycle" | "Unsupported");
 
-export const Reason = {
-    ...__sidex_types.checker<Reason>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Missing", null, null], ["OtherBoot", null, null], ["OwnerMismatch", null, null], ["TagMismatch", null, null], ["Future", null, null], ["Expired", null, null], ["Conflict", null, null], ["Cycle", null, null], ["Unsupported", null, null]])),
+export const HealthProblem = {
+    ...__sidex_types.checker<HealthProblem>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Missing", null, null], ["OtherBoot", null, null], ["OwnerMismatch", null, null], ["TagMismatch", null, null], ["Future", null, null], ["Expired", null, null], ["Conflict", null, null], ["Cycle", null, null], ["Unsupported", null, null]])),
 };
 /**
  * Boot and time in which evidence is evaluated.
@@ -265,9 +265,9 @@ export const HealthReport = {
                                             * IDs of the inputs of an aggregate node; empty for other nodes.
                                             */
                                                         "inputs": HealthNodeId[], /**
-                                            * Why the node's evidence was not used or its rule was not applied.
+                                            * Problem that kept the node's evidence or rule from determining its answers.
                                             */
-                                                        "reason"?: Reason, /**
+                                                        "problem"?: HealthProblem, /**
                                             * Message of the fresh evidence.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
@@ -276,5 +276,5 @@ export const HealthReport = {
                                                         "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const HealthNodeResult = {
-    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["reason", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Reason), true], ["message", __sidex_types.builtin("string"), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
+    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["problem", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthProblem), true], ["message", __sidex_types.builtin("string"), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };

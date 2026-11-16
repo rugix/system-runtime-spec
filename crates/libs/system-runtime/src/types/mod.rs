@@ -4424,9 +4424,9 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "Why a node's evidence was not used or its rule was not applied.\n"]
+    #[doc = "Problem that keeps a node's evidence or rule from determining its answers.\n"]
     #[derive(Clone, Debug, PartialEq, Copy, Eq)]
-    pub enum Reason {
+    pub enum HealthProblem {
         #[doc = "The evidence or the metric definition does not exist.\n"]
         Missing,
         #[doc = "The evidence belongs to another boot.\n"]
@@ -4443,13 +4443,13 @@ pub mod health {
         Conflict,
         #[doc = "The node is on a cycle.\n"]
         Cycle,
-        #[doc = "A rule type, state, or input mode is unknown to the evaluator.\n"]
+        #[doc = "A rule type, answer, or input mode is unknown to the evaluator.\n"]
         Unsupported,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for Reason {
+    impl ::sidex::Shaped for HealthProblem {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::health::Reason",
+            "::system_runtime::health::HealthProblem",
             ::sidex::shape::ShapeKind::Variant(
                 ::sidex::shape::VariantShape::new(&[
                     ::sidex::shape::CaseShape::new("Missing", ::std::option::Option::None)
@@ -4470,13 +4470,13 @@ pub mod health {
                         .with_docs("The node is on a cycle.\n"),
                     ::sidex::shape::CaseShape::new("Unsupported", ::std::option::Option::None)
                         .with_docs(
-                            "A rule type, state, or input mode is unknown to the evaluator.\n",
+                            "A rule type, answer, or input mode is unknown to the evaluator.\n",
                         ),
                 ])
                 .json_tagging(::sidex::formats::json::Tagging::External),
             ),
         )
-        .with_docs("Why a node's evidence was not used or its rule was not applied.\n")
+        .with_docs("Problem that keeps a node's evidence or rule from determining its answers.\n")
         .with_attrs(&[
             ::sidex::shape::Attr::List {
                 path: "json",
@@ -4498,14 +4498,14 @@ pub mod health {
         ]);
     }
     #[automatically_derived]
-    impl ::sidex::Encode for Reason {
+    impl ::sidex::Encode for HealthProblem {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Variant(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::VariantView for Reason {
+    impl ::sidex::encode::VariantView for HealthProblem {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -4538,7 +4538,7 @@ pub mod health {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for Reason {
+    impl ::sidex::Decode for HealthProblem {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -4566,7 +4566,7 @@ pub mod health {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for Reason {
+    impl ::serde::Serialize for HealthProblem {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -4575,7 +4575,7 @@ pub mod health {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for Reason {
+    impl<'de> ::serde::Deserialize<'de> for HealthProblem {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -4973,8 +4973,8 @@ pub mod health {
         pub healthy: Answer,
         #[doc = "IDs of the inputs of an aggregate node; empty for other nodes.\n"]
         pub inputs: ::std::vec::Vec<HealthNodeId>,
-        #[doc = "Why the node's evidence was not used or its rule was not applied.\n"]
-        pub reason: ::std::option::Option<Reason>,
+        #[doc = "Problem that kept the node's evidence or rule from determining its answers.\n"]
+        pub problem: ::std::option::Option<HealthProblem>,
         #[doc = "Message of the fresh evidence.\n"]
         pub message: ::std::option::Option<::std::string::String>,
         #[doc = "Annotations of the fresh evidence.\n"]
@@ -5004,11 +5004,14 @@ pub mod health {
                     ::sidex::shape::shape_of::<::std::vec::Vec<HealthNodeId>>,
                 )
                 .with_docs("IDs of the inputs of an aggregate node; empty for other nodes.\n"),
-                ::sidex::shape::FieldShape::new("reason", ::sidex::shape::shape_of::<Reason>)
-                    .with_docs(
-                        "Why the node's evidence was not used or its rule was not applied.\n",
-                    )
-                    .optional(),
+                ::sidex::shape::FieldShape::new(
+                    "problem",
+                    ::sidex::shape::shape_of::<HealthProblem>,
+                )
+                .with_docs(
+                    "Problem that kept the node's evidence or rule from determining its answers.\n",
+                )
+                .optional(),
                 ::sidex::shape::FieldShape::new(
                     "message",
                     ::sidex::shape::shape_of::<::std::string::String>,
@@ -5053,7 +5056,7 @@ pub mod health {
                 3usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.healthy)),
                 4usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.inputs)),
                 5usize => self
-                    .reason
+                    .problem
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 6usize => self
@@ -5079,7 +5082,7 @@ pub mod health {
             let mut __field_2 = ::std::option::Option::<Answer>::None;
             let mut __field_3 = ::std::option::Option::<Answer>::None;
             let mut __field_4 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
-            let mut __field_5 = ::std::option::Option::<Reason>::None;
+            let mut __field_5 = ::std::option::Option::<HealthProblem>::None;
             let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_7 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
@@ -5113,7 +5116,7 @@ pub mod health {
                     }
                     5usize => {
                         __field_5 = ::std::option::Option::Some(
-                            <Reason as ::sidex::Decode>::decode(decoder)?,
+                            <HealthProblem as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     6usize => {
@@ -5142,7 +5145,7 @@ pub mod health {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthy`"))?,
                 inputs: __field_4
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `inputs`"))?,
-                reason: __field_5,
+                problem: __field_5,
                 message: __field_6,
                 annotations: __field_7,
             })
@@ -5179,7 +5182,7 @@ pub mod health {
                 healthy: healthy,
                 inputs: inputs,
                 owner: ::std::default::Default::default(),
-                reason: ::std::default::Default::default(),
+                problem: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
                 annotations: ::std::default::Default::default(),
             }
@@ -5237,14 +5240,14 @@ pub mod health {
             self.inputs = inputs;
             self
         }
-        #[doc = "Sets the value of `reason`."]
-        pub fn set_reason(&mut self, reason: ::std::option::Option<Reason>) -> &mut Self {
-            self.reason = reason;
+        #[doc = "Sets the value of `problem`."]
+        pub fn set_problem(&mut self, problem: ::std::option::Option<HealthProblem>) -> &mut Self {
+            self.problem = problem;
             self
         }
-        #[doc = "Sets the value of `reason`."]
-        pub fn with_reason(mut self, reason: ::std::option::Option<Reason>) -> Self {
-            self.reason = reason;
+        #[doc = "Sets the value of `problem`."]
+        pub fn with_problem(mut self, problem: ::std::option::Option<HealthProblem>) -> Self {
+            self.problem = problem;
             self
         }
         #[doc = "Sets the value of `message`."]

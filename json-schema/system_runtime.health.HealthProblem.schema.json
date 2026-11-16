@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "system_runtime.health.Reason",
+  "$id": "system_runtime.health.HealthProblem",
   "enum": [
     "Missing",
     "OtherBoot",
@@ -12,5 +12,5 @@
     "Cycle",
     "Unsupported"
   ],
-  "description": "Why a node's evidence was not used or its rule was not applied."
+  "description": "Problem that keeps a node's evidence or rule from determining its answers."
 }

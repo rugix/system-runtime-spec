@@ -744,18 +744,18 @@ record HealthContext {
 
 Evidence is _fresh_ if all of the following hold, checked in this order:
 
-1. It exists. Otherwise, the reason is `Missing`.
-2. Its `bootId` equals the context's `bootId`. Otherwise, the reason is `OtherBoot`.
-3. If the record it is checked against has an `owner`, its `owner` is equal. Otherwise, the reason
+1. It exists. Otherwise, the problem is `Missing`.
+2. Its `bootId` equals the context's `bootId`. Otherwise, the problem is `OtherBoot`.
+3. If the record it is checked against has an `owner`, its `owner` is equal. Otherwise, the problem
    is `OwnerMismatch`.
 4. If the record it is checked against has an `expectedTag`, its `tag` is equal. Otherwise, the
-   reason is `TagMismatch`.
-5. Its `observedAtMs` is at most `nowMs`. Otherwise, the reason is `Future`.
+   problem is `TagMismatch`.
+5. Its `observedAtMs` is at most `nowMs`. Otherwise, the problem is `Future`.
 6. Its age, `nowMs` minus `observedAtMs`, is less than its `maxAgeMs` and less than every
-   `maxAgeMs` of the records it is checked against. Otherwise, the reason is `Expired`.
+   `maxAgeMs` of the records it is checked against. Otherwise, the problem is `Expired`.
 
-The first condition that does not hold determines the reason. Evidence that is not fresh is not
-used, and the node's answers are `Unknown`/`Unknown` with that reason. If evidence is fresh, the
+The first condition that does not hold determines the problem. Evidence that is not fresh is not
+used, and the node's answers are `Unknown`/`Unknown` with that problem. If evidence is fresh, the
 rules of the node's type determine the answers from it, and the node's result carries its
 `message` and `annotations`.
 
@@ -810,8 +810,8 @@ record HealthStatus {
 }
 ```
 
-Writers MUST NOT publish two status records for the same node. If several status records refer to
-an observed node, its answers are `Unknown`/`Unknown`, with the reason `Conflict`, and the evaluator
+Writers MUST NOT publish two status records for the same node. If several status records refer to an
+observed node, its answers are `Unknown`/`Unknown`, with the problem `Conflict`, and the evaluator
 adds a diagnostic with the severity `Warning`. Status records that refer to no observed node are
 ignored.
 
@@ -946,13 +946,13 @@ A range MUST NOT be empty: if it has both bounds, the lower value MUST NOT excee
 and if both values are equal, both bounds MUST be inclusive. The healthy range MUST be a subset of
 the usable range.
 
-If the metric has no definition, the node's answers are `Unknown`/`Unknown`, with the reason
+If the metric has no definition, the node's answers are `Unknown`/`Unknown`, with the problem
 `Missing`. If the metric has several definitions or several samples, or if the rule has a `unit`
-that differs from the definition's unit, the node's answers are `Unknown`/`Unknown`, with the reason
-`Conflict`, and the evaluator adds a diagnostic with the severity `Warning`. Otherwise, the metric's
-sample is checked against the metric's definition and the rule: its owner against the definition's
-`owner`, its tag against the definition's `expectedTag`, and its age against the `maxAgeMs` of both.
-If the sample is fresh, the node's answers are:
+that differs from the definition's unit, the node's answers are `Unknown`/`Unknown`, with the
+problem `Conflict`, and the evaluator adds a diagnostic with the severity `Warning`. Otherwise, the
+metric's sample is checked against the metric's definition and the rule: its owner against the
+definition's `owner`, its tag against the definition's `expectedTag`, and its age against the
+`maxAgeMs` of both. If the sample is fresh, the node's answers are:
 
 - `Yes`/`Yes` if the value lies in the healthy range,
 - `Yes`/`No` if it lies in the usable range but not in the healthy range, and
@@ -1110,12 +1110,12 @@ configurations ([Section 5](#5-diagnostics)). It proceeds as follows:
 1. It skips invalid records, for example, nodes with an empty range or evidence with a `maxAgeMs`
    of zero, and adds a diagnostic with the severity `Error` for each.
 2. If several nodes have the same ID, it evaluates none of them. The ID has one result, at the
-   position of the first of these nodes, with the answers `Unknown`/`Unknown`, the reason
+   position of the first of these nodes, with the answers `Unknown`/`Unknown`, the problem
    `Conflict`, no owner, and no inputs. These nodes do not attach to other nodes, and attachments
    to their ID are ignored. The evaluator adds a diagnostic with the severity `Error` for the ID.
 3. It adds the attached inputs of the remaining aggregate nodes
    ([Section 8.7](#87-aggregate-nodes)).
-4. It gives every node on a cycle the answers `Unknown`/`Unknown` and the reason `Cycle`, and adds
+4. It gives every node on a cycle the answers `Unknown`/`Unknown` and the problem `Cycle`, and adds
    a diagnostic with the severity `Warning` for each. A node is on a cycle if it is an input of
    itself, directly or through other aggregate nodes.
 5. It determines the answers of every other node by the rules of its type.
@@ -1144,8 +1144,8 @@ record HealthNodeResult {
     healthy: Answer,
     /// IDs of the inputs of an aggregate node; empty for other nodes.
     inputs: [HealthNodeId],
-    /// Why the node's evidence was not used or its rule was not applied.
-    reason?: Reason,
+    /// Problem that kept the node's evidence or rule from determining its answers.
+    problem?: HealthProblem,
     /// Message of the fresh evidence.
     message?: string,
     /// Annotations of the fresh evidence.
@@ -1153,7 +1153,7 @@ record HealthNodeResult {
 }
 ```
 
-The reasons are:
+The problems are:
 
 - `Missing`, `OtherBoot`, `OwnerMismatch`, `TagMismatch`, `Future`, and `Expired` for evidence
   that is not fresh ([Section 8.3](#83-evidence)), and `Missing` also for a metric without a
@@ -1163,7 +1163,8 @@ The reasons are:
 - `Unsupported` for a rule type, answer, or input mode unknown to the evaluator
   ([Section 12](#12-evolution)).
 
-Other results of aggregate nodes have no reason; their inputs explain them.
+An aggregate node whose rule determines its answers has no problem; its inputs explain its
+answers.
 
 > **Example:** An app's observed node `telemetry` attaches itself to `device.apps`, an aggregate
 > node without own inputs. If the app's status record expires, the report is:
@@ -1177,7 +1178,7 @@ Other results of aggregate nodes have no reason; their inputs explain them.
 >       "usable": "Unknown",
 >       "healthy": "Unknown",
 >       "inputs": [],
->       "reason": "Expired"
+>       "problem": "Expired"
 >     }
 >   ],
 >   "diagnostics": []
@@ -1430,10 +1431,9 @@ The schemas describe what writers produce. Implementations MUST ignore fields th
 and MUST treat values they do not know as follows:
 
 - **Health evaluators** treat an unknown rule type, or an unknown answer of a fresh status record,
-  as unsupported: the node's answers are `Unknown`/`Unknown`, with the reason `Unsupported`. An
+  as unsupported: the node's answers are `Unknown`/`Unknown`, with the problem `Unsupported`. An
   unknown input mode makes the aggregate node's answers unsupported in the same way.
-- **Consumers** report an unknown compatibility problem without further detail and treat an
-  unknown reason as no reason.
+- **Consumers** report an unknown compatibility or health problem without further detail.
 - **Readers of snapshots and consumers** treat a diagnostic of an unknown kind as of the kind
   `DirectoryConfig`, and one of an unknown severity as an error.
 

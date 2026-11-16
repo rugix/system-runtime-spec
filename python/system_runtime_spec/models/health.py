@@ -126,7 +126,7 @@ class HealthNodeResult(_sidex.Model):
     usable: Answer = pydantic.Field(description="Whether the minimum criteria are met.")
     healthy: Answer = pydantic.Field(description="Whether the desired criteria are met.")
     inputs: list[HealthNodeId] = pydantic.Field(description="IDs of the inputs of an aggregate node; empty for other nodes.")
-    reason: Reason | None = pydantic.Field(default=None, description="Why the node's evidence was not used or its rule was not applied.")
+    problem: HealthProblem | None = pydantic.Field(default=None, description="Problem that kept the node's evidence or rule from determining its answers.")
     message: str | None = pydantic.Field(default=None, description="Message of the fresh evidence.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Annotations of the fresh evidence.")
 
@@ -177,5 +177,5 @@ type InputMode = Literal["Counted", "Mandatory", "Optional"]
 type Answer = Literal["Yes", "No", "Unknown"]
 
 
-# Why a node's evidence was not used or its rule was not applied.
-type Reason = Literal["Missing", "OtherBoot", "OwnerMismatch", "TagMismatch", "Future", "Expired", "Conflict", "Cycle", "Unsupported"]
+# Problem that keeps a node's evidence or rule from determining its answers.
+type HealthProblem = Literal["Missing", "OtherBoot", "OwnerMismatch", "TagMismatch", "Future", "Expired", "Conflict", "Cycle", "Unsupported"]

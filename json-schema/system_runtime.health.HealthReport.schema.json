@@ -99,8 +99,8 @@
             "$ref": "#/$defs/system_runtime.health.HealthNodeId"
           }
         },
-        "reason": {
-          "$ref": "#/$defs/system_runtime.health.Reason"
+        "problem": {
+          "$ref": "#/$defs/system_runtime.health.HealthProblem"
         },
         "message": {
           "type": "string"
@@ -118,7 +118,7 @@
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.health.Reason": {
+    "system_runtime.health.HealthProblem": {
       "enum": [
         "Missing",
         "OtherBoot",
@@ -130,7 +130,7 @@
         "Cycle",
         "Unsupported"
       ],
-      "description": "Why a node's evidence was not used or its rule was not applied."
+      "description": "Problem that keeps a node's evidence or rule from determining its answers."
     }
   }
 }
