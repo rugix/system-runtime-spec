@@ -45,7 +45,7 @@ _ID = re.compile(r"[!-~]+")
 _U64_MAX = 2**64 - 1
 
 _RULE_TYPES = ("Observed", "Threshold", "Aggregate")
-_STATES = ("Healthy", "Degraded", "Unhealthy", "Unknown")
+_ANSWERS = ("Yes", "No", "Unknown")
 _MODES = ("Counted", "Mandatory", "Optional")
 
 
@@ -91,12 +91,12 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
     if model is HealthNode:
         unsupported = _node_fallbacks(data, attachments)
     elif model is HealthStatus:
-        state = data.get("state")
-        if state not in _STATES:
-            if not isinstance(state, str):
-                raise InvalidRecord("state is not a string")
+        for key in ("usable", "healthy"):
+            if not isinstance(data.get(key), str):
+                raise InvalidRecord(f"{key} is not a string")
+        if data["usable"] not in _ANSWERS or data["healthy"] not in _ANSWERS:
             unsupported = True
-            data["state"] = "Unknown"
+            data["usable"] = data["healthy"] = "Unknown"
     try:
         instance = model.model_validate(data)
     except pydantic.ValidationError as error:
@@ -268,6 +268,10 @@ def _check_ranges(healthy: MetricRange, usable: MetricRange) -> None:
 
 def _validate_status(record: HealthStatus) -> None:
     _check_positive(record.max_age_ms, "maxAgeMs")
+    if record.healthy == "Yes" and record.usable != "Yes":
+        raise InvalidRecord("healthy is Yes but usable is not")
+    if record.usable == "No" and record.healthy != "No":
+        raise InvalidRecord("usable is No but healthy is not")
 
 
 def _validate_metric(record: MetricDefinition) -> None:

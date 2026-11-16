@@ -12,7 +12,7 @@ const SUPPORTED_MINOR = 0n;
 const U64_MAX = (1n << 64n) - 1n;
 
 const RULE_TYPES = ["Observed", "Threshold", "Aggregate"];
-const STATES = ["Healthy", "Degraded", "Unhealthy", "Unknown"];
+const ANSWERS = ["Yes", "No", "Unknown"];
 const MODES = ["Counted", "Mandatory", "Optional"];
 
 /** Models of the kinds of records that `Records` holds, by kind. */
@@ -123,10 +123,13 @@ export function decode<K extends RecordModelKind>(kind: K, json: unknown): Recor
       }
     }
   } else if (kind === "HealthStatus") {
-    if (typeof data.state !== "string") throw new InvalidRecord("state is not a string");
-    if (!STATES.includes(data.state)) {
+    const { usable, healthy } = data;
+    if (typeof usable !== "string") throw new InvalidRecord("usable is not a string");
+    if (typeof healthy !== "string") throw new InvalidRecord("healthy is not a string");
+    if (!ANSWERS.includes(usable) || !ANSWERS.includes(healthy)) {
       unsupported = true;
-      data.state = "Unknown";
+      data.usable = "Unknown";
+      data.healthy = "Unknown";
     }
   }
   const report = CHECKERS[kind].check(data);
@@ -223,6 +226,12 @@ const VALIDATORS: { [K in RecordModelKind]: (record: RecordModels[K]) => void } 
   },
   HealthStatus(record) {
     checkPositive(record.maxAgeMs, "maxAgeMs");
+    if (record.healthy === "Yes" && record.usable !== "Yes") {
+      throw new InvalidRecord("healthy is Yes but usable is not");
+    }
+    if (record.usable === "No" && record.healthy !== "No") {
+      throw new InvalidRecord("usable is No but healthy is not");
+    }
   },
   MetricDefinition(record) {
     for (const component of record.components ?? []) checkId(component, "component ID");

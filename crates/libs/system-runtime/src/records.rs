@@ -14,7 +14,7 @@ pub(crate) const SUPPORTED_MAJOR: u64 = 1;
 const SUPPORTED_MINOR: u64 = 0;
 
 const RULE_TYPES: [&str; 3] = ["Observed", "Threshold", "Aggregate"];
-const STATES: [&str; 4] = ["Healthy", "Degraded", "Unhealthy", "Unknown"];
+const ANSWERS: [&str; 3] = ["Yes", "No", "Unknown"];
 const MODES: [&str; 3] = ["Counted", "Mandatory", "Optional"];
 
 /// The records of a system and the diagnostics about them.
@@ -351,10 +351,13 @@ pub(crate) fn decode<T: sidex::Decode>(
             }
         }
         DiagnosticKind::HealthStatus => {
-            let state = string(record.get("state").unwrap_or(&JsonValue::Null), "state")?;
-            if !STATES.contains(&state) {
-                unsupported = true;
-                record.insert("state".into(), "Unknown".into());
+            for key in ["usable", "healthy"] {
+                let answer = string(record.get(key).unwrap_or(&JsonValue::Null), key)?;
+                unsupported |= !ANSWERS.contains(&answer);
+            }
+            if unsupported {
+                record.insert("usable".into(), "Unknown".into());
+                record.insert("healthy".into(), "Unknown".into());
             }
         }
         _ => {}
@@ -397,6 +400,20 @@ fn check_positive(value: &JsonValue, key: &str) -> Result<(), String> {
         return Err(format!("{key} is zero"));
     }
     Ok(())
+}
+
+/// Check that the answers of a status record do not contradict each other.
+fn check_answers(record: &JsonValue) -> Result<(), String> {
+    let answer = |key: &str| get(record, key).and_then(JsonValue::as_str);
+    match (answer("usable"), answer("healthy")) {
+        (Some(usable), Some("Yes")) if usable != "Yes" => {
+            Err("healthy is Yes but usable is not".to_owned())
+        }
+        (Some("No"), Some(healthy)) if healthy != "No" => {
+            Err("usable is No but healthy is not".to_owned())
+        }
+        _ => Ok(()),
+    }
 }
 
 fn finite(value: Option<&JsonValue>, what: &str) -> Result<f64, String> {
@@ -455,7 +472,11 @@ fn validate(kind: DiagnosticKind, record: &JsonValue) -> Result<(), String> {
                 }
             }
         }
-        DiagnosticKind::HealthStatus | DiagnosticKind::MetricDefinition => {
+        DiagnosticKind::HealthStatus => {
+            check_positive(record, "maxAgeMs")?;
+            check_answers(record)?;
+        }
+        DiagnosticKind::MetricDefinition => {
             check_positive(record, "maxAgeMs")?;
         }
         DiagnosticKind::MetricSample => {

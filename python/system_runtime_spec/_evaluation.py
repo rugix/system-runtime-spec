@@ -11,7 +11,6 @@ from .models.health import (
     HealthRule_Aggregate,
     HealthRule_Observed,
     HealthRule_Threshold,
-    HealthState,
     HealthStatus,
     InputMode,
     Reason,
@@ -20,12 +19,6 @@ from .models.metric import MetricDefinition, MetricRange, MetricSample
 
 type Answers = tuple[Answer, Answer]
 
-_STATE_ANSWERS: dict[HealthState, Answers] = {
-    "Healthy": ("Yes", "Yes"),
-    "Degraded": ("Yes", "No"),
-    "Unhealthy": ("No", "No"),
-    "Unknown": ("Unknown", "Unknown"),
-}
 _UNKNOWN: Answers = ("Unknown", "Unknown")
 
 
@@ -293,7 +286,7 @@ class _Evaluation:
         if status.unsupported:
             result.reason = "Unsupported"
         else:
-            result.usable, result.healthy = _STATE_ANSWERS[status.value.state]
+            result.usable, result.healthy = status.value.usable, status.value.healthy
         result.message = status.value.message
         result.details = status.value.details
 

@@ -155,9 +155,13 @@ export const InputMode = {
                                             * ID of the observed node.
                                             */
                                                         "id": HealthNodeId, /**
-                                            * Result of the check.
+                                            * Whether the minimum criteria are met.
                                             */
-                                                        "state": HealthState, /**
+                                                        "usable": Answer, /**
+                                            * Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires
+                                            * `No`.
+                                            */
+                                                        "healthy": Answer, /**
                                             * ID of the boot during which the check took place.
                                             */
                                                         "bootId": __sidex_types.builtins.String, /**
@@ -184,15 +188,7 @@ export const InputMode = {
                                                         "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const HealthStatus = {
-    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
-};
-/**
- * Summary of the answers of a node.
- */
- export type HealthState = ("Healthy" | "Degraded" | "Unhealthy" | "Unknown");
-
-export const HealthState = {
-    ...__sidex_types.checker<HealthState>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Healthy", null, null], ["Degraded", null, null], ["Unhealthy", null, null], ["Unknown", null, null]])),
+    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
  * Answer to whether criteria are met.

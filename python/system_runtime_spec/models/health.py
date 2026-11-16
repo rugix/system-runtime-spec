@@ -82,7 +82,8 @@ class HealthStatus(_sidex.Model):
 
     spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
     id: HealthNodeId = pydantic.Field(description="ID of the observed node.")
-    state: HealthState = pydantic.Field(description="Result of the check.")
+    usable: Answer = pydantic.Field(description="Whether the minimum criteria are met.")
+    healthy: Answer = pydantic.Field(description="Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires\n`No`.")
     boot_id: str = pydantic.Field(description="ID of the boot during which the check took place.", validation_alias="bootId", serialization_alias="bootId")
     observed_at_ms: _sidex.U64 = pydantic.Field(description="Boot-time clock value, in milliseconds, when the check took place.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
     max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the status record is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
@@ -171,10 +172,6 @@ type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthR
 
 # How an input affects the answers of an aggregate node.
 type InputMode = Literal["Counted", "Mandatory", "Optional"]
-
-
-# Summary of the answers of a node.
-type HealthState = Literal["Healthy", "Degraded", "Unhealthy", "Unknown"]
 
 
 # Answer to whether criteria are met.

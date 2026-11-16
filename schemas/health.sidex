@@ -105,8 +105,11 @@ record HealthStatus {
     spec_version?: string,
     /// ID of the observed node.
     id: HealthNodeId,
-    /// Result of the check.
-    state: HealthState,
+    /// Whether the minimum criteria are met.
+    usable: Answer,
+    /// Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires
+    /// `No`.
+    healthy: Answer,
     /// ID of the boot during which the check took place.
     boot_id: string,
     /// Boot-time clock value, in milliseconds, when the check took place.
@@ -123,20 +126,6 @@ record HealthStatus {
     details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
-}
-
-/// Summary of the answers of a node.
-#[json(tagged = externally)]
-#[rust(derive(Copy, Eq))]
-variant HealthState {
-    /// The desired criteria are met.
-    Healthy,
-    /// The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.
-    Degraded,
-    /// The minimum criteria are not met.
-    Unhealthy,
-    /// Whether the minimum criteria are met is unknown.
-    Unknown,
 }
 
 /// Answer to whether criteria are met.

@@ -1,7 +1,7 @@
 import { builtins } from "@sidex/types";
 import type { Diagnostic, DiagnosticKind, Severity } from "./generated/common.js";
 import type {
-  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthReport, HealthState,
+  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthReport,
   HealthStatus, InputMode, ObservationRule, Reason, ThresholdRule,
 } from "./generated/health.js";
 import type { MetricDefinition, MetricRange, MetricSample } from "./generated/metric.js";
@@ -10,12 +10,6 @@ import { type Record, diagnostic } from "./decoding.js";
 type Answers = [Answer, Answer];
 
 const UNKNOWN: Answers = ["Unknown", "Unknown"];
-const STATE_ANSWERS: { [S in HealthState]: Answers } = {
-  Healthy: ["Yes", "Yes"],
-  Degraded: ["Yes", "No"],
-  Unhealthy: ["No", "No"],
-  Unknown: UNKNOWN,
-};
 const { U64, F64 } = builtins;
 
 function conjunction(answers: Answer[]): Answer {
@@ -274,7 +268,7 @@ class Evaluation {
       return;
     }
     if (status.unsupported) result.reason = "Unsupported";
-    else [result.usable, result.healthy] = STATE_ANSWERS[status.value.state];
+    else [result.usable, result.healthy] = [status.value.usable, status.value.healthy];
     this.copyMessageAndDetails(result, status.value);
   }
 

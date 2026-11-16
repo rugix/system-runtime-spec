@@ -749,15 +749,6 @@
       }
     ]
   },
-  "system_runtime.health.HealthState": {
-    "enum": [
-      "Healthy",
-      "Degraded",
-      "Unhealthy",
-      "Unknown"
-    ],
-    "description": "Summary of the answers of a node."
-  },
   "system_runtime.health.HealthStatus": {
     "type": "object",
     "description": "Result of a check, published while the system runs.",
@@ -768,8 +759,11 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
-      "state": {
-        "$ref": "#/components/schemas/system_runtime.health.HealthState"
+      "usable": {
+        "$ref": "#/components/schemas/system_runtime.health.Answer"
+      },
+      "healthy": {
+        "$ref": "#/components/schemas/system_runtime.health.Answer"
       },
       "bootId": {
         "type": "string"
@@ -812,7 +806,8 @@
     },
     "required": [
       "id",
-      "state",
+      "usable",
+      "healthy",
       "bootId",
       "observedAtMs",
       "maxAgeMs"

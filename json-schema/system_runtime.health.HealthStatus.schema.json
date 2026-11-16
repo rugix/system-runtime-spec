@@ -10,8 +10,11 @@
     "id": {
       "$ref": "#/$defs/system_runtime.health.HealthNodeId"
     },
-    "state": {
-      "$ref": "#/$defs/system_runtime.health.HealthState"
+    "usable": {
+      "$ref": "#/$defs/system_runtime.health.Answer"
+    },
+    "healthy": {
+      "$ref": "#/$defs/system_runtime.health.Answer"
     },
     "bootId": {
       "type": "string"
@@ -54,25 +57,25 @@
   },
   "required": [
     "id",
-    "state",
+    "usable",
+    "healthy",
     "bootId",
     "observedAtMs",
     "maxAgeMs"
   ],
   "unevaluatedProperties": false,
   "$defs": {
+    "system_runtime.health.Answer": {
+      "enum": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "description": "Answer to whether criteria are met."
+    },
     "system_runtime.health.HealthNodeId": {
       "type": "string",
       "description": "ID of a health node."
-    },
-    "system_runtime.health.HealthState": {
-      "enum": [
-        "Healthy",
-        "Degraded",
-        "Unhealthy",
-        "Unknown"
-      ],
-      "description": "Summary of the answers of a node."
     }
   }
 }

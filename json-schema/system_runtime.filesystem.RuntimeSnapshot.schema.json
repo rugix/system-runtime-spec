@@ -215,6 +215,14 @@
       ],
       "unevaluatedProperties": false
     },
+    "system_runtime.health.Answer": {
+      "enum": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "description": "Answer to whether criteria are met."
+    },
     "system_runtime.health.Attachment": {
       "type": "object",
       "description": "Attachment of a node to an aggregate node as an input.",
@@ -415,15 +423,6 @@
         }
       ]
     },
-    "system_runtime.health.HealthState": {
-      "enum": [
-        "Healthy",
-        "Degraded",
-        "Unhealthy",
-        "Unknown"
-      ],
-      "description": "Summary of the answers of a node."
-    },
     "system_runtime.health.HealthStatus": {
       "type": "object",
       "description": "Result of a check, published while the system runs.",
@@ -434,8 +433,11 @@
         "id": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "state": {
-          "$ref": "#/$defs/system_runtime.health.HealthState"
+        "usable": {
+          "$ref": "#/$defs/system_runtime.health.Answer"
+        },
+        "healthy": {
+          "$ref": "#/$defs/system_runtime.health.Answer"
         },
         "bootId": {
           "type": "string"
@@ -478,7 +480,8 @@
       },
       "required": [
         "id",
-        "state",
+        "usable",
+        "healthy",
         "bootId",
         "observedAtMs",
         "maxAgeMs"

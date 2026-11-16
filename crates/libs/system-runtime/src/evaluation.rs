@@ -38,15 +38,6 @@ type Answers = (Answer, Answer);
 
 const UNKNOWN: Answers = (Answer::Unknown, Answer::Unknown);
 
-fn state_answers(state: HealthState) -> Answers {
-    match state {
-        HealthState::Healthy => (Answer::Yes, Answer::Yes),
-        HealthState::Degraded => (Answer::Yes, Answer::No),
-        HealthState::Unhealthy => (Answer::No, Answer::No),
-        HealthState::Unknown => UNKNOWN,
-    }
-}
-
 fn conjunction(answers: impl IntoIterator<Item = Answer>) -> Answer {
     let mut result = Answer::Yes;
     for answer in answers {
@@ -457,7 +448,7 @@ impl<'a> Evaluation<'a> {
         if status.unsupported {
             result.reason = Some(Reason::Unsupported);
         } else {
-            (result.usable, result.healthy) = state_answers(record.state);
+            (result.usable, result.healthy) = (record.usable, record.healthy);
         }
         result.message = record.message.clone();
         result.details = record.details.clone();

@@ -27,7 +27,7 @@ const snapshot = Snapshot.fromJSON({
   specVersion: "1.0",
   clock: { context: { bootId: "boot", nowMs: 45000 }, timestamp: "2026-10-14T12:00:00Z" },
   healthNodes: [{ id: "app" }],
-  healthStatuses: [{ id: "app", state: "Healthy", bootId: "boot", observedAtMs: 42000, maxAgeMs: 5000 }],
+  healthStatuses: [{ id: "app", usable: "Yes", healthy: "Yes", bootId: "boot", observedAtMs: 42000, maxAgeMs: 5000 }],
   metrics: [],
   metricSamples: [],
 });

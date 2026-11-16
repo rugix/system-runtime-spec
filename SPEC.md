@@ -628,16 +628,13 @@ variant Answer {
 }
 ```
 
-A node that is healthy is usable, and a node that is not usable is not healthy. For display and for
-publishing, the answers are summarized as four _health states_:
+A node that is healthy is usable, and a node that is not usable is not healthy. For display, tools
+can summarize the answers as four _health states_:
 
 - `Healthy`: healthy `Yes`.
 - `Degraded`: usable `Yes` and healthy `No` or `Unknown`.
 - `Unhealthy`: usable `No`.
 - `Unknown`: usable `Unknown`.
-
-A status record ([Section 8.4](#84-observed-nodes-and-status-records)) reports one of these states,
-which corresponds to the answers `Yes`/`Yes`, `Yes`/`No`, `No`/`No`, or `Unknown`/`Unknown`.
 
 > **Note:** A consumer that makes a decision chooses the answer it requires: healthy `Yes` for the
 > desired criteria or usable `Yes` for the minimum criteria. `Unknown` satisfies neither.
@@ -792,8 +789,11 @@ record HealthStatus {
     spec_version?: string,
     /// ID of the observed node.
     id: HealthNodeId,
-    /// Result of the check.
-    state: HealthState,
+    /// Whether the minimum criteria are met.
+    usable: Answer,
+    /// Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires
+    /// `No`.
+    healthy: Answer,
     /// ID of the boot during which the check took place.
     boot_id: string,
     /// Boot-time clock value, in milliseconds, when the check took place.
@@ -811,19 +811,6 @@ record HealthStatus {
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
 }
-
-/// Summary of the answers of a node.
-#[json(tagged = externally)]
-variant HealthState {
-    /// The desired criteria are met.
-    Healthy,
-    /// The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.
-    Degraded,
-    /// The minimum criteria are not met.
-    Unhealthy,
-    /// Whether the minimum criteria are met is unknown.
-    Unknown,
-}
 ```
 
 Writers MUST NOT publish two status records for the same node. If several status records refer to
@@ -833,16 +820,15 @@ ignored.
 
 Otherwise, the status record of an observed node is checked against the node: its owner against
 the node's `owner`, its tag against the rule's `expectedTag`, and its age against the rule's
-`maxAgeMs`. If the status record is fresh, the node's answers correspond to its `state` as defined
-in [Section 8.1](#81-health-answers).
+`maxAgeMs`. If the status record is fresh, the node's answers are the answers of the status record.
 
-> **Note:** A check reports `Degraded` when it is usable but not fully healthy, for example, a
-> disk check that sees little free space. It reports `Unknown` when it cannot reach a conclusion,
-> for example, because a dependency of the check itself is unavailable.
+A status record is invalid if its answers contradict [Section 8.1](#81-health-answers): if `healthy`
+is `Yes` and `usable` is not, or if `usable` is `No` and `healthy` is not.
 
-> **Note:** A status record cannot express the answers `Yes`/`Unknown` and `Unknown`/`No`, so it
-> cannot relay the result of an evaluation. A system that passes on the health of another system,
-> such as an attached device, passes on that system's own snapshot ([Section 11](#11-transport)).
+> **Note:** A disk check that sees little free space reports `Yes`/`No`. A check that confirms
+> its minimum criteria but cannot check its desired criteria reports `Yes`/`Unknown`. A check that
+> cannot reach any conclusion, for example, because a dependency of the check itself is
+> unavailable, reports `Unknown`/`Unknown`.
 
 ### 8.5 Metrics
 
@@ -1178,7 +1164,7 @@ The reasons are:
   definition,
 - `Conflict` for records that contradict each other, such as two nodes with the same ID,
 - `Cycle` for a node on a cycle, and
-- `Unsupported` for a rule type, state, or input mode unknown to the evaluator
+- `Unsupported` for a rule type, answer, or input mode unknown to the evaluator
   ([Section 12](#12-evolution)).
 
 Other results of aggregate nodes have no reason; their inputs explain them.
@@ -1447,7 +1433,7 @@ uses them, applying the fallbacks of this section, and reports a diagnostic with
 The schemas describe what writers produce. Implementations MUST ignore fields they do not know,
 and MUST treat values they do not know as follows:
 
-- **Health evaluators** treat an unknown rule type, or an unknown state of a fresh status record,
+- **Health evaluators** treat an unknown rule type, or an unknown answer of a fresh status record,
   as unsupported: the node's answers are `Unknown`/`Unknown`, with the reason `Unsupported`. An
   unknown input mode makes the aggregate node's answers unsupported in the same way.
 - **Consumers** report an unknown compatibility problem without further detail and treat an
