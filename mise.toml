@@ -43,3 +43,21 @@ run = ["npm ci", "npm run check", "npm test", "npm pack"]
 
 [tasks.check]
 depends = ["check:generated", "check:rust", "check:python", "check:typescript"]
+
+[tasks.lock]
+description = "Refresh the lockfiles after changing package versions"
+run = [
+    "cargo update --workspace",
+    "uv lock --project python",
+    "npm install --package-lock-only --ignore-scripts --prefix typescript",
+]
+
+[tasks."release:preview"]
+description = "Show what a release of the current commit publishes and its notes"
+usage = 'arg "[tag]" help="Release tag, by default the current UTC date"'
+run = "python scripts/release.py preview ${usage_tag:-}"
+
+[tasks."release:tag"]
+description = "Tag the latest commit of main as a release and push the tag"
+usage = 'arg "[tag]" help="Release tag, by default the current UTC date"'
+run = "python scripts/release.py tag ${usage_tag:-}"

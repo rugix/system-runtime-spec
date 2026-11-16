@@ -70,6 +70,14 @@ class ReleaseTests(unittest.TestCase):
         self.commit_and_tag("2026.11.02")
         self.assertEqual(plan_release(self.root, "2026.11.02").published, set())
 
+    def test_untagged_commit(self) -> None:
+        """Check a commit before it is tagged, as a release preview does."""
+        (self.root / "typescript/README.md").write_text("Changed.\n")
+        self.git("add", "--all")
+        self.git("commit", "--quiet", "--message", "Change")
+        with self.assertRaisesRegex(ValueError, "TypeScript package changed"):
+            plan_release(self.root, "2026.11.02", "HEAD")
+
     def test_missing_bump(self) -> None:
         """Reject a changed package that keeps its version."""
         (self.root / "typescript/README.md").write_text("Changed.\n")

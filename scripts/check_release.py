@@ -65,8 +65,12 @@ def check_versions(read: Reader) -> dict[str, str]:
     return versions
 
 
-def plan_release(root: Path, tag: str) -> Release:
-    """Compare release `tag` with the previous release and check the version bumps."""
+def plan_release(root: Path, tag: str, commit: str | None = None) -> Release:
+    """Compare release `tag` with the previous release and check the version bumps.
+
+    The release consists of `commit`, which defaults to the commit that `tag` names.
+    """
+    commit = commit or tag
     key = tag_key(tag)
     if key is None:
         raise ValueError(f"Release tag must be a date such as 2026.11.16, got {tag!r}")
@@ -76,16 +80,16 @@ def plan_release(root: Path, tag: str) -> Release:
         if (other_key := tag_key(other)) is not None and other_key < key
     ]
     previous = max(earlier, key=tag_key, default=None)
-    versions = check_versions(lambda path: git(root, "show", f"{tag}:{path}"))
+    versions = check_versions(lambda path: git(root, "show", f"{commit}:{path}"))
     if previous is None:
         return Release(tag, None, versions, set(versions))
-    if run_git(root, "merge-base", "--is-ancestor", previous, tag).returncode != 0:
+    if run_git(root, "merge-base", "--is-ancestor", previous, commit).returncode != 0:
         raise ValueError(f"Release {tag} must contain the previous release {previous}")
     before = check_versions(lambda path: git(root, "show", f"{previous}:{path}"))
     # A package's version is part of its files, so unchanged packages keep it.
     published = set()
     for package in PACKAGES:
-        if not git(root, "diff", "--name-only", previous, tag, "--", *package.paths):
+        if not git(root, "diff", "--name-only", previous, commit, "--", *package.paths):
             continue
         version, old = versions[package.registry], before[package.registry]
         if version_key(version) <= version_key(old):

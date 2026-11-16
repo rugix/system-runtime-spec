@@ -39,9 +39,7 @@ Refresh the lockfiles and run the checks:
 
 ```sh
 mise install
-mise exec -- cargo update --workspace
-mise exec -- uv lock --project python
-mise exec -- npm install --package-lock-only --ignore-scripts --prefix typescript
+mise run lock
 mise run check
 ```
 
@@ -55,23 +53,28 @@ commit:
 mise exec -- cargo publish --dry-run --locked
 ```
 
-To check the version bumps before pushing the tag, tag the commit locally and run the release
-check. It lists the packages that the release publishes:
+To preview the release of the checked-out commit, run:
 
 ```sh
-git tag 2026.11.16
-mise exec -- python scripts/check_release.py --tag 2026.11.16
+mise run release:preview
 ```
+
+The preview checks the version bumps against the previous release, lists the packages that the
+release publishes, and prints the release notes. GitHub's list of merged pull requests requires
+the [GitHub CLI](https://cli.github.com) with access to the repository and the commit pushed to
+GitHub. The tag defaults to the current UTC date; pass a tag to override it, such as
+`mise run release:preview 2026.11.16.1`.
 
 ## Publish a Release
 
-Check out the merged release commit with a clean working tree, then tag it with the current UTC
-date and push the tag:
+Check out the latest commit of `main` with a clean working tree, then tag and push the release:
 
 ```sh
-git tag 2026.11.16
-git push origin 2026.11.16
+mise run release:tag
 ```
+
+The task refuses to tag anything other than the latest commit of `origin/main` and runs the same
+version check as the preview before it pushes the tag.
 
 Watch the Release workflow until the publishing jobs and the GitHub release job succeed. Verify
 each registry entry and install the published versions in a fresh consumer project before
