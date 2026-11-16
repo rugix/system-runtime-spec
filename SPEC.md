@@ -225,15 +225,13 @@ the fallbacks of this section, and reports a diagnostic with the severity `Warni
 The schemas describe what writers produce. Implementations MUST ignore fields they do not know,
 and MUST treat values they do not know as follows:
 
-| Enumeration | Role | Fallback |
-| --- | --- | --- |
-| Health rule types ([Section 6.2](#62-health-graphs)) | Health evaluator | The node's result is unknown, with the reason `Unsupported`. |
-| Status states ([Section 6.4](#64-observed-nodes-and-status-records)) | Health evaluator | The node's result is unknown, with the reason `Unsupported`. |
-| Input modes ([Section 6.7](#67-aggregate-nodes)) | Health evaluator | The aggregate node's result is unknown, with the reason `Unsupported`. |
-| Compatibility problems ([Section 5.5](#55-compatibility-reports)) | Consumer | The problem is reported without further detail. |
-| Reasons ([Section 6.8](#68-evaluation-and-reports)) | Consumer | The result is treated as having no reason. |
-| Diagnostic kinds ([Section 3.2](#32-diagnostics)) | Reader of a snapshot, consumer | The diagnostic is treated as of the kind `DirectoryConfig`. |
-| Diagnostic severities ([Section 3.2](#32-diagnostics)) | Reader of a snapshot, consumer | The diagnostic is treated as an error. |
+- **Health evaluators** treat an unknown rule type or status state as unsupported: the node's
+  answers are `Unknown`/`Unknown`, with the reason `Unsupported`. An unknown input mode makes the
+  aggregate node's answers unsupported in the same way.
+- **Consumers** report an unknown compatibility problem without further detail and treat an
+  unknown reason as no reason.
+- **Readers of snapshots and consumers** treat a diagnostic of an unknown kind as of the kind
+  `DirectoryConfig`, and one of an unknown severity as an error.
 
 A change that readers cannot safely ignore requires a new major version. A new major version uses
 new standard directories ([Section 8.1](#81-directories)), so that older readers do not report its
