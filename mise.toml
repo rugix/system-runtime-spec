@@ -47,6 +47,7 @@ depends = ["check:generated", "check:rust", "check:python", "check:typescript"]
 [tasks."build:cli"]
 description = "Build the command-line tool for a Linux target into dist/"
 usage = 'arg "<target>" help="Rust target, such as aarch64-unknown-linux-musl"'
+shell = "bash -c"
 run = """
 set -euo pipefail
 version="${SYSTEM_RUNTIME_VERSION:-dev}"
