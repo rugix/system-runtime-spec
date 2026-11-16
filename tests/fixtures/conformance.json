@@ -2632,10 +2632,7 @@
             "bootId": "boot",
             "observedAtMs": 80,
             "maxAgeMs": 20,
-            "message": "low disk",
-            "details": {
-              "free": 12
-            }
+            "message": "low disk"
           }
         ]
       },
@@ -10381,7 +10378,7 @@
       }
     },
     {
-      "name": "message and details of fresh evidence",
+      "name": "message of fresh evidence",
       "records": {
         "healthNodes": [
           {
@@ -10396,13 +10393,7 @@
             "bootId": "boot",
             "observedAtMs": 900,
             "maxAgeMs": 500,
-            "message": "low disk",
-            "details": {
-              "free": 12,
-              "paths": [
-                "/data"
-              ]
-            }
+            "message": "low disk"
           }
         ]
       },
@@ -10417,13 +10408,7 @@
             "usable": "Yes",
             "healthy": "No",
             "inputs": [],
-            "message": "low disk",
-            "details": {
-              "free": 12,
-              "paths": [
-                "/data"
-              ]
-            }
+            "message": "low disk"
           }
         ],
         "diagnostics": []
@@ -10776,10 +10761,7 @@
             "bootId": "boot",
             "observedAtMs": 900,
             "maxAgeMs": 500,
-            "message": "ok",
-            "details": {
-              "k": "v"
-            }
+            "message": "ok"
           }
         ]
       },
@@ -10794,10 +10776,7 @@
             "usable": "Yes",
             "healthy": "Yes",
             "inputs": [],
-            "message": "ok",
-            "details": {
-              "k": "v"
-            }
+            "message": "ok"
           }
         ],
         "diagnostics": []

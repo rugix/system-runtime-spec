@@ -245,9 +245,8 @@ class Evaluation {
     return undefined;
   }
 
-  private copyMessageAndDetails(result: HealthNodeResult, evidence: HealthStatus | MetricSample): void {
+  private copyMessage(result: HealthNodeResult, evidence: HealthStatus | MetricSample): void {
     if (evidence.message !== undefined) result.message = evidence.message;
-    if (evidence.details !== undefined) result.details = evidence.details;
   }
 
   private observe(result: HealthNodeResult, node: HealthNode, rule: ObservationRule): void {
@@ -269,7 +268,7 @@ class Evaluation {
     }
     if (status.unsupported) result.reason = "Unsupported";
     else [result.usable, result.healthy] = [status.value.usable, status.value.healthy];
-    this.copyMessageAndDetails(result, status.value);
+    this.copyMessage(result, status.value);
   }
 
   private threshold(result: HealthNodeResult, node: HealthNode, rule: ThresholdRule): void {
@@ -306,7 +305,7 @@ class Evaluation {
     [result.usable, result.healthy] = contains(rule.healthy, value)
       ? ["Yes", "Yes"]
       : contains(rule.usable, value) ? ["Yes", "No"] : ["No", "No"];
-    this.copyMessageAndDetails(result, sample);
+    this.copyMessage(result, sample);
   }
 
   private aggregate(result: HealthNodeResult, rule: AggregationRule): void {

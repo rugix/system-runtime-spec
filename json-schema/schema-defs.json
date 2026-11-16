@@ -614,10 +614,6 @@
       },
       "message": {
         "type": "string"
-      },
-      "details": {
-        "type": "object",
-        "additionalProperties": {}
       }
     },
     "required": [
@@ -794,10 +790,6 @@
       },
       "message": {
         "type": "string"
-      },
-      "details": {
-        "type": "object",
-        "additionalProperties": {}
       },
       "annotations": {
         "type": "object",
@@ -1022,10 +1014,6 @@
       },
       "message": {
         "type": "string"
-      },
-      "details": {
-        "type": "object",
-        "additionalProperties": {}
       },
       "annotations": {
         "type": "object",

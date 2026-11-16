@@ -44,10 +44,8 @@ record MetricSample {
     owner?: string,
     /// Opaque label identifying the configuration or instance that took the evidence.
     tag?: string,
-    /// Explanation supplied by the writer.
+    /// Explanation for people, such as the output of a check; can span several lines.
     message?: string,
-    /// Further information about the observation, for display.
-    details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
 }

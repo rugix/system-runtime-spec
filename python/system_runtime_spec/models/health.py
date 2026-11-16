@@ -89,8 +89,7 @@ class HealthStatus(_sidex.Model):
     max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the status record is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     owner: str | None = pydantic.Field(default=None, description="Owner of the status record.")
     tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
-    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display.")
+    message: str | None = pydantic.Field(default=None, description="Explanation for people, such as the output of a check; can span several lines.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
@@ -129,7 +128,6 @@ class HealthNodeResult(_sidex.Model):
     inputs: list[HealthNodeId] = pydantic.Field(description="IDs of the inputs of an aggregate node; empty for other nodes.")
     reason: Reason | None = pydantic.Field(default=None, description="Why the node's evidence was not used or its rule was not applied.")
     message: str | None = pydantic.Field(default=None, description="Message of the fresh evidence.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Details of the fresh evidence.")
 
 
 class HealthRule_Observed(_sidex.Model):

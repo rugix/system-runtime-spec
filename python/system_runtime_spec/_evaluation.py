@@ -288,7 +288,6 @@ class _Evaluation:
         else:
             result.usable, result.healthy = status.value.usable, status.value.healthy
         result.message = status.value.message
-        result.details = status.value.details
 
     def _threshold(
         self, result: HealthNodeResult, node: HealthNode, rule: HealthRule_Threshold
@@ -334,7 +333,6 @@ class _Evaluation:
         else:
             result.usable, result.healthy = "No", "No"
         result.message = sample.message
-        result.details = sample.details
 
     def _aggregate(self, result: HealthNodeResult, rule: HealthRule_Aggregate) -> None:
         inputs = self.inputs[result.id]

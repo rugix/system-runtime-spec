@@ -46,10 +46,6 @@
     "message": {
       "type": "string"
     },
-    "details": {
-      "type": "object",
-      "additionalProperties": {}
-    },
     "annotations": {
       "type": "object",
       "additionalProperties": {}

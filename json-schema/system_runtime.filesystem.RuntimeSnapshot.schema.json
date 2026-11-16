@@ -469,10 +469,6 @@
         "message": {
           "type": "string"
         },
-        "details": {
-          "type": "object",
-          "additionalProperties": {}
-        },
         "annotations": {
           "type": "object",
           "additionalProperties": {}
@@ -629,10 +625,6 @@
         },
         "message": {
           "type": "string"
-        },
-        "details": {
-          "type": "object",
-          "additionalProperties": {}
         },
         "annotations": {
           "type": "object",

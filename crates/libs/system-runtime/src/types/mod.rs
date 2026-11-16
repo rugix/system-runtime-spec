@@ -4002,12 +4002,8 @@ pub mod health {
         pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Opaque label identifying the configuration or instance that took the evidence.\n"]
         pub tag: ::std::option::Option<::std::string::String>,
-        #[doc = "Explanation supplied by the writer.\n"]
+        #[doc = "Explanation for people, such as the output of a check; can span several lines.\n"]
         pub message: ::std::option::Option<::std::string::String>,
-        #[doc = "Further information about the observation, for display.\n"]
-        pub details: ::std::option::Option<
-            ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-        >,
         #[doc = "Further data that the specification does not define, with namespaced member names.\n"]
         pub annotations: ::std::option::Option<
             ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
@@ -4015,7 +4011,7 @@ pub mod health {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthStatus {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthStatus" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("ID of the observed node.\n") , :: sidex :: shape :: FieldShape :: new ("usable" , :: sidex :: shape :: shape_of :: < Answer > ,) . with_docs ("Whether the minimum criteria are met.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < Answer > ,) . with_docs ("Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires\n`No`.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the check took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the check took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the status record is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the status record.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that took the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation supplied by the writer.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("details" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further information about the observation, for display.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Result of a check, published while the system runs.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthStatus" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("ID of the observed node.\n") , :: sidex :: shape :: FieldShape :: new ("usable" , :: sidex :: shape :: shape_of :: < Answer > ,) . with_docs ("Whether the minimum criteria are met.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < Answer > ,) . with_docs ("Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires\n`No`.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the check took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the check took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the status record is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the status record.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that took the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation for people, such as the output of a check; can span several lines.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Result of a check, published while the system runs.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for HealthStatus {
@@ -4056,10 +4052,6 @@ pub mod health {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 10usize => self
-                    .details
-                    .as_ref()
-                    .map(|value| ::sidex::Encode::encode(value)),
-                11usize => self
                     .annotations
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
@@ -4084,9 +4076,6 @@ pub mod health {
             let mut __field_8 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_9 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_10 = ::std::option::Option::<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >::None;
-            let mut __field_11 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -4147,14 +4136,6 @@ pub mod health {
                             decoder
                         )?)
                     }
-                    11usize => {
-                        __field_11 = ::std::option::Option::Some(<::std::collections::BTreeMap<
-                            ::std::string::String,
-                            ::sidex::types::JsonValue,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
-                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -4175,8 +4156,7 @@ pub mod health {
                 owner: __field_7,
                 tag: __field_8,
                 message: __field_9,
-                details: __field_10,
-                annotations: __field_11,
+                annotations: __field_10,
             })
         }
     }
@@ -4218,7 +4198,6 @@ pub mod health {
                 owner: ::std::default::Default::default(),
                 tag: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
-                details: ::std::default::Default::default(),
                 annotations: ::std::default::Default::default(),
             }
         }
@@ -4341,26 +4320,6 @@ pub mod health {
             message: ::std::option::Option<::std::string::String>,
         ) -> Self {
             self.message = message;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn set_details(
-            &mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> &mut Self {
-            self.details = details;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn with_details(
-            mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> Self {
-            self.details = details;
             self
         }
         #[doc = "Sets the value of `annotations`."]
@@ -5018,10 +4977,6 @@ pub mod health {
         pub reason: ::std::option::Option<Reason>,
         #[doc = "Message of the fresh evidence.\n"]
         pub message: ::std::option::Option<::std::string::String>,
-        #[doc = "Details of the fresh evidence.\n"]
-        pub details: ::std::option::Option<
-            ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-        >,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthNodeResult {
@@ -5055,17 +5010,6 @@ pub mod health {
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
                 .with_docs("Message of the fresh evidence.\n")
-                .optional(),
-                ::sidex::shape::FieldShape::new(
-                    "details",
-                    ::sidex::shape::shape_of::<
-                        ::std::collections::BTreeMap<
-                            ::std::string::String,
-                            ::sidex::types::JsonValue,
-                        >,
-                    >,
-                )
-                .with_docs("Details of the fresh evidence.\n")
                 .optional(),
             ])),
         )
@@ -5101,10 +5045,6 @@ pub mod health {
                     .message
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
-                7usize => self
-                    .details
-                    .as_ref()
-                    .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
             }
         }
@@ -5122,9 +5062,6 @@ pub mod health {
             let mut __field_4 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
             let mut __field_5 = ::std::option::Option::<Reason>::None;
             let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
-            let mut __field_7 = ::std::option::Option::<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
                 match index {
                     0usize => {
@@ -5162,14 +5099,6 @@ pub mod health {
                             <::std::string::String as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
-                    7usize => {
-                        __field_7 = ::std::option::Option::Some(<::std::collections::BTreeMap<
-                            ::std::string::String,
-                            ::sidex::types::JsonValue,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
-                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -5185,7 +5114,6 @@ pub mod health {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `inputs`"))?,
                 reason: __field_5,
                 message: __field_6,
-                details: __field_7,
             })
         }
     }
@@ -5222,7 +5150,6 @@ pub mod health {
                 owner: ::std::default::Default::default(),
                 reason: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
-                details: ::std::default::Default::default(),
             }
         }
         #[doc = "Sets the value of `id`."]
@@ -5302,26 +5229,6 @@ pub mod health {
             message: ::std::option::Option<::std::string::String>,
         ) -> Self {
             self.message = message;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn set_details(
-            &mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> &mut Self {
-            self.details = details;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn with_details(
-            mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> Self {
-            self.details = details;
             self
         }
     }
@@ -5737,12 +5644,8 @@ pub mod metric {
         pub owner: ::std::option::Option<::std::string::String>,
         #[doc = "Opaque label identifying the configuration or instance that took the evidence.\n"]
         pub tag: ::std::option::Option<::std::string::String>,
-        #[doc = "Explanation supplied by the writer.\n"]
+        #[doc = "Explanation for people, such as the output of a check; can span several lines.\n"]
         pub message: ::std::option::Option<::std::string::String>,
-        #[doc = "Further information about the observation, for display.\n"]
-        pub details: ::std::option::Option<
-            ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-        >,
         #[doc = "Further data that the specification does not define, with namespaced member names.\n"]
         pub annotations: ::std::option::Option<
             ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
@@ -5750,7 +5653,7 @@ pub mod metric {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for MetricSample {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::metric::MetricSample" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < MetricId > ,) . with_docs ("ID of the metric.\n") , :: sidex :: shape :: FieldShape :: new ("value" , :: sidex :: shape :: shape_of :: < f64 > ,) . with_docs ("Measured value in the metric's unit; must be finite.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the measurement took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the measurement took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the sample is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the sample.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that took the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation supplied by the writer.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("details" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further information about the observation, for display.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Current measurement of a metric, published while the system runs.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::metric::MetricSample" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < MetricId > ,) . with_docs ("ID of the metric.\n") , :: sidex :: shape :: FieldShape :: new ("value" , :: sidex :: shape :: shape_of :: < f64 > ,) . with_docs ("Measured value in the metric's unit; must be finite.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the measurement took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the measurement took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the sample is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the sample.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that took the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation for people, such as the output of a check; can span several lines.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Current measurement of a metric, published while the system runs.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for MetricSample {
@@ -5790,10 +5693,6 @@ pub mod metric {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 9usize => self
-                    .details
-                    .as_ref()
-                    .map(|value| ::sidex::Encode::encode(value)),
-                10usize => self
                     .annotations
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
@@ -5817,9 +5716,6 @@ pub mod metric {
             let mut __field_7 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_8 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_9 = ::std::option::Option::<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >::None;
-            let mut __field_10 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -5874,14 +5770,6 @@ pub mod metric {
                             decoder
                         )?)
                     }
-                    10usize => {
-                        __field_10 = ::std::option::Option::Some(<::std::collections::BTreeMap<
-                            ::std::string::String,
-                            ::sidex::types::JsonValue,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
-                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -5900,8 +5788,7 @@ pub mod metric {
                 owner: __field_6,
                 tag: __field_7,
                 message: __field_8,
-                details: __field_9,
-                annotations: __field_10,
+                annotations: __field_9,
             })
         }
     }
@@ -5941,7 +5828,6 @@ pub mod metric {
                 owner: ::std::default::Default::default(),
                 tag: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
-                details: ::std::default::Default::default(),
                 annotations: ::std::default::Default::default(),
             }
         }
@@ -6054,26 +5940,6 @@ pub mod metric {
             message: ::std::option::Option<::std::string::String>,
         ) -> Self {
             self.message = message;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn set_details(
-            &mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> &mut Self {
-            self.details = details;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn with_details(
-            mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> Self {
-            self.details = details;
             self
         }
         #[doc = "Sets the value of `annotations`."]
