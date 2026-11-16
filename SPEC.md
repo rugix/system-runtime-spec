@@ -362,6 +362,8 @@ record ComponentDeclaration {
     id: string,
     /// Owner of the declaration, which replaces or removes it as a whole.
     owner?: string,
+    /// Human-readable name of the component.
+    label?: string,
     /// Version of the component, also provided as its implicit capability.
     version?: string,
     /// Capabilities the component provides.

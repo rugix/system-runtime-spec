@@ -410,6 +410,8 @@ pub mod component {
         pub id: ::std::string::String,
         #[doc = "Owner of the declaration, which replaces or removes it as a whole.\n"]
         pub owner: ::std::option::Option<::std::string::String>,
+        #[doc = "Human-readable name of the component.\n"]
+        pub label: ::std::option::Option<::std::string::String>,
         #[doc = "Version of the component, also provided as its implicit capability.\n"]
         pub version: ::std::option::Option<::std::string::String>,
         #[doc = "Capabilities the component provides.\n"]
@@ -427,7 +429,7 @@ pub mod component {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for ComponentDeclaration {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::component::ComponentDeclaration" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Unique ID of the component within the composition.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the declaration, which replaces or removes it as a whole.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the component, also provided as its implicit capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("provides" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilityDeclaration , > > ,) . with_docs ("Capabilities the component provides.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("claims" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < ClaimDeclaration , > > ,) . with_docs ("Resources the component claims.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("requires" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that each need to match a capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("conflicts" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that must not match any capability, including the component's own.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("One part of a system, such as the system image, an app, a runtime, or a hardware module.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::component::ComponentDeclaration" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Unique ID of the component within the composition.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the declaration, which replaces or removes it as a whole.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable name of the component.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the component, also provided as its implicit capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("provides" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilityDeclaration , > > ,) . with_docs ("Capabilities the component provides.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("claims" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < ClaimDeclaration , > > ,) . with_docs ("Resources the component claims.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("requires" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that each need to match a capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("conflicts" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that must not match any capability, including the component's own.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("One part of a system, such as the system image, an app, a runtime, or a hardware module.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for ComponentDeclaration {
@@ -453,26 +455,30 @@ pub mod component {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 3usize => self
-                    .version
+                    .label
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 4usize => self
-                    .provides
+                    .version
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 5usize => self
-                    .claims
+                    .provides
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 6usize => self
-                    .requires
+                    .claims
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 7usize => self
-                    .conflicts
+                    .requires
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 8usize => self
+                    .conflicts
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                9usize => self
                     .annotations
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
@@ -490,14 +496,15 @@ pub mod component {
             let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_2 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
-            let mut __field_4 =
+            let mut __field_4 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_5 =
                 ::std::option::Option::<::std::vec::Vec<CapabilityDeclaration>>::None;
-            let mut __field_5 = ::std::option::Option::<::std::vec::Vec<ClaimDeclaration>>::None;
-            let mut __field_6 =
-                ::std::option::Option::<::std::vec::Vec<CapabilitySelectorDeclaration>>::None;
+            let mut __field_6 = ::std::option::Option::<::std::vec::Vec<ClaimDeclaration>>::None;
             let mut __field_7 =
                 ::std::option::Option::<::std::vec::Vec<CapabilitySelectorDeclaration>>::None;
-            let mut __field_8 = ::std::option::Option::<
+            let mut __field_8 =
+                ::std::option::Option::<::std::vec::Vec<CapabilitySelectorDeclaration>>::None;
+            let mut __field_9 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -523,25 +530,23 @@ pub mod component {
                         )
                     }
                     4usize => {
-                        __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
+                        __field_4 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    5usize => {
+                        __field_5 = ::std::option::Option::Some(<::std::vec::Vec<
                             CapabilityDeclaration,
                         > as ::sidex::Decode>::decode(
                             decoder
                         )?)
                     }
-                    5usize => {
-                        __field_5 = ::std::option::Option::Some(
+                    6usize => {
+                        __field_6 = ::std::option::Option::Some(
                             <::std::vec::Vec<ClaimDeclaration> as ::sidex::Decode>::decode(
                                 decoder,
                             )?,
                         )
-                    }
-                    6usize => {
-                        __field_6 = ::std::option::Option::Some(<::std::vec::Vec<
-                            CapabilitySelectorDeclaration,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
                     }
                     7usize => {
                         __field_7 = ::std::option::Option::Some(<::std::vec::Vec<
@@ -551,7 +556,14 @@ pub mod component {
                         )?)
                     }
                     8usize => {
-                        __field_8 = ::std::option::Option::Some(<::std::collections::BTreeMap<
+                        __field_8 = ::std::option::Option::Some(<::std::vec::Vec<
+                            CapabilitySelectorDeclaration,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
+                    9usize => {
+                        __field_9 = ::std::option::Option::Some(<::std::collections::BTreeMap<
                             ::std::string::String,
                             ::sidex::types::JsonValue,
                         > as ::sidex::Decode>::decode(
@@ -566,12 +578,13 @@ pub mod component {
                 spec_version: __field_0,
                 id: __field_1.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
                 owner: __field_2,
-                version: __field_3,
-                provides: __field_4,
-                claims: __field_5,
-                requires: __field_6,
-                conflicts: __field_7,
-                annotations: __field_8,
+                label: __field_3,
+                version: __field_4,
+                provides: __field_5,
+                claims: __field_6,
+                requires: __field_7,
+                conflicts: __field_8,
+                annotations: __field_9,
             })
         }
     }
@@ -599,6 +612,7 @@ pub mod component {
                 id: id.into(),
                 spec_version: ::std::default::Default::default(),
                 owner: ::std::default::Default::default(),
+                label: ::std::default::Default::default(),
                 version: ::std::default::Default::default(),
                 provides: ::std::default::Default::default(),
                 claims: ::std::default::Default::default(),
@@ -647,6 +661,19 @@ pub mod component {
         #[doc = "Sets the value of `owner`."]
         pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
             self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn set_label(
+            &mut self,
+            label: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.label = label;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn with_label(mut self, label: ::std::option::Option<::std::string::String>) -> Self {
+            self.label = label;
             self
         }
         #[doc = "Sets the value of `version`."]

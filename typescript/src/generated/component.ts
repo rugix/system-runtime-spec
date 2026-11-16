@@ -20,6 +20,9 @@ import * as __schema_metric from "./metric.js";
                                             * Owner of the declaration, which replaces or removes it as a whole.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
+                                            * Human-readable name of the component.
+                                            */
+                                                        "label"?: __sidex_types.builtins.String, /**
                                             * Version of the component, also provided as its implicit capability.
                                             */
                                                         "version"?: __sidex_types.builtins.String, /**
@@ -40,7 +43,7 @@ import * as __schema_metric from "./metric.js";
                                                         "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const ComponentDeclaration = {
-    ...__sidex_types.checker<ComponentDeclaration>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.builtin("string"), false], ["owner", __sidex_types.builtin("string"), true], ["version", __sidex_types.builtin("string"), true], ["provides", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilityDeclaration)), true], ["claims", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimDeclaration)), true], ["requires", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["conflicts", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
+    ...__sidex_types.checker<ComponentDeclaration>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.builtin("string"), false], ["owner", __sidex_types.builtin("string"), true], ["label", __sidex_types.builtin("string"), true], ["version", __sidex_types.builtin("string"), true], ["provides", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilityDeclaration)), true], ["claims", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimDeclaration)), true], ["requires", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["conflicts", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
  * A resource that at most one component may claim.

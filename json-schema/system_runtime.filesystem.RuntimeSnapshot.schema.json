@@ -159,6 +159,9 @@
         "owner": {
           "type": "string"
         },
+        "label": {
+          "type": "string"
+        },
         "version": {
           "type": "string"
         },
