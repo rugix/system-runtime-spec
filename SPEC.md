@@ -23,8 +23,7 @@ This document is the normative definition of the specification. The
 7. [Links Between Components and Health](#7-links-between-components-and-health)
 8. [Discovery](#8-discovery)
 9. [Transport](#9-transport)
-10. [Limitations](#10-limitations)
-11. [Security Considerations](#11-security-considerations)
+10. [Security Considerations](#10-security-considerations)
 
 ## 1. Conventions
 
@@ -85,20 +84,15 @@ The sections that matter most for each role are:
 | Reader | [3](#3-records), [8](#8-discovery), and [9](#9-transport) |
 | Compatibility checker | [3](#3-records), [4](#4-versions-and-version-requirements), and [5](#5-components) |
 | Health evaluator | [3](#3-records) and [6](#6-health) |
-| Consumer | [5.5](#55-compatibility-reports), [6.1](#61-health-answers), [6.8](#68-evaluation-and-reports), and [10](#10-limitations) |
+| Consumer | [5.5](#55-compatibility-reports), [6.1](#61-health-answers), and [6.8](#68-evaluation-and-reports) |
 
 An implementation conforms to the specification for a role if it satisfies all requirements that
-apply to that role. The [conformance suite](tests/fixtures/) in this repository
-contains test cases for version matching, compatibility checking, candidate compositions, health
-evaluation, snapshots, clock correlation, and discovery. Passing it is evidence of conformance, but
-does not replace the requirements of the specification. If a test case contradicts the
-specification, the specification applies, and the test case is wrong.
+apply to that role. The [conformance suite](tests/fixtures/) tests all parts; if a test case
+contradicts the specification, the test case is wrong.
 
 ## 3. Records
 
-Records are small JSON documents that the parts of a system publish about themselves. This section
-defines what all records have in common: their encoding, how problems with them are reported, their
-IDs and owners, data for other tools, and how the format evolves.
+Records are small JSON documents that the parts of a system publish about themselves.
 
 ### 3.1 Encoding
 
@@ -118,9 +112,9 @@ parts define their consequences. Writers MUST NOT publish invalid records.
 
 ### 3.2 Diagnostics
 
-Records come from many contributors, and one faulty record should not prevent the evaluation of the
-others. Readers, compatibility checkers, and health evaluators MUST skip invalid records and records
-that cannot be read, and MUST report a _diagnostic_ for each:
+One faulty record should not prevent the evaluation of the others. Readers, compatibility checkers,
+and health evaluators MUST skip invalid records and records that cannot be read, and MUST report a
+_diagnostic_ for each:
 
 ```sidex
 /// A record that was skipped or used despite a problem.
@@ -193,29 +187,20 @@ An update of a contributor replaces all component declarations, health nodes, an
 of its owner, including overrides in `/etc` ([Section 8.3](#83-reading)). A writer that performs an
 update MUST ensure that, once the updated records take effect, no such records of the replaced owner
 from before the update remain in the directories that readers read. A writer that rolls back an
-update SHOULD restore the records that the update removed. [Section 5.6](#56-candidate-compositions)
-defines how compatibility checkers predict the result of an update, and [Section 6.3](#63-evidence)
-how owners constrain evidence.
+update SHOULD restore the records that the update removed.
 
-> **Note:** A system image might use the owner `rugix.system`, and an app named `telemetry` the
-> owner `rugix.apps.telemetry`. Owner names are conventions of the tools that use them; readers do
-> not derive owners from file paths.
+> **Example:** A system image might use the owner `rugix.system`, and an app named `telemetry` the
+> owner `rugix.apps.telemetry`.
 
 ### 3.5 Annotations
 
-Component declarations, health nodes, metric definitions, and evidence have an optional
-`annotations` field, an object for data that this specification does not define, such as
-information for a particular tool. Member names SHOULD start with a reverse domain name that the
-writer controls, such as `com.example.priority`. Annotations do not affect compatibility checking
-or health evaluation, and results do not carry them.
-
-Evidence ([Section 6.3](#63-evidence)) also has an optional `details` field, an object that
-explains one observation to people, such as the output of a check, in any structure. The result
-of a node carries the details of its fresh evidence. Writers SHOULD put data for tools into
-annotations and data for display into details.
-
-Writers MUST put data that this specification does not define into annotations or details, and
-MUST NOT add other fields to records.
+Records can carry `annotations`, data for tools that this specification does not define. Member
+names SHOULD start with a reverse domain name that the writer controls, such as
+`com.example.priority`. Evidence ([Section 6.3](#63-evidence)) can also carry `details`, which
+explain an observation to people, such as the output of a check; the result of a node carries the
+details of its fresh evidence. Neither affects compatibility checking or health evaluation. Writers
+MUST put data that this specification does not define into annotations or details, and MUST NOT add
+other fields to records.
 
 ### 3.6 Evolution
 
@@ -227,15 +212,9 @@ changes that readers of earlier minor versions of the same major version can saf
 
 Every record has an optional field `specVersion`, which holds the version of this specification that
 the record follows, such as `1.0`. A record without it follows version 1.0. Writers SHOULD set it to
-the lowest version whose features the record uses. Specification versions, here and in snapshots
-([Section 9.1](#91-snapshots)), have the following form, where both numbers fit into an unsigned
-64-bit integer and compare numerically:
-
-```text
-spec-version = number "." number
-number       = "0" | nonzero { digit }
-nonzero      = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-```
+the lowest version whose features the record uses. A specification version, here and in snapshots
+([Section 9.1](#91-snapshots)), consists of two decimal numbers without leading zeros, separated by
+a dot, such as `1.0`. Both numbers fit into an unsigned 64-bit integer and compare numerically.
 
 A record whose `specVersion` does not have this form, or has a major version that the reader does
 not support, is invalid. A component declaration with a higher minor version than the reader
@@ -256,14 +235,9 @@ and MUST treat values they do not know as follows:
 | Diagnostic kinds ([Section 3.2](#32-diagnostics)) | Reader of a snapshot, consumer | The diagnostic is treated as of the kind `DirectoryConfig`. |
 | Diagnostic severities ([Section 3.2](#32-diagnostics)) | Reader of a snapshot, consumer | The diagnostic is treated as an error. |
 
-> **Note:** The fallbacks are conservative. For example, a node that attaches to an aggregate node
-> with an input mode added in a later minor version makes that aggregate node unknown for older
-> health evaluators.
-
-A change that readers cannot safely ignore requires a new major version. If records of a new major
-version appeared next to records of an earlier one, readers of the earlier major version would
-report them as invalid, which would make compositions inconsistent and block health decisions. A new
-major version therefore uses new standard directories ([Section 8.1](#81-directories)).
+A change that readers cannot safely ignore requires a new major version. A new major version uses
+new standard directories ([Section 8.1](#81-directories)), so that older readers do not report its
+records as invalid.
 
 ## 4. Versions and Version Requirements
 
@@ -292,11 +266,9 @@ unsigned 64-bit integer. Leading zeros are allowed. Whitespace at the start and 
 ignored. In this document, _whitespace_ means the characters with the Unicode property
 `White_Space`.
 
-> **Note:** The grammar covers, for example, `1.4.2`, `2.0.0-rc.1`, `1.4.2+build.7`, `2026.06.25`,
-> `42`, and `20260625071935`. Versions of other formats must be converted, which can lose
-> information. For example, the Debian version `2.27~rc1` could become `2.27-rc.1`, where the
-> separate numeric identifier keeps `rc.2` before `rc.10`. Debian epochs and revisions have no
-> counterpart and need a convention of the converting tool.
+> **Example:** `1.4.2`, `2.0.0-rc.1`, `1.4.2+build.7`, `2026.06.25`, and `20260625071935` are
+> versions. Versions of other formats need to be converted, such as the Debian version `2.27~rc1`
+> to `2.27-rc.1`.
 
 ### 4.2 Precedence
 
@@ -366,16 +338,9 @@ are greater than those of `V`, where _n_ is the number of release components of 
 | `>=3-rc.2` | `3-rc.2`, `3`, `4` | `3-rc.1` |
 | `<4-rc.2` | `4-rc.1` | `4-rc.2`, `4` |
 
-> **Note:** Lines let a requirement such as `>=3,<4` cover the release candidates of version 3,
-> which is useful while version 3 is being tested, and exclude those of version 4, which already
-> contain its changes. Package managers such as Cargo and npm exclude prereleases unless a
-> requirement names one, because they choose which versions to install. Requirements in this
-> specification check versions that are already present, and a release candidate is meant to work
-> like the release of its line.
-
-> **Note:** The operators `==` and `!=` compare precedence, and the other operators compare lines.
-> So `<=3` matches `3.5`, but `==3` does not. The requirement `3.*` matches the line `3`. Build
-> metadata does not affect precedence, so `==3+build.7` matches every build of `3`.
+> **Note:** Lines let `>=3,<4` cover the release candidates of version 3 and exclude those of
+> version 4. Package managers such as Cargo exclude prereleases instead, because they choose which
+> versions to install; requirements here check versions that are already present.
 
 ## 5. Components
 
@@ -483,16 +448,11 @@ record ClaimDeclaration {
 A component that claims the same resource several times claims it once. Claims do not provide
 capabilities.
 
-> **Note:** Each requirement is met on its own, possibly by different components. A component
-> that needs two properties of the same provider requires one capability that states both. Other
-> constraints follow from conflicts and shared capabilities. A component that works with a library
-> only from version 2 on, if the library is present at all, declares the conflict
-> `{"id": "libfoo", "version": "<2"}`. Components that are alternatives to each other, such as two
-> database engines, provide a common capability, such as `database.sql`, that other components
-> require.
-
-> **Note:** Capabilities and claims only match if all components name them the same way, so their
-> IDs need shared conventions, such as `network.tcp.8080` for a TCP port.
+> **Note:** Each requirement is met on its own, possibly by different components. A component that
+> works with `libfoo` only from version 2 on, if it is present at all, declares the conflict
+> `{"id": "libfoo", "version": "<2"}`. Alternatives, such as two database engines, provide a common
+> capability, such as `database.sql`. IDs of capabilities and claims need shared conventions, such
+> as `network.tcp.8080` for a TCP port.
 
 ### 5.4 Consistency
 
@@ -511,8 +471,7 @@ if and only if:
 - no conflict of any component matches any capability, including the capabilities of the
   component declaring the conflict.
 
-Several components MAY provide the same capability. Consistency covers only the declared
-constraints ([Section 10](#10-limitations)).
+Several components MAY provide the same capability.
 
 ### 5.5 Compatibility Reports
 
@@ -632,13 +591,10 @@ the current composition, so a fleet-management server can check an update before
 > itself, such as the revision of its board. A declaration that is meant to be replaced needs an
 > owner; otherwise, its replacement duplicates its ID.
 
-> **Note:** If the current composition is already inconsistent, every candidate composition that
-> keeps the existing problems is inconsistent too, including an update that fixes another problem. A
-> consumer can accept a candidate composition whose problems and error diagnostics each equal one of
-> the current composition, provided that the update adds no diagnostics about its own declarations,
-> so that existing problems do not block updates that do not make them worse. Current diagnostics
-> about files that the update replaces stay in the candidate composition and therefore count as
-> existing.
+> **Note:** If the current composition is already inconsistent, so is every candidate composition
+> that keeps its problems. A consumer can accept a candidate composition whose problems and error
+> diagnostics all occur in the current composition, so that existing problems do not block updates
+> that do not make them worse.
 
 ## 6. Health
 
@@ -670,20 +626,9 @@ variant Answer {
     Unknown,
 }
 ```
- The answers are related: a node that is healthy
-is usable, and a node that is not usable is not healthy. Therefore, exactly six combinations are
-possible:
 
-| Usable | Healthy | Meaning |
-| --- | --- | --- |
-| `Yes` | `Yes` | The desired criteria are met. |
-| `Yes` | `No` | The node is usable, but the desired criteria are not met. |
-| `Yes` | `Unknown` | The node is usable, but whether the desired criteria are met is unknown. |
-| `Unknown` | `No` | The desired criteria are not met, and whether the node is usable is unknown. |
-| `Unknown` | `Unknown` | Whether the node is usable is unknown. |
-| `No` | `No` | The node is not usable. |
-
-For display and for publishing, the combinations are summarized as four _health states_:
+A node that is healthy is usable, and a node that is not usable is not healthy. For display and for
+publishing, the answers are summarized as four _health states_:
 
 | State | Answers |
 | --- | --- |
@@ -695,11 +640,8 @@ For display and for publishing, the combinations are summarized as four _health 
 A status record ([Section 6.4](#64-observed-nodes-and-status-records)) reports one of these states,
 which corresponds to the answers `Yes`/`Yes`, `Yes`/`No`, `No`/`No`, or `Unknown`/`Unknown`.
 
-> **Note:** A consumer that makes a decision, such as an update controller deciding whether to
-> commit an update, chooses the node and the answer it requires. Requiring the healthy answer `Yes`
-> demands the desired criteria, including those of optional inputs
-> ([Section 6.7](#67-aggregate-nodes)). Requiring the usable answer `Yes` demands the minimum
-> criteria. The answer `Unknown` satisfies neither.
+> **Note:** A consumer that makes a decision chooses the answer it requires: healthy `Yes` for the
+> desired criteria or usable `Yes` for the minimum criteria. `Unknown` satisfies neither.
 
 ### 6.2 Health Graphs
 
@@ -770,10 +712,7 @@ that does not exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
 > }
 > ```
 >
-> Because the node lists its inputs, an input whose records are missing is `Unknown`. An aggregate
-> node whose inputs attach themselves cannot tell which contributors are absent; a minimum count
-> ([Section 6.7](#67-aggregate-nodes)) can detect too few inputs, but does not establish which
-> contributors are present.
+> Because the node lists its inputs, an input whose records are missing is `Unknown`.
 
 ### 6.3 Evidence
 
@@ -902,13 +841,6 @@ are `Unknown`/`Unknown`, with the reason `Unsupported`.
 > disk check that sees little free space. It reports `Unknown` when it cannot reach a conclusion,
 > for example, because a dependency of the check itself is unavailable.
 
-> **Note:** A status record cannot express the answers `Yes`/`Unknown` and `Unknown`/`No`, so it
-> cannot relay every result of an evaluation. A system that passes on the health of other
-> systems, such as a gateway for attached devices, passes on a separate snapshot for each system
-> ([Section 9](#9-transport)), so that their answers are evaluated from the original records in
-> their own health contexts. Combining the health of several systems is outside the scope of this
-> specification.
-
 ### 6.5 Metrics
 
 A _metric_ is a named numeric measurement, such as a CPU temperature or the free space on a
@@ -975,38 +907,13 @@ metric; a different measurement or unit needs a new ID. Writers MUST NOT publish
 or two samples for the same metric. If they do, the answers of threshold nodes over the metric
 are unknown ([Section 6.6](#66-threshold-nodes)). Samples without a definition are ignored.
 
-Units are codes of the [Unified Code for Units of Measure][ucum] (UCUM) in its case-sensitive
-form, which OpenTelemetry also uses. UCUM can express any unit, including derived units such as
-`By/s` and terms in curly braces such as `{packet}/s`, which name what is counted. Writers
-MUST use a valid UCUM code and SHOULD use a base unit without a prefix, such as `s` and `By`, so
-that thresholds of different contributors compare without conversion. Dimensionless values use
-`1`. Common measurements use the following codes:
-
-| Measurement | Code | Unit |
-| --- | --- | --- |
-| Temperature | `Cel` | Degrees Celsius. |
-| Information | `By` | Bytes. |
-| Duration | `s` | Seconds. |
-| Fraction | `1` | Dimensionless; 1 corresponds to 100 percent. |
-| Number of items or events | `{item}`, such as `{process}` | Items, named by the annotation. |
-| Data rate | `By/s` | Bytes per second. |
-| Frequency | `Hz` | Hertz. |
-| Rotational speed | `{rev}/min` | Revolutions per minute. |
-| Electric potential | `V` | Volts. |
-| Electric current | `A` | Amperes. |
-| Power | `W` | Watts. |
-| Energy | `J` | Joules. |
-| Pressure | `Pa` | Pascals. |
-| Length | `m` | Meters. |
-| Signal power level | `dB[mW]` | Decibels relative to one milliwatt (dBm). |
-
-Units describe what was measured. Health evaluation compares units only as strings
-([Section 6.6](#66-threshold-nodes)) and never converts values. Readers MUST NOT check unit codes
-and MUST NOT reject a metric because of its unit code.
-
-> **Note:** Tools choose how to display values, including precision, prefixes, and conversions,
-> and display codes they do not know as written. A fraction with the unit `1` is not restricted to
-> the range from 0 to 1.
+Units are case-sensitive codes of the [Unified Code for Units of Measure][ucum] (UCUM), as in
+OpenTelemetry, such as `Cel` for degrees Celsius, `By` for bytes, `s` for seconds, `1` for
+fractions, `By/s` for data rates, and `{process}` for counts of processes. Writers MUST use a valid
+UCUM code and SHOULD use a base unit without a prefix, such as `s` and `By`, so that thresholds of
+different contributors compare without conversion. Health evaluation compares units only as
+strings ([Section 6.6](#66-threshold-nodes)) and never converts values. Readers MUST NOT reject a
+metric because of its unit code.
 
 [ucum]: https://ucum.org/ucum
 
@@ -1202,20 +1109,14 @@ be met.
 > }
 > ```
 >
-> Without counts, both counted inputs must be usable for the app to be usable, and all inputs must
-> be healthy for it to be healthy. If the upload's status record expires, the app's answers are
-> `Yes`/`Unknown`. If the database is not usable, they are `No`/`No`. While the app is installed,
-> `rugix.apps` is only healthy if the app is; when the app is removed, its attachment is removed
-> with it.
+> If the upload's status record expires, the app's answers are `Yes`/`Unknown`. If the database is
+> not usable, they are `No`/`No`.
 
 > **Example:** With three interchangeable workers, `"minUsable": 2` keeps a service usable while
 > one worker is down, and the omitted `minHealthy` requires all three workers for full health. If
 > one worker is not usable and another is unknown, the service's usable answer is `Unknown`,
 > because whether two workers are usable depends on the unknown one; its healthy answer is `No`,
 > because fewer than three workers can be healthy.
-
-> **Note:** The summarized states of [Section 6.1](#61-health-answers) follow from the answers.
-> For example, the usable answer `Yes` with the healthy answer `No` or `Unknown` is `Degraded`.
 
 ### 6.8 Evaluation and Reports
 
@@ -1356,7 +1257,7 @@ record to a temporary file in the same directory, whose name starts with `.` or 
 extension, and then rename the temporary file to the final name. There are no transactions across
 files.
 
-Directories do not authenticate writers ([Section 11](#11-security-considerations)).
+Directories do not authenticate writers ([Section 10](#10-security-considerations)).
 
 > **Note:** To let an unprivileged service publish its evidence without giving it access to the
 > files of other services, give the service a directory of its own and add the directory with a
@@ -1406,9 +1307,6 @@ override other records. Directory configurations have no IDs and cannot be overr
 A directory MAY be a symlink. A reader MUST resolve each directory to its physical location before
 traversing it, so that changing the symlink during traversal cannot mix files of two
 directories.
-
-> **Note:** Records can change at any time. Tools can reduce the risk of acting on outdated
-> records by loading a fresh set before acting and retrying when they detect a concurrent change.
 
 ### 8.4 Directory Configurations
 
@@ -1534,46 +1432,16 @@ observation time after the clock sample, and evidence whose estimate lies outsid
 > `2026-10-14T11:59:57Z`. The estimate is only as accurate as the wall clock at the time of
 > sampling.
 
-## 10. Limitations
+## 10. Security Considerations
 
-This section is informative. It states what the results of compatibility checking and health
-evaluation do not establish.
+Records decide whether updates are installed, committed, or rolled back, so false records can block
+updates or get faulty ones committed.
 
-- A consistent composition meets the declared constraints. Whether its components work together
-  also depends on constraints that nobody declared.
-- Health evaluation interprets evidence: the results of checks and measurements at the time they
-  were taken. A healthy result does not show that a node stayed healthy between observations. How
-  long a node needs to stay healthy before a consumer acts, for example, before it commits an
-  update, is the consumer's decision.
-- Which node a consumer bases a decision on, and which answer it requires, is its decision
-  ([Section 6.1](#61-health-answers)).
-- Records can change while a reader reads them, and there are no transactions across files
-  ([Section 8.2](#82-files)). A snapshot holds the records as they were collected, which need not
-  correspond to a single instant.
-- Evaluating a snapshot establishes health at its clock sample, not at the time it is received or
-  displayed. A consumer that shows the current health of a device needs its own policy for old
-  snapshots and lost contact.
-- A record that could not be read is missing from the results. Diagnostics report it
-  ([Section 3.2](#32-diagnostics)).
-- Owners and tags detect mistakes, such as outdated evidence. They do not authenticate writers
-  ([Section 11](#11-security-considerations)).
-
-## 11. Security Considerations
-
-Records decide whether updates are installed, committed, or rolled back. A writer that publishes
-false records can therefore block updates, cause rollbacks, or get an incompatible or faulty update
-committed.
-
-**Trust.** Readers trust every writer that can create files in the directories they read, for every
-record such a writer publishes, including its ID and owner. Such a writer can attach nodes to any
-aggregate node and cause conflicts with the records of others, and a writer in a higher level can
-override the records of lower levels. Writers in `/run/system-runtime` can therefore override the
-records of the system image. Owners and tags detect mistakes, but anyone who can write a record can
-set them. A directory of its own separates the files of a service, but the service can still publish
-records with any ID. Standard directories and added directories should therefore be writable only
-by privileged users and by the services that publish into them. Restricting which IDs a writer may
-publish needs a mechanism outside this specification, such as a collector that checks the records
-of each source.
+**Trust.** Readers trust every writer that can create files in the directories they read, with any
+ID and owner. Such a writer can attach nodes to any aggregate node, conflict with the records of
+others, and, from a higher level, override the records of the system image. Owners and tags detect
+mistakes, not attacks. Standard directories and added directories should therefore be writable only
+by privileged users and by the services that publish into them.
 
 **Resource limits.** Readers SHOULD limit the size of files, the number of files, the depth of
 directories, and the nesting of JSON values, and SHOULD skip what exceeds a limit and report a
@@ -1583,10 +1451,9 @@ diagnostic.
 has checked it. Readers SHOULD traverse directories relative to open file descriptors and open
 entries without following symlinks, for example, with `openat` and `O_NOFOLLOW` on Linux.
 
-**Transport.** Snapshots reveal information about a device, such as its software and the messages
-and details of its checks. Writers SHOULD NOT put secrets into labels, messages, details, or
-annotations. Systems that send snapshots SHOULD protect their integrity and confidentiality and
+**Transport.** Snapshots reveal information about a device. Writers SHOULD NOT put secrets into
+records. Systems that send snapshots SHOULD protect their integrity and confidentiality and
 authenticate the sending device, for example, with TLS.
 
-**Display.** Labels, messages, and details are arbitrary text from writers. Consumers SHOULD treat
-them as untrusted when they display them, for example, by escaping them in HTML.
+**Display.** Consumers SHOULD treat labels, messages, and details as untrusted text when they
+display them.
