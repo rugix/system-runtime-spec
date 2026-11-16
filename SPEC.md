@@ -78,13 +78,14 @@ Records come from _contributors_, such as a system image or an app, whose writer
 
 The sections that matter most for each role are:
 
-| Role | Sections |
-| --- | --- |
-| Writer | [3](#3-records), [5.1–5.3](#51-component-declarations) for component declarations, [6.1–6.7](#61-health-answers) for health records, and [8.1–8.2](#81-directories) |
-| Reader | [3](#3-records), [8](#8-discovery), and [9](#9-transport) |
-| Compatibility checker | [3](#3-records), [4](#4-versions-and-version-requirements), and [5](#5-components) |
-| Health evaluator | [3](#3-records) and [6](#6-health) |
-| Consumer | [5.5](#55-compatibility-reports), [6.1](#61-health-answers), and [6.8](#68-evaluation-and-reports) |
+- **Writers:** [Sections 3](#3-records), [5.1–5.3](#51-component-declarations) for component
+  declarations, [6.1–6.7](#61-health-answers) for health records, and [8.1–8.2](#81-directories).
+- **Readers:** [Sections 3](#3-records), [8](#8-discovery), and [9](#9-transport).
+- **Compatibility checkers:** [Sections 3](#3-records), [4](#4-versions-and-version-requirements),
+  and [5](#5-components).
+- **Health evaluators:** [Sections 3](#3-records) and [6](#6-health).
+- **Consumers:** [Sections 5.5](#55-compatibility-reports), [6.1](#61-health-answers), and
+  [6.8](#68-evaluation-and-reports).
 
 An implementation conforms to the specification for a role if it satisfies all requirements that
 apply to that role. The [conformance suite](tests/fixtures/) tests all parts; if a test case
@@ -308,33 +309,28 @@ components, with missing components counted as zero, start with the release comp
 comparator's version, including versions with prereleases. The line `3` contains `3.0-rc.1`, `3`,
 and `3.5.1`. The line `3.0` contains `3.0.5`, but not `3.1`.
 
-A comparator matches a version as follows, where `V` is the comparator's version:
+A version is _before_ the line `V` if its first _n_ release components, with missing components
+counted as zero, are less than those of `V`, where _n_ is the number of release components of `V`,
+and _after_ the line if they are greater. Release components compare as in
+[Section 4.2](#42-precedence). A comparator with the version `V` matches a version as follows:
 
-| Comparator | `V` without a prerelease | `V` with a prerelease |
-| --- | --- | --- |
-| `>=V` | The release components of the version are at least those of `V`, so the version is in or after the line `V`. | The version's precedence is at least that of `V`. |
-| `<V` | The release components of the version are less than those of `V`, so the version is before the line `V`. | The version's precedence is less than that of `V`. |
-| `>V` | The version is after the line `V`. | The version's precedence is greater than that of `V`. |
-| `<=V` | The version is in or before the line `V`. | The version's precedence is at most that of `V`. |
-| `==V` | The version has the same precedence as `V`. | The version has the same precedence as `V`. |
-| `!=V` | The version has a different precedence than `V`. | The version has a different precedence than `V`. |
-| `==V.*` | The version is in the line `V`. | Invalid. |
-| `!=V.*` | The version is not in the line `V`. | Invalid. |
+- `==V` matches the versions with the same precedence as `V`, and `!=V` the others.
+- `==V.*` matches the versions in the line `V`, and `!=V.*` the others.
+- If `V` has a prerelease, `>=V`, `>V`, `<=V`, and `<V` compare the precedence of the version with
+  that of `V`.
+- Otherwise, they compare lines: `>=V` matches the versions in or after the line `V`, `>V` those
+  after it, `<=V` those in or before it, and `<V` those before it.
 
-Release components compare as in [Section 4.2](#42-precedence), ignoring prereleases. A version is
-after the line `V` if its first _n_ release components, with missing components counted as zero,
-are greater than those of `V`, where _n_ is the number of release components of `V`. For example:
-
-| Requirement | Matches | Does Not Match |
-| --- | --- | --- |
-| `>=3,<4` | `3.0-rc.1`, `3.9.2` | `2.9`, `4.0-rc.1` |
-| `>3` | `4.0-rc.1` | `3.1` |
-| `>3.0` | `3.1` | `3.0.5` |
-| `<=3` | `3.9` | `4.0-rc.1` |
-| `3.*` | `3.0-rc.1`, `3.5.1` | `4.0-rc.1` |
-| `==3` | `3.0`, `3+build.7` | `3.0-rc.1`, `3.0.1` |
-| `>=3-rc.2` | `3-rc.2`, `3`, `4` | `3-rc.1` |
-| `<4-rc.2` | `4-rc.1` | `4-rc.2`, `4` |
+> **Example:**
+>
+> - `>=3,<4` matches `3.0-rc.1` and `3.9.2`, but not `2.9` or `4.0-rc.1`.
+> - `>3` matches `4.0-rc.1`, but not `3.1`.
+> - `>3.0` matches `3.1`, but not `3.0.5`.
+> - `<=3` matches `3.9`, but not `4.0-rc.1`.
+> - `3.*` matches `3.0-rc.1` and `3.5.1`, but not `4.0-rc.1`.
+> - `==3` matches `3.0` and `3+build.7`, but not `3.0-rc.1` or `3.0.1`.
+> - `>=3-rc.2` matches `3-rc.2`, `3`, and `4`, but not `3-rc.1`.
+> - `<4-rc.2` matches `4-rc.1`, but not `4-rc.2` or `4`.
 
 > **Note:** Lines let `>=3,<4` cover the release candidates of version 3 and exclude those of
 > version 4. Package managers such as Cargo exclude prereleases instead, because they choose which
@@ -628,12 +624,10 @@ variant Answer {
 A node that is healthy is usable, and a node that is not usable is not healthy. For display and for
 publishing, the answers are summarized as four _health states_:
 
-| State | Answers |
-| --- | --- |
-| `Healthy` | Healthy `Yes`. |
-| `Degraded` | Usable `Yes` and healthy `No` or `Unknown`. |
-| `Unhealthy` | Usable `No`. |
-| `Unknown` | Usable `Unknown`. |
+- `Healthy`: healthy `Yes`.
+- `Degraded`: usable `Yes` and healthy `No` or `Unknown`.
+- `Unhealthy`: usable `No`.
+- `Unknown`: usable `Unknown`.
 
 A status record ([Section 6.4](#64-observed-nodes-and-status-records)) reports one of these states,
 which corresponds to the answers `Yes`/`Yes`, `Yes`/`No`, `No`/`No`, or `Unknown`/`Unknown`.
@@ -1225,16 +1219,16 @@ This section defines how writers publish records as files on Linux and how reade
 
 ### 8.1 Directories
 
-Each kind of record has standard directories:
+Each kind of record has standard directories below `/usr/lib/system-runtime`, `/etc/system-runtime`,
+and `/run/system-runtime`:
 
-| Records | Standard Directories |
-| --- | --- |
-| Component declarations | `/usr/lib/system-runtime/components`, `/etc/system-runtime/components`, `/run/system-runtime/components` |
-| Health nodes | `/usr/lib/system-runtime/health/nodes`, `/etc/system-runtime/health/nodes`, `/run/system-runtime/health/nodes` |
-| Status records | `/run/system-runtime/health/status` |
-| Metric definitions | `/usr/lib/system-runtime/metrics/definitions`, `/etc/system-runtime/metrics/definitions`, `/run/system-runtime/metrics/definitions` |
-| Metric samples | `/run/system-runtime/metrics/samples` |
-| Directory configurations | `/usr/lib/system-runtime/directories`, `/etc/system-runtime/directories`, `/run/system-runtime/directories` |
+- component declarations in `components`,
+- health nodes in `health/nodes`,
+- metric definitions in `metrics/definitions`, and
+- directory configurations in `directories`.
+
+Status records and metric samples only have the standard directories
+`/run/system-runtime/health/status` and `/run/system-runtime/metrics/samples`.
 
 > **Note:** `/usr/lib/system-runtime` holds records of the system image, `/etc/system-runtime`
 > records specific to a device, and `/run/system-runtime` records generated at runtime. Evidence
