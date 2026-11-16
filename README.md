@@ -56,14 +56,14 @@ for a part to publish its records.
 
 All three implementations are published as `system-runtime-spec`. They check compatibility,
 evaluate health, and create and read snapshots; the Rust and Python implementations also discover
-records in the filesystem. Version 0.2 of the packages implements version 1.0 (draft) of the
-specification.
+records in the filesystem. Each package has its own version, independent of the specification's,
+and exports the version of the specification that it implements as `SPEC_VERSION`.
 
-| Language | Package | Documentation |
-| --- | --- | --- |
-| Rust | [crates.io](https://crates.io/crates/system-runtime-spec) | [README](crates/libs/system-runtime/README.md) |
-| Python | [PyPI](https://pypi.org/project/system-runtime-spec/) | [README](python/README.md) |
-| TypeScript | [npm](https://www.npmjs.com/package/system-runtime-spec) | [README](typescript/README.md) |
+| Language | Package | Specification | Documentation |
+| --- | --- | --- | --- |
+| Rust | [crates.io](https://crates.io/crates/system-runtime-spec) | 1.0 (draft) since 0.2 | [README](crates/libs/system-runtime/README.md) |
+| Python | [PyPI](https://pypi.org/project/system-runtime-spec/) | 1.0 (draft) since 0.2 | [README](python/README.md) |
+| TypeScript | [npm](https://www.npmjs.com/package/system-runtime-spec) | 1.0 (draft) since 0.2 | [README](typescript/README.md) |
 
 ## Development
 

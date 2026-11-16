@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]*"]
   pull_request:
     paths:
       - ".github/workflows/**"
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: Publish packages (requires selecting a release tag)
+        description: Publish the release (requires selecting a release tag)
         type: boolean
         default: false
       registry:
@@ -23,6 +23,11 @@ on:
 permissions:
   contents: read
 
+# Unlike the implicit default, an explicit Bash shell sets `pipefail`.
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: release-${{ github.ref }}-${{ github.event_name == 'push' || inputs.publish || false }}
   cancel-in-progress: false
@@ -32,9 +37,13 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       publish: ${{ steps.release.outputs.publish }}
+      crates-io: ${{ steps.release.outputs.crates-io }}
+      pypi: ${{ steps.release.outputs.pypi }}
+      npm: ${{ steps.release.outputs.npm }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Validate Release
         id: release
@@ -43,7 +52,7 @@ jobs:
         run: |
           if [ "$PUBLISH" = true ]; then
             test "$GITHUB_REF_TYPE" = tag
-            python3 scripts/check_release.py --tag "$GITHUB_REF_NAME"
+            python3 scripts/check_release.py --tag "$GITHUB_REF_NAME" | tee -a "$GITHUB_OUTPUT"
           else
             python3 scripts/check_release.py
           fi
@@ -58,7 +67,7 @@ jobs:
   crates-io:
     needs: [prepare, checks]
     if: >-
-      needs.prepare.outputs.publish == 'true' &&
+      needs.prepare.outputs.crates-io == 'true' &&
       github.repository == 'rugix/system-runtime-spec' &&
       (github.event_name == 'push' || inputs.registry == 'all' || inputs.registry == 'crates-io')
     runs-on: ubuntu-24.04
@@ -91,7 +100,7 @@ jobs:
   pypi:
     needs: [prepare, checks]
     if: >-
-      needs.prepare.outputs.publish == 'true' &&
+      needs.prepare.outputs.pypi == 'true' &&
       github.repository == 'rugix/system-runtime-spec' &&
       (github.event_name == 'push' || inputs.registry == 'all' || inputs.registry == 'pypi')
     runs-on: ubuntu-24.04
@@ -112,7 +121,7 @@ jobs:
   npm:
     needs: [prepare, checks]
     if: >-
-      needs.prepare.outputs.publish == 'true' &&
+      needs.prepare.outputs.npm == 'true' &&
       github.repository == 'rugix/system-runtime-spec' &&
       (github.event_name == 'push' || inputs.registry == 'all' || inputs.registry == 'npm')
     runs-on: ubuntu-24.04
@@ -147,3 +156,36 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish ./dist/system-runtime-spec-*.tgz --access public
+
+  github-release:
+    needs: [prepare, checks, crates-io, pypi, npm]
+    if: >-
+      always() &&
+      needs.prepare.outputs.publish == 'true' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
+      github.repository == 'rugix/system-runtime-spec'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Create GitHub Release
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists."
+            exit 0
+          fi
+          previous=$(python3 scripts/check_release.py --tag "$TAG" --notes notes.md | sed -n 's/^previous=//p')
+          args=(--verify-tag --title "$TAG" --notes "$(cat notes.md)" --generate-notes)
+          if [ -n "$previous" ]; then
+            args+=(--notes-start-tag "$previous")
+          fi
+          gh release create "$TAG" "${args[@]}"
