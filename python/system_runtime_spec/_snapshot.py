@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 
@@ -21,9 +20,6 @@ from .models.component import ComponentDeclaration
 from .models.health import HealthClockSample, HealthNode, HealthStatus
 from .models.metric import MetricDefinition, MetricSample
 
-_TIMESTAMP = re.compile(
-    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:([0-9]{2})(\.[0-9]+)?Z"
-)
 _LISTS: tuple[tuple[str, type[RecordModel]], ...] = (
     ("components", ComponentDeclaration),
     ("healthNodes", HealthNode),
@@ -115,13 +111,8 @@ class Snapshot:
         for name in (*(name for name, _ in _LISTS), "diagnostics"):
             if name in value and not isinstance(value[name], list):
                 raise SnapshotError(f"{name} is not a list")
-        clock = value.get("clock")
-        timestamp = clock.get("timestamp") if isinstance(clock, dict) else None
-        match = _TIMESTAMP.fullmatch(timestamp) if isinstance(timestamp, str) else None
-        if match is None or match[1] == "60":
-            raise SnapshotError(f"invalid clock timestamp {timestamp!r}")
         try:
-            sample = HealthClockSample.model_validate(clock)
+            sample = HealthClockSample.model_validate(value.get("clock"))
         except pydantic.ValidationError as error:
             raise SnapshotError(f"invalid clock sample: {error}") from None
         present = [name in value for name in _HEALTH_FIELDS]

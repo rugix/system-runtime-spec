@@ -253,25 +253,6 @@ fn number(text: &str) -> Option<u64> {
     valid.then(|| text.parse().ok()).flatten()
 }
 
-/// Read integral JSON numbers that fit integer fields, such as `1.0`, as integers.
-fn integral(value: &JsonValue) -> JsonValue {
-    match value {
-        JsonValue::Number(number) if number.is_f64() => {
-            let float = number.as_f64();
-            if float.fract() == 0.0 && (0.0..18_446_744_073_709_551_616.0).contains(&float) {
-                JsonValue::from(float as u64)
-            } else {
-                value.clone()
-            }
-        }
-        JsonValue::Seq(items) => JsonValue::from(items.iter().map(integral).collect::<Vec<_>>()),
-        JsonValue::Map(map) => {
-            JsonValue::Map(map.iter().map(|(k, v)| (k.clone(), integral(v))).collect())
-        }
-        _ => value.clone(),
-    }
-}
-
 fn object(value: &JsonValue) -> Result<Map<Str, JsonValue>, String> {
     value
         .as_map()
@@ -322,7 +303,7 @@ pub(crate) fn decode<T: sidex::Decode>(
     kind: RecordKind,
     json: JsonValue,
 ) -> Result<Record<T>, String> {
-    let mut record = object(&integral(&json))?;
+    let mut record = object(&json)?;
     let newer = check_version(kind, &record)?;
     let mut unsupported = false;
     let mut unsupported_parents = BTreeSet::new();

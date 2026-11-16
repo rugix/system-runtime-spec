@@ -35,12 +35,16 @@ RFC 8174) when, and only when, they appear in all capitals.
 Examples and notes are informative. Everything else is normative, except where a section states
 otherwise.
 
-This document defines all records completely. The [schemas](schemas/) in [Sidex][sidex], a
-language for defining data models, and the [JSON Schemas](json-schema/) generated from them give
-the same structure in machine-readable form. They are informative.
+This document and the [schemas](schemas/) together form the specification. The schemas define the
+structure of records, reports, and snapshots in [Sidex][sidex], a language for data models, and
+their JSON representation follows [Sidex's JSON mapping][sidex-json]. This document defines their
+meaning and the conditions that the structure alone does not express. It quotes the schema
+definitions it refers to; if a quote differs from the schemas, the schemas apply.
+The [JSON Schemas](json-schema/) generated from the schemas are informative.
 
 [bcp14]: https://www.rfc-editor.org/info/bcp14
 [sidex]: https://github.com/silitics/sidex
+[sidex-json]: https://oss.silitics.com/sidex/docs/guides/json/
 
 ## 2. Conformance
 
@@ -69,64 +73,86 @@ The specification distinguishes five roles:
 - A **consumer** acts on reports, such as an update controller that decides whether to commit an
   update.
 
-An implementation conforms to the specification for a role if it satisfies all requirements of this
-document that apply to that role. The [conformance suite](tests/fixtures/) in this repository
+An implementation can take several roles. For example, an update controller reads records, checks
+the compatibility of an update, writes the records of the update, and decides whether to commit it.
+Records come from _contributors_, such as a system image or an app, whose writers publish them.
+
+An implementation conforms to the specification for a role if it satisfies all requirements that
+apply to that role. The [conformance suite](tests/fixtures/) in this repository
 contains test cases for version matching, compatibility checking, candidate compositions, health
 evaluation, snapshots, clock correlation, and discovery. Passing it is evidence of conformance, but
-does not replace the requirements of this document. If a test case contradicts this document, the
-document applies, and the test case is wrong.
+does not replace the requirements of the specification. If a test case contradicts the
+specification, the specification applies, and the test case is wrong.
 
 ## 3. Records
 
 ### 3.1 Encoding
 
-Records are JSON texts ([RFC 8259][rfc8259]) that consist of one object. Field names use camelCase,
-and enumeration values use PascalCase. Writers MUST produce [I-JSON][rfc7493] messages: they are
-encoded in UTF-8, no object has two members with the same name, and no string contains an unpaired
-surrogate or a noncharacter. Writers MUST omit optional fields that are not set and MUST NOT encode
-them as `null`.
+Each record is a JSON object of one of the record types of the schemas, such as
+`ComponentDeclaration` or `HealthStatus`. Field names use camelCase, so the schema field
+`max_age_ms` is the JSON field `maxAgeMs`, which this document uses. Enumeration values use
+PascalCase, and absent optional fields are omitted. Fields of the type `u64`, such as boot-time
+clock values, hold unsigned 64-bit integers; values beyond 2⁵³ − 1 are decimal strings, so that
+JavaScript implementations can process them without losing precision.
 
-Fields that this document defines as integers hold unsigned 64-bit integers, such as boot-time clock
-values; other numbers, such as metric values, are not integers in this sense. Writers MUST encode an
-integer as a JSON number without a fraction or an exponent if it is at most 2⁵³ − 1, and otherwise
-as a string of decimal digits without leading zeros, so that JavaScript implementations can process
-it without losing precision. Readers MUST accept both encodings for every integer, and a JSON number
-with an integral value, such as `1.0`, is that integer. Negative values, values with a fraction, and
-values greater than 2⁶⁴ − 1 are invalid.
-
-Readers MAY reject records that violate the other rules for writers in this section, but need not
-detect such violations; standard JSON parsers do not. Writers that follow these rules produce
-records that all readers interpret alike.
-
-A record is _valid_ if it has the structure that this document defines and its fields satisfy the
-conditions that this document states for them, such as that a version is valid or that a
-`maxAgeMs` is positive. Numbers outside the range of IEEE 754 binary64 are invalid. Unknown fields,
-unknown enumeration values ([Section 3.6](#36-evolution)), and unit codes
-([Section 6.5](#65-metrics)) do not make a record invalid. Conditions that concern several records,
-such as unique IDs, do not affect validity; the parts define their consequences.
-
-[rfc8259]: https://www.rfc-editor.org/rfc/rfc8259
-[rfc7493]: https://www.rfc-editor.org/rfc/rfc7493
+A record is _valid_ if it has the structure of its schema and its fields satisfy the conditions
+that this document and the schemas state for them, such as that a version is valid or that a
+`maxAgeMs` is positive. Unknown fields, unknown enumeration values
+([Section 3.6](#36-evolution)), and unit codes ([Section 6.5](#65-metrics)) do not make a record
+invalid. Conditions that concern several records, such as unique IDs, do not affect validity; the
+parts define their consequences. Writers MUST NOT publish invalid records.
 
 ### 3.2 Diagnostics
 
 Records come from many contributors, and one faulty record should not prevent the evaluation of the
 others. Readers, compatibility checkers, and health evaluators MUST skip invalid records and records
-that cannot be read, and MUST report a _diagnostic_ for each. A diagnostic has the following fields:
+that cannot be read, and MUST report a _diagnostic_ for each:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `severity` | severity | `Error` if the results may not reflect the records concerned, for example, because they were skipped, and `Warning` if the results account for the problem. |
-| `kind` | diagnostic kind | Kind of records concerned: `ComponentDeclaration`, `HealthNode`, `HealthStatus`, `MetricDefinition`, `MetricSample`, or `DirectoryConfig`. |
-| `message` | string | Description of the problem. |
-| `path` | string, optional | Path of the file or directory concerned. |
+```sidex
+/// A record that was skipped or used despite a problem.
+record Diagnostic {
+    /// Whether the results may not reflect the records concerned.
+    severity: Severity,
+    /// Kind of records concerned.
+    kind: RecordKind,
+    /// Description of the problem; not specified and differs between implementations.
+    message: string,
+    /// Path of the file or directory concerned.
+    path?: string,
+}
+
+/// Effect of a diagnostic on the results.
+#[json(tagged = externally)]
+variant Severity {
+    /// The results may not reflect the records concerned, for example, because they were skipped.
+    Error,
+    /// The results account for the problem.
+    Warning,
+}
+
+/// Kind of records, named after the record types.
+#[json(tagged = externally)]
+variant RecordKind {
+    /// Component declarations.
+    ComponentDeclaration,
+    /// Health nodes.
+    HealthNode,
+    /// Status records.
+    HealthStatus,
+    /// Metric definitions.
+    MetricDefinition,
+    /// Metric samples.
+    MetricSample,
+    /// Directory configurations.
+    DirectoryConfig,
+}
+```
 
 The kind of a diagnostic is the kind of the records it concerns, also for a directory of such
 records and for diagnostics added during evaluation. The kind `DirectoryConfig` is reserved for
 directory configurations themselves. The components part and the health part define how
 diagnostics affect their results ([Sections 5.4](#54-consistency) and
-[6.8](#68-evaluation-and-reports)). The messages of diagnostics and their order are not specified
-and differ between implementations.
+[6.8](#68-evaluation-and-reports)). The order of diagnostics is not specified.
 
 ### 3.3 Identifiers
 
@@ -146,8 +172,8 @@ Component declarations, health nodes, status records, metric definitions, and me
 an optional `owner`. The owner names the contributor that supplies the record, such as a system
 image or an app, and that replaces or removes the record as a whole.
 
-Owners do not scope IDs: records with different owners MUST have distinct IDs within their
-namespace. Records without an owner are valid.
+Owners do not scope IDs: records of different owners need distinct IDs within their namespace, and
+the parts define what happens if they share one. Records without an owner are valid.
 
 An update of a contributor replaces all component declarations, health nodes, and metric definitions
 of its owner, including overrides in `/etc` ([Section 8.3](#83-reading)). A writer that performs an
@@ -185,11 +211,11 @@ changes that readers of earlier minor versions of the same major version can saf
 - adding optional fields whose absence keeps the meaning of a record unchanged, and
 - adding values to the enumerations that this section lists, with the fallback defined here.
 
-Every record, in addition to the fields that this document lists for it, has an optional field
-`specVersion`, which holds the version of this specification that the record follows, such as `1.0`.
-A record without it follows version 1.0. Writers SHOULD set it to the lowest version whose features
-the record uses. Specification versions, here and in snapshots ([Section 9.1](#91-snapshots)), have
-the following form, where both numbers fit into an unsigned 64-bit integer and compare numerically:
+Every record has an optional field `specVersion`, which holds the version of this specification that
+the record follows, such as `1.0`. A record without it follows version 1.0. Writers SHOULD set it to
+the lowest version whose features the record uses. Specification versions, here and in snapshots
+([Section 9.1](#91-snapshots)), have the following form, where both numbers fit into an unsigned
+64-bit integer and compare numerically:
 
 ```text
 spec-version = number "." number
@@ -203,18 +229,18 @@ supports is invalid as well, because a matching feature that the reader does not
 it match too much. For other records with a higher minor version, the reader uses them, applying
 the fallbacks of this section, and reports a diagnostic with the severity `Warning`.
 
-Readers MUST ignore fields they do not know. Readers MUST treat values they do not know as
-follows:
+The schemas describe what writers produce. Implementations MUST ignore fields they do not know,
+and MUST treat values they do not know as follows:
 
-| Enumeration | Fallback |
-| --- | --- |
-| Health rule types ([Section 6.2](#62-health-graphs)) | The node's result is unknown, with the reason `Unsupported`. |
-| Status states ([Section 6.4](#64-observed-nodes-and-status-records)) | The node's result is unknown, with the reason `Unsupported`. |
-| Input modes ([Section 6.7](#67-aggregate-nodes)) | The aggregate node's result is unknown, with the reason `Unsupported`. |
-| Compatibility problems ([Section 5.5](#55-compatibility-reports)) | The problem is reported without further detail. |
-| Reasons ([Section 6.8](#68-evaluation-and-reports)) | The result is treated as having no reason. |
-| Diagnostic kinds ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as of the kind `DirectoryConfig`. |
-| Diagnostic severities ([Section 3.2](#32-diagnostics)) | The diagnostic is treated as an error. |
+| Enumeration | Role | Fallback |
+| --- | --- | --- |
+| Health rule types ([Section 6.2](#62-health-graphs)) | Health evaluator | The node's result is unknown, with the reason `Unsupported`. |
+| Status states ([Section 6.4](#64-observed-nodes-and-status-records)) | Health evaluator | The node's result is unknown, with the reason `Unsupported`. |
+| Input modes ([Section 6.7](#67-aggregate-nodes)) | Health evaluator | The aggregate node's result is unknown, with the reason `Unsupported`. |
+| Compatibility problems ([Section 5.5](#55-compatibility-reports)) | Consumer | The problem is reported without further detail. |
+| Reasons ([Section 6.8](#68-evaluation-and-reports)) | Consumer | The result is treated as having no reason. |
+| Diagnostic kinds ([Section 3.2](#32-diagnostics)) | Reader of a snapshot, consumer | The diagnostic is treated as of the kind `DirectoryConfig`. |
+| Diagnostic severities ([Section 3.2](#32-diagnostics)) | Reader of a snapshot, consumer | The diagnostic is treated as an error. |
 
 > **Note:** The fallbacks are conservative. For example, a node that attaches to an aggregate node
 > with an input mode added in a later minor version makes that aggregate node unknown for older
@@ -223,7 +249,7 @@ follows:
 A change that readers cannot safely ignore requires a new major version. If records of a new major
 version appeared next to records of an earlier one, readers of the earlier major version would
 report them as invalid, which would make compositions inconsistent and block health decisions. A new
-major version therefore MUST use new standard directories ([Section 8.1](#81-directories)).
+major version therefore uses new standard directories ([Section 8.1](#81-directories)).
 
 ## 4. Versions and Version Requirements
 
@@ -247,9 +273,9 @@ identifier = ( letter | digit | "-" ) { letter | digit | "-" }
 ```
 
 Letters are the ASCII letters `A` to `Z` and `a` to `z`, and digits are `0` to `9`. Release
-components and prerelease identifiers that consist only of digits are _numeric_ and MUST fit into
-an unsigned 64-bit integer. Leading zeros are allowed. Readers MUST ignore whitespace at the start
-and end of a version. In this document, _whitespace_ means the characters with the Unicode property
+components and prerelease identifiers that consist only of digits are _numeric_ and MUST fit into an
+unsigned 64-bit integer. Leading zeros are allowed. Whitespace at the start and end of a version is
+ignored. In this document, _whitespace_ means the characters with the Unicode property
 `White_Space`.
 
 > **Note:** The grammar covers, for example, `1.4.2`, `2.0.0-rc.1`, `1.4.2+build.7`, `2026.06.25`,
@@ -346,28 +372,56 @@ _consistent_.
 
 ### 5.1 Component Declarations
 
-Each component is described by one `ComponentDeclaration`:
+Each component is described by one component declaration:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | Unique ID of the component within the composition. |
-| `owner` | string, optional | Owner of the declaration ([Section 3.4](#34-owners)). |
-| `version` | version, optional | Version of the component. |
-| `provides` | list of capabilities, optional | Capabilities the component provides. |
-| `claims` | list of claims, optional | Resources the component claims. |
-| `requires` | list of selectors, optional | Requirements: selectors that each need to match a capability. |
-| `conflicts` | list of selectors, optional | Conflicts: selectors that must not match any capability. |
-| `annotations` | object, optional | Further data ([Section 3.5](#35-annotations)). |
+```sidex
+/// One part of a system, such as the system image, an app, a runtime, or a hardware module.
+record ComponentDeclaration {
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Unique ID of the component within the composition.
+    id: string,
+    /// Owner of the declaration, which replaces or removes it as a whole.
+    owner?: string,
+    /// Version of the component, also provided as its implicit capability.
+    version?: string,
+    /// Capabilities the component provides.
+    provides?: [CapabilityDeclaration],
+    /// Resources the component claims.
+    claims?: [ClaimDeclaration],
+    /// Selectors that each need to match a capability.
+    requires?: [CapabilitySelectorDeclaration],
+    /// Selectors that must not match any capability, including the component's own.
+    conflicts?: [CapabilitySelectorDeclaration],
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
+}
+```
+
+The `version` MUST be valid ([Section 4.1](#41-versions)).
 
 ### 5.2 Capabilities
 
-A _capability_ states a fact that a component provides. It has an `id` and, optionally, either a
-`version` or a `value`, but not both:
+A _capability_ states a fact that a component provides:
+
+```sidex
+/// A fact that a component provides.
+record CapabilityDeclaration {
+    /// ID of the capability.
+    id: string,
+    /// Version of what is present; mutually exclusive with `value`.
+    version?: string,
+    /// Exact property; mutually exclusive with `version`.
+    value?: string,
+}
+```
 
 - A capability with only an ID states that something is present.
 - A capability with a `version` states which version of something is present. The version MUST be
   valid ([Section 4.1](#41-versions)).
 - A capability with a `value` states an exact property as a string.
+
+A capability MUST NOT have both a `version` and a `value`.
 
 Every component also provides an _implicit capability_ with its own `id` and, if it declares one,
 its `version`.
@@ -377,9 +431,22 @@ its `version`.
 
 ### 5.3 Selectors and Claims
 
-Requirements and conflicts are _selectors_ over capabilities. A selector has an `id` and,
-optionally, either a `version` holding a version requirement
-([Section 4.3](#43-version-requirements)) or a `value`, but not both. A selector matches a
+Requirements and conflicts are _selectors_ over capabilities:
+
+```sidex
+/// A selector over capabilities.
+record CapabilitySelectorDeclaration {
+    /// ID of the capability.
+    id: string,
+    /// Version requirement; mutually exclusive with `value`.
+    version?: string,
+    /// Exact value; mutually exclusive with `version`.
+    value?: string,
+}
+```
+
+The `version` of a selector holds a version requirement ([Section 4.3](#43-version-requirements)),
+which MUST be valid. A selector MUST NOT have both a `version` and a `value`. A selector matches a
 capability with the same ID if:
 
 - the selector has neither a version requirement nor a value,
@@ -389,9 +456,18 @@ capability with the same ID if:
 A selector with a version requirement does not match a capability without a version, even if the
 requirement is `*`.
 
-A _claim_ reserves a resource that at most one component may claim. It has an `id` that names the
-resource. A component that claims the same resource several times claims it once. Claims do not
-provide capabilities.
+A _claim_ reserves a resource:
+
+```sidex
+/// A resource that at most one component may claim.
+record ClaimDeclaration {
+    /// ID of the resource.
+    id: string,
+}
+```
+
+A component that claims the same resource several times claims it once. Claims do not provide
+capabilities.
 
 > **Note:** Each requirement is met on its own, possibly by different components. A component
 > that needs two properties of the same provider requires one capability that states both. Other
@@ -426,19 +502,70 @@ constraints ([Section 10](#10-limitations)).
 
 ### 5.5 Compatibility Reports
 
-A compatibility checker produces a `CompatibilityReport` with the fields `consistent`, a boolean,
-`problems`, a list of all violated constraints, and `diagnostics`, the diagnostics about component
-declarations and directory configurations. Each problem has a `problem` field naming its kind:
+A compatibility checker produces a compatibility report:
 
-| Kind | Fields | Reported for |
-| --- | --- | --- |
-| `DuplicateComponent` | `id` | Each component ID that more than one component uses. |
-| `DuplicateClaim` | `id`, `components` | Each resource that more than one component claims, with the claiming components in declaration order. |
-| `UnsatisfiedRequirement` | `component`, `selector` | Each requirement that matches no capability. |
-| `Conflict` | `component`, `selector`, `provider`, `capability` | Each pair of a conflict and a capability it matches. |
+```sidex
+/// Result of checking a composition.
+record CompatibilityReport {
+    /// Whether there are no problems and no diagnostics with the severity `Error`.
+    consistent: bool,
+    /// Violated constraints, in the order that the specification defines.
+    problems: [CompatibilityProblem],
+    /// Diagnostics about component declarations and directory configurations.
+    diagnostics: [Diagnostic],
+}
 
-The report is consistent if and only if it contains no problems and no diagnostics with the
-severity `Error`. Problems MUST appear in this order:
+/// A violated constraint.
+#[json(tag = "problem")]
+variant CompatibilityProblem {
+    /// More than one component uses an ID.
+    DuplicateComponent: ComponentIdProblem,
+    /// More than one component claims a resource.
+    DuplicateClaim: ClaimProblem,
+    /// A requirement matches no capability.
+    UnsatisfiedRequirement: SelectorProblem,
+    /// A conflict matches a capability.
+    Conflict: ConflictProblem,
+}
+
+/// A component ID that more than one component uses.
+record ComponentIdProblem {
+    /// ID of the components.
+    id: string,
+}
+
+/// A resource that more than one component claims.
+record ClaimProblem {
+    /// ID of the resource.
+    id: string,
+    /// IDs of the claiming components, in declaration order.
+    components: [string],
+}
+
+/// A requirement that matches no capability.
+record SelectorProblem {
+    /// ID of the requiring component.
+    component: string,
+    /// The requirement as declared.
+    selector: CapabilitySelectorDeclaration,
+}
+
+/// A conflict that matches a capability.
+record ConflictProblem {
+    /// ID of the component declaring the conflict.
+    component: string,
+    /// The conflict as declared.
+    selector: CapabilitySelectorDeclaration,
+    /// ID of the component providing the capability.
+    provider: string,
+    /// The matching capability as declared.
+    capability: CapabilityDeclaration,
+}
+```
+
+The report lists each component ID that more than one component uses, each resource that more than
+one component claims, each requirement that matches no capability, and each pair of a conflict and
+a capability it matches. Problems MUST appear in this order:
 
 1. Duplicate components, sorted by ID.
 2. Duplicate claims, sorted by resource ID.
@@ -447,7 +574,7 @@ severity `Error`. Problems MUST appear in this order:
    several capabilities produces one problem per capability, in the order of the providing
    components, with each component's implicit capability before its explicit ones.
 
-Problems contain the selectors and capabilities as declared, with the fields that this document
+Problems contain the selectors and capabilities as declared, with the fields that the schema
 defines. Two problems are _equal_ if they have the same kind and equal fields. Two diagnostics are
 _equal_ if they have equal fields, apart from their messages.
 
@@ -498,8 +625,21 @@ two questions about each node:
 - **Usable:** Are the minimum criteria met?
 - **Healthy:** Are the desired criteria met?
 
-Each answer is `Yes`, `No`, or `Unknown`. The answer `Unknown` means that the available evidence
-does not determine whether the criteria are met. The answers are related: a node that is healthy
+Each answer is `Yes`, `No`, or `Unknown`:
+
+```sidex
+/// Answer to whether criteria are met.
+#[json(tagged = externally)]
+variant Answer {
+    /// The criteria are met.
+    Yes,
+    /// The criteria are not met.
+    No,
+    /// The available evidence does not determine whether the criteria are met.
+    Unknown,
+}
+```
+ The answers are related: a node that is healthy
 is usable, and a node that is not usable is not healthy. Therefore, exactly six combinations are
 possible:
 
@@ -532,28 +672,44 @@ which corresponds to the answers `Yes`/`Yes`, `Yes`/`No`, `No`/`No`, or `Unknown
 
 ### 6.2 Health Graphs
 
-A _health graph_ is a set of health nodes. Each node is described by a `HealthNode`:
+A _health graph_ is a set of health nodes:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | Unique ID of the node within the graph. |
-| `owner` | string, optional | Owner of the node ([Section 3.4](#34-owners)). |
-| `label` | string, optional | Human-readable name of the node. |
-| `components` | list of strings, optional | IDs of associated components ([Section 7](#7-links-between-components-and-health)). |
-| `rule` | rule, optional | How the node's answers are determined. |
-| `partOf` | list of attachments, optional | Aggregate nodes that the node attaches to as an input ([Section 6.7](#67-aggregate-nodes)). |
-| `annotations` | object, optional | Further data ([Section 3.5](#35-annotations)). |
+```sidex
+/// A check or function whose health is evaluated.
+record HealthNode {
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Unique ID of the node within the graph.
+    id: HealthNodeId,
+    /// Owner of the node, which replaces or removes it as a whole.
+    owner?: string,
+    /// Human-readable name of the node.
+    label?: string,
+    /// IDs of associated components; associations create no dependencies.
+    components?: [string],
+    /// How the node's answers are determined; omitted means an observed node without constraints.
+    rule?: HealthRule,
+    /// Aggregate nodes that the node attaches to as an input.
+    part_of?: [Attachment],
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
+}
 
-A rule has a `type` field and the fields of its type:
+/// How a node's answers are determined.
+#[json(tag = "type")]
+variant HealthRule {
+    /// The node takes its answers from a status record.
+    Observed: ObservationRule,
+    /// The node derives its answers from a metric sample.
+    Threshold: ThresholdRule,
+    /// The node derives its answers from other nodes.
+    Aggregate: AggregationRule,
+}
+```
 
-- `Observed`: The node takes its answers from a status record
-  ([Section 6.4](#64-observed-nodes-and-status-records)).
-- `Threshold`: The node derives its answers from a metric sample
-  ([Section 6.6](#66-threshold-nodes)).
-- `Aggregate`: The node derives its answers from other nodes
-  ([Section 6.7](#67-aggregate-nodes)).
-
-A node without a `rule` is an observed node without constraints. A node whose rule type is unknown
+[Sections 6.4](#64-observed-nodes-and-status-records), [6.6](#66-threshold-nodes), and
+[6.7](#67-aggregate-nodes) define the rules, and [Section 7](#7-links-between-components-and-health)
+the associated components. A node whose rule type is unknown
 to the evaluator has the answers `Unknown`/`Unknown`, with the reason `Unsupported`.
 
 The inputs of aggregate nodes, including attached inputs, form directed edges from each aggregate
@@ -596,18 +752,9 @@ cannot keep reporting an old result. Times are measured on the _boot-time clock_
 system, which starts at zero when the system boots and counts suspended time. Unlike a wall clock,
 it does not change when the system adjusts its time.
 
-Evidence has the following fields:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `bootId` | string | ID of the boot during which the evidence was taken. |
-| `observedAtMs` | unsigned 64-bit integer | Boot-time clock value, in milliseconds, when the evidence was taken. |
-| `maxAgeMs` | unsigned 64-bit integer | Duration, in milliseconds, for which the evidence is valid. MUST be positive. |
-| `owner` | string, optional | Owner of the evidence. |
-| `tag` | string, optional | Opaque label identifying the configuration or instance that took the evidence. |
-| `message` | string, optional | Explanation supplied by the writer. |
-| `details` | object, optional | Further information about the observation, for display ([Section 3.5](#35-annotations)). |
-| `annotations` | object, optional | Further data ([Section 3.5](#35-annotations)). |
+Status records ([Section 6.4](#64-observed-nodes-and-status-records)) and metric samples
+([Section 6.5](#65-metrics)) share the fields of evidence: `bootId`, `observedAtMs`, `maxAgeMs`,
+`owner`, `tag`, `message`, `details`, and `annotations`.
 
 On Linux, `bootId` is the UUID in `/proc/sys/kernel/random/boot_id`, without the trailing newline,
 and the boot-time clock is `CLOCK_BOOTTIME`. Writers MUST use the same boot-time clock as the
@@ -617,8 +764,18 @@ the time the record was written.
 > **Note:** On Linux, a time namespace can offset `CLOCK_BOOTTIME` for the processes in it. A
 > writer in such a namespace needs to correct its observation times by the offset.
 
-A health evaluator evaluates evidence in a _health context_, which consists of the current boot ID,
-`bootId`, a string, and the current boot-time clock value in milliseconds, `nowMs`, an integer.
+A health evaluator evaluates evidence in a _health context_:
+
+```sidex
+/// Boot and time in which evidence is evaluated.
+record HealthContext {
+    /// Current boot ID.
+    boot_id: string,
+    /// Current boot-time clock value in milliseconds.
+    now_ms: u64,
+}
+```
+
 Evidence is _fresh_ if all of the following hold, checked in this order:
 
 1. It exists. Otherwise, the reason is `Missing`.
@@ -648,20 +805,56 @@ definitions of the same contributor SHOULD declare the matching `expectedTag`.
 
 ### 6.4 Observed Nodes and Status Records
 
-An observed node takes its answers from a status record. Its rule has the following optional
-fields:
+An observed node takes its answers from a status record:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `maxAgeMs` | unsigned 64-bit integer, optional | Upper limit for the age of status records. MUST be positive. |
-| `expectedTag` | string, optional | Tag that status records need to carry to be fresh. |
+```sidex
+/// Constraints on the status records of an observed node.
+record ObservationRule {
+    /// Upper limit for the age of status records, in milliseconds; must be positive.
+    max_age_ms?: u64,
+    /// Tag that status records need to carry to be fresh.
+    expected_tag?: string,
+}
 
-A `HealthStatus` is evidence ([Section 6.3](#63-evidence)) with the following further fields:
+/// Result of a check, published while the system runs.
+record HealthStatus {
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// ID of the observed node.
+    id: HealthNodeId,
+    /// Result of the check.
+    state: HealthState,
+    /// ID of the boot during which the check took place.
+    boot_id: string,
+    /// Boot-time clock value, in milliseconds, when the check took place.
+    observed_at_ms: u64,
+    /// Duration, in milliseconds, for which the status record is valid; must be positive.
+    max_age_ms: u64,
+    /// Owner of the status record.
+    owner?: string,
+    /// Opaque label identifying the configuration or instance that took the evidence.
+    tag?: string,
+    /// Explanation supplied by the writer.
+    message?: string,
+    /// Further information about the observation, for display, in any structure.
+    details?: [string: json],
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
+}
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | ID of the observed node. |
-| `state` | health state | Result of the check: `Healthy`, `Degraded`, `Unhealthy`, or `Unknown`. |
+/// Summary of the answers of a node.
+#[json(tagged = externally)]
+variant HealthState {
+    /// The desired criteria are met.
+    Healthy,
+    /// The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.
+    Degraded,
+    /// The minimum criteria are not met.
+    Unhealthy,
+    /// Whether the minimum criteria are met is unknown.
+    Unknown,
+}
+```
 
 Writers MUST NOT publish two status records for the same node. If several status records refer to
 an observed node, its answers are `Unknown`/`Unknown`, with the reason `Conflict`, and the evaluator
@@ -692,28 +885,58 @@ partition. Metrics separate measurements from health policies: a service publish
 and any number of threshold nodes ([Section 6.6](#66-threshold-nodes)) evaluate it. A metric keeps
 no history; only its current sample counts.
 
-A `MetricDefinition` declares a metric:
+A metric definition declares a metric, and a metric sample is evidence
+([Section 6.3](#63-evidence)) of its current value:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | Unique ID of the metric. |
-| `owner` | string, optional | Owner of the definition ([Section 3.4](#34-owners)). |
-| `label` | string, optional | Human-readable name of the metric. |
-| `components` | list of strings, optional | IDs of associated components ([Section 7](#7-links-between-components-and-health)). |
-| `unit` | string | Unit of all samples and thresholds of the metric, as a UCUM code. |
-| `maxAgeMs` | unsigned 64-bit integer, optional | Upper limit for the age of samples. MUST be positive. |
-| `expectedTag` | string, optional | Tag that samples need to carry to be fresh. |
-| `annotations` | object, optional | Further data ([Section 3.5](#35-annotations)). |
+```sidex
+/// A named numeric measurement.
+record MetricDefinition {
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Unique ID of the metric.
+    id: MetricId,
+    /// Owner of the definition, which replaces or removes it as a whole.
+    owner?: string,
+    /// Human-readable name of the metric.
+    label?: string,
+    /// IDs of associated components; associations create no dependencies.
+    components?: [string],
+    /// Unit of all samples and thresholds of the metric, as a UCUM code.
+    unit: string,
+    /// Upper limit for the age of samples, in milliseconds; must be positive.
+    max_age_ms?: u64,
+    /// Tag that samples need to carry to be fresh.
+    expected_tag?: string,
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
+}
 
-A `MetricSample` is evidence ([Section 6.3](#63-evidence)) with the following further fields:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | ID of the metric. |
-| `value` | number | Measured value in the metric's unit. |
-
-Values and range bounds are IEEE 754 binary64 numbers, encoded as JSON numbers. They MUST be
-finite.
+/// Current measurement of a metric, published while the system runs.
+record MetricSample {
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// ID of the metric.
+    id: MetricId,
+    /// Measured value in the metric's unit; must be finite.
+    value: f64,
+    /// ID of the boot during which the measurement took place.
+    boot_id: string,
+    /// Boot-time clock value, in milliseconds, when the measurement took place.
+    observed_at_ms: u64,
+    /// Duration, in milliseconds, for which the sample is valid; must be positive.
+    max_age_ms: u64,
+    /// Owner of the sample.
+    owner?: string,
+    /// Opaque label identifying the configuration or instance that took the evidence.
+    tag?: string,
+    /// Explanation supplied by the writer.
+    message?: string,
+    /// Further information about the observation, for display, in any structure.
+    details?: [string: json],
+    /// Further data that the specification does not define, with namespaced member names.
+    annotations?: [string: json],
+}
+```
 
 A metric ID names one measurement in one unit, because threshold nodes of other contributors
 compare its samples with fixed numbers. Writers MUST NOT change the meaning or the unit of a
@@ -758,23 +981,42 @@ and MUST NOT reject a metric because of its unit code.
 
 ### 6.6 Threshold Nodes
 
-A threshold node derives its answers by comparing a metric sample with two ranges. Its rule has
-the following fields:
+A threshold node derives its answers by comparing a metric sample with two ranges:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `metric` | string | ID of the metric. |
-| `unit` | string, optional | Unit of the ranges, as a UCUM code. |
-| `healthy` | range | Range in which the desired criteria are met. |
-| `usable` | range | Range in which the minimum criteria are met. |
-| `maxAgeMs` | unsigned 64-bit integer, optional | Upper limit for the age of samples. MUST be positive. |
+```sidex
+/// Ranges that a metric sample is compared with.
+record ThresholdRule {
+    /// ID of the metric.
+    metric: MetricId,
+    /// Unit of the ranges, as a UCUM code; must equal the metric's unit.
+    unit?: string,
+    /// Range in which the desired criteria are met; a subset of the usable range.
+    healthy: MetricRange,
+    /// Range in which the minimum criteria are met.
+    usable: MetricRange,
+    /// Upper limit for the age of samples, in milliseconds; must be positive.
+    max_age_ms?: u64,
+}
 
-The `unit` states the unit that the ranges assume, so that a threshold node does not silently
-apply its ranges to a metric whose unit differs.
+/// A non-empty range; a missing bound leaves the range unbounded on that side.
+record MetricRange {
+    /// Lower bound.
+    lower?: MetricBound,
+    /// Upper bound.
+    upper?: MetricBound,
+}
 
-A range has an optional `lower` and an optional `upper` bound. Each bound has a `value` and a
-boolean `inclusive`, which states whether the bound itself belongs to the range. A missing bound
-leaves the range unbounded on that side. A value lies in a range if it is greater than the lower
+/// One bound of a range, in the metric's unit.
+record MetricBound {
+    /// Finite value of the bound.
+    value: f64,
+    /// Whether the bound itself belongs to the range.
+    inclusive: bool,
+}
+```
+
+The `unit` states the unit that the ranges assume, so that a threshold node does not silently apply
+its ranges to a metric whose unit differs. A value lies in a range if it is greater than the lower
 bound, or equal to it and the bound is inclusive, and less than the upper bound, or equal to it and
 the bound is inclusive.
 
@@ -816,21 +1058,38 @@ If the sample is fresh, the node's answers are:
 
 ### 6.7 Aggregate Nodes
 
-An aggregate node derives its answers from other nodes, its _inputs_. Its rule has the following
-fields:
+An aggregate node derives its answers from other nodes, its _inputs_:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `inputs` | list of inputs, optional | The node's inputs. |
-| `minUsable` | unsigned 64-bit integer, optional | Number of counted inputs that need to be usable. |
-| `minHealthy` | unsigned 64-bit integer, optional | Number of counted inputs that need to be healthy. |
+```sidex
+/// Inputs of an aggregate node and the counts they need to meet.
+record AggregationRule {
+    /// The node's inputs.
+    inputs?: [AggregationInput],
+    /// Number of counted inputs that need to be usable; omitted means `min_healthy`.
+    min_usable?: u64,
+    /// Number of counted inputs that need to be healthy; omitted means all counted inputs.
+    min_healthy?: u64,
+}
 
-Each input has the following fields:
+/// One input of an aggregate node.
+record AggregationInput {
+    /// ID of the input node.
+    node: HealthNodeId,
+    /// How the input affects the node's answers; omitted means `Counted`.
+    mode?: InputMode,
+}
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `node` | string | ID of the input node. |
-| `mode` | input mode, optional | How the input affects the node's answers. Defaults to `Counted`. |
+/// How an input affects the answers of an aggregate node.
+#[json(tagged = externally)]
+variant InputMode {
+    /// The input counts toward `min_usable` and `min_healthy`.
+    Counted,
+    /// The input counts, and the node is only usable and healthy if the input is.
+    Mandatory,
+    /// The input does not count; the node is only healthy if the input is healthy.
+    Optional,
+}
+```
 
 The input modes are:
 
@@ -840,13 +1099,18 @@ The input modes are:
 - `Optional`: The input does not count and does not affect the minimum criteria. The node is only
   healthy if the input is healthy.
 
-A node also becomes an input of an aggregate node by attaching itself to it. Each entry of a node's
-`partOf` field is an _attachment_ with the following fields:
+A node also becomes an input of an aggregate node by attaching itself to it with an entry of its
+`partOf` field:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `node` | string | ID of the aggregate node. |
-| `mode` | input mode, optional | Mode of the input. Defaults to `Counted`. |
+```sidex
+/// Attachment of a node to an aggregate node as an input.
+record Attachment {
+    /// ID of the aggregate node.
+    node: HealthNodeId,
+    /// Mode of the input; omitted means `Counted`.
+    mode?: InputMode,
+}
+```
 
 If the aggregate node exists, the attaching node is one of its inputs, with the mode of the
 attachment. Attached inputs follow the inputs of the rule, in the order of the definitions of the
@@ -862,9 +1126,7 @@ the rule that refers to no node has the answers `Unknown`/`Unknown`, and the eva
 diagnostic with the severity `Warning` for it; the input appears in the node's result, but has no
 result of its own.
 
-Inputs with the modes `Counted` and `Mandatory` are the _counted inputs_. If `minHealthy` is
-omitted, it equals the number of counted inputs. If `minUsable` is omitted, it equals
-`minHealthy`.
+Inputs with the modes `Counted` and `Mandatory` are the _counted inputs_.
 
 The answers combine in three-valued logic. For a list of answers, their _conjunction_ is `No` if
 any answer is `No`, otherwise `Unknown` if any answer is `Unknown`, and `Yes` otherwise; the
@@ -942,21 +1204,38 @@ configurations ([Section 3.2](#32-diagnostics)). It proceeds as follows:
    on a cycle if it is an input of itself, directly or through other aggregate nodes.
 5. It determines the answers of every other node by the rules of its type.
 
-The evaluator produces a `HealthReport` with a list `nodes`, which contains one `HealthNodeResult`
-per node ID, in the order of the node definitions, and a list `diagnostics`, which contains the
-diagnostics about health records and directory configurations and those added during evaluation.
-A `HealthNodeResult` has the following fields:
+The evaluator produces a health report:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | ID of the node. |
-| `owner` | string, optional | Owner of the node. |
-| `usable` | answer | Whether the minimum criteria are met: `Yes`, `No`, or `Unknown`. |
-| `healthy` | answer | Whether the desired criteria are met: `Yes`, `No`, or `Unknown`. |
-| `inputs` | list of strings | IDs of the inputs of an aggregate node ([Section 6.7](#67-aggregate-nodes)); empty for other nodes. |
-| `reason` | reason, optional | Why the node's evidence was not used or its rule was not applied. |
-| `message` | string, optional | Message of the fresh evidence. |
-| `details` | object, optional | Details of the fresh evidence. |
+```sidex
+/// Result of evaluating health.
+record HealthReport {
+    /// One result per node ID, in the order of the node definitions.
+    nodes: [HealthNodeResult],
+    /// Diagnostics about health records and directory configurations, and those added during
+    /// evaluation.
+    diagnostics: [Diagnostic],
+}
+
+/// Answers of one node.
+record HealthNodeResult {
+    /// ID of the node.
+    id: HealthNodeId,
+    /// Owner of the node.
+    owner?: string,
+    /// Whether the minimum criteria are met.
+    usable: Answer,
+    /// Whether the desired criteria are met.
+    healthy: Answer,
+    /// IDs of the inputs of an aggregate node; empty for other nodes.
+    inputs: [HealthNodeId],
+    /// Why the node's evidence was not used or its rule was not applied.
+    reason?: Reason,
+    /// Message of the fresh evidence.
+    message?: string,
+    /// Details of the fresh evidence.
+    details?: [string: json],
+}
+```
 
 The reasons are:
 
@@ -1083,16 +1362,29 @@ directories.
 
 ### 8.4 Directory Configurations
 
-A `DirectoryConfig` adds directories for other contributors, such as apps that ship records in
-their installation directories:
+A directory configuration adds directories for other contributors, such as apps that ship records
+in their installation directories:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `components` | list of paths, optional | Directories of component declarations. |
-| `healthNodes` | list of paths, optional | Directories of health nodes. |
-| `healthStatuses` | list of paths, optional | Directories of status records. |
-| `metrics` | list of paths, optional | Directories of metric definitions. |
-| `metricSamples` | list of paths, optional | Directories of metric samples. |
+```sidex
+/// Directories that a contributor adds, as absolute paths without `..` segments.
+///
+/// A segment consisting only of `*` matches every directory at that level whose name does not
+/// start with `.`, in byte order, but no symlink.
+record DirectoryConfig {
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Directories of component declarations.
+    components?: [string],
+    /// Directories of health nodes.
+    health_nodes?: [string],
+    /// Directories of status records.
+    health_statuses?: [string],
+    /// Directories of metric definitions.
+    metrics?: [string],
+    /// Directories of metric samples.
+    metric_samples?: [string],
+}
+```
 
 Paths MUST be absolute and MUST NOT contain `..` segments or NUL characters. A path segment
 consisting only of `*` matches every directory at that level whose name does not start with `.`, in
@@ -1113,34 +1405,48 @@ add directories for directory configurations.
 ## 9. Transport
 
 This section defines how records are sent to another system, such as a fleet-management server,
-so that it can check compatibility or evaluate health. Reports and snapshots use the encoding of
+so that it can check compatibility or evaluate health. Snapshots and reports use the encoding of
 [Section 3.1](#31-encoding). A snapshot does not identify the system it describes; the transport
 does.
 
 ### 9.1 Snapshots
 
-A `RuntimeSnapshot` contains the records read from a system:
+A snapshot contains the records read from a system:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `specVersion` | string | Version of this specification that the snapshot follows, such as `1.0`. |
-| `clock` | clock sample | Correlation of the boot-time clock with wall-clock time ([Section 9.2](#92-clock-correlation)). |
-| `components` | list of component declarations, optional | Component declarations. |
-| `healthNodes` | list of health nodes, optional | Health nodes. |
-| `healthStatuses` | list of status records, optional | Status records. |
-| `metrics` | list of metric definitions, optional | Metric definitions. |
-| `metricSamples` | list of metric samples, optional | Metric samples. |
-| `diagnostics` | list of diagnostics, optional | Diagnostics about the included records ([Section 3.2](#32-diagnostics)). |
+```sidex
+/// Records read from a system, for sending them to another system.
+///
+/// An omitted list means that the snapshot does not include records of its kind. The lists of the
+/// health part are either all present or all omitted.
+record RuntimeSnapshot {
+    /// Version of the specification that the snapshot's own fields follow.
+    spec_version: string,
+    /// Correlation of the boot-time clock with wall-clock time, sampled after collecting the
+    /// records.
+    clock: HealthClockSample,
+    /// Component declarations.
+    components?: [ComponentDeclaration],
+    /// Health nodes.
+    health_nodes?: [HealthNode],
+    /// Status records.
+    health_statuses?: [HealthStatus],
+    /// Metric definitions.
+    metrics?: [MetricDefinition],
+    /// Metric samples.
+    metric_samples?: [MetricSample],
+    /// Diagnostics about the included records and about directory configurations.
+    diagnostics?: [Diagnostic],
+}
+```
 
-A present list of records contains all records of its kind that the writer read, after overrides
-([Section 8.3](#83-reading)), and is empty if there are none. An omitted list means that the
-snapshot does not include records of its kind. The lists `healthNodes`, `healthStatuses`, `metrics`,
-and `metricSamples` MUST either all be present or all be omitted. The list `diagnostics` MUST
-contain the diagnostics of both severities that the writer's reader reported about the included
-kinds of records and about directory configurations; it is omitted if there are none.
+The writer of a snapshot MUST include all records of each included kind that its reader read,
+after overrides ([Section 8.3](#83-reading)), and MUST include either all lists of the health part
+or none. It MUST include the diagnostics of both severities that its reader reported about the
+included kinds of records and about directory configurations, and omits `diagnostics` if there are
+none.
 
-Snapshots MUST contain the original records. In particular, transport MUST NOT change observation
-times or validity durations.
+A snapshot MUST contain the original records. A system that relays a snapshot is a writer of it
+and MUST NOT change it, in particular not the observation times or validity durations.
 
 The `specVersion` of a snapshot is the version of this specification that the snapshot's own fields
 follow, such as `1.0` ([Section 3.6](#36-evolution)). The records in it keep their own versions. A
@@ -1150,18 +1456,21 @@ versions.
 
 ### 9.2 Clock Correlation
 
-The reader of a snapshot cannot interpret boot-time clock values on its own. A
-`HealthClockSample` correlates them with wall-clock time:
+The reader of a snapshot cannot interpret boot-time clock values on its own. A clock sample
+correlates them with wall-clock time:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `context` | health context | Boot ID and boot-time clock value at sampling. |
-| `timestamp` | timestamp | Wall-clock time at the same instant, in RFC 3339 format in UTC. |
+```sidex
+/// Correlation of the boot-time clock with wall-clock time.
+record HealthClockSample {
+    /// Boot ID and boot-time clock value at sampling.
+    context: HealthContext,
+    /// Wall-clock time at the same instant, in RFC 3339 format in UTC.
+    timestamp: timestamp,
+}
+```
 
-The writer of a snapshot MUST take the clock sample after collecting the records. Timestamps MUST
-use the uppercase separators `T` and `Z`, MAY include fractional seconds, MUST NOT have the second
-`60`, and MUST lie in the years 0001 to 9999. Calculations with timestamps ignore leap seconds, as
-Unix time does.
+The writer of a snapshot MUST take the clock sample after collecting the records. Calculations with
+timestamps ignore leap seconds, as Unix time does.
 
 Evaluating a snapshot with the context of its clock sample evaluates the collected evidence at the
 time of the clock sample. For evidence from the boot of the clock sample, its estimated wall-clock
@@ -1211,10 +1520,10 @@ aggregate node and cause conflicts with the records of others, and a writer in a
 override the records of lower levels. Writers in `/run/system-runtime` can therefore override the
 records of the system image. Owners and tags detect mistakes, but anyone who can write a record can
 set them. A directory of its own separates the files of a service, but the service can still publish
-records with any ID. Standard directories and added directories SHOULD be writable only by
-privileged users and by the services that publish into them. Restricting which IDs a writer may
-publish needs a mechanism outside this specification, such as a collector that checks the records of
-each source.
+records with any ID. Standard directories and added directories should therefore be writable only
+by privileged users and by the services that publish into them. Restricting which IDs a writer may
+publish needs a mechanism outside this specification, such as a collector that checks the records
+of each source.
 
 **Resource limits.** Readers SHOULD limit the size of files, the number of files, the depth of
 directories, and the nesting of JSON values, and SHOULD skip what exceeds a limit and report a
@@ -1226,7 +1535,7 @@ entries without following symlinks, for example, with `openat` and `O_NOFOLLOW` 
 
 **Transport.** Snapshots reveal information about a device, such as its software and the messages
 and details of its checks. Writers SHOULD NOT put secrets into labels, messages, details, or
-annotations. Transport SHOULD protect the integrity and confidentiality of snapshots and
+annotations. Systems that send snapshots SHOULD protect their integrity and confidentiality and
 authenticate the sending device, for example, with TLS.
 
 **Display.** Labels, messages, and details are arbitrary text from writers. Consumers SHOULD treat

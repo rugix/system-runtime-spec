@@ -12,7 +12,6 @@ const LISTS: readonly [keyof RuntimeSnapshot, RecordModelKind][] = [
   ["metricSamples", "MetricSample"],
 ];
 const HEALTH_FIELDS = ["healthNodes", "healthStatuses", "metrics", "metricSamples"] as const;
-const TIMESTAMP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:([0-9]{2})(\.[0-9]+)?Z$/;
 
 /** Parts of the specification whose records a snapshot includes. */
 export type Parts = {
@@ -78,10 +77,6 @@ export class Snapshot {
       throw new SnapshotError(`unsupported snapshot version ${JSON.stringify(value.specVersion)}`);
     }
     const clock = value.clock;
-    const timestamp = isObject(clock) && typeof clock.timestamp === "string" ? TIMESTAMP.exec(clock.timestamp) : null;
-    if (timestamp === null || timestamp[1] === "60") {
-      throw new SnapshotError(`invalid clock timestamp ${JSON.stringify(isObject(clock) ? clock.timestamp : clock)}`);
-    }
     const check = HealthClockSample.check(clock);
     if (check.isErr()) throw new SnapshotError(`invalid clock sample: ${check}`);
     const present = HEALTH_FIELDS.map((field) => value[field] !== undefined);

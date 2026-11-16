@@ -10156,14 +10156,14 @@
       }
     },
     {
-      "name": "integral numbers and decimal strings",
+      "name": "decimal strings and large integers",
       "records": {
         "healthNodes": [
           {
             "id": "a",
             "rule": {
               "type": "Observed",
-              "maxAgeMs": 1000.0
+              "maxAgeMs": 1000
             }
           }
         ],
@@ -10730,35 +10730,7 @@
       "valid": false
     },
     {
-      "name": "leap second",
-      "snapshot": {
-        "specVersion": "1.0",
-        "clock": {
-          "context": {
-            "bootId": "boot",
-            "nowMs": 1000
-          },
-          "timestamp": "2016-12-31T23:59:60Z"
-        }
-      },
-      "valid": false
-    },
-    {
-      "name": "lowercase separators",
-      "snapshot": {
-        "specVersion": "1.0",
-        "clock": {
-          "context": {
-            "bootId": "boot",
-            "nowMs": 1000
-          },
-          "timestamp": "2026-10-14t12:00:00z"
-        }
-      },
-      "valid": false
-    },
-    {
-      "name": "offset timestamp",
+      "name": "timestamp with an offset",
       "snapshot": {
         "specVersion": "1.0",
         "clock": {
@@ -10769,7 +10741,8 @@
           "timestamp": "2026-10-14T12:00:00+01:00"
         }
       },
-      "valid": false
+      "valid": true,
+      "diagnostics": []
     },
     {
       "name": "list that is not an array",

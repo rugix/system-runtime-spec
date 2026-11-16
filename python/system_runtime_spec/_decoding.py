@@ -83,7 +83,7 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
     if not isinstance(value, Mapping):
         raise InvalidRecord("record is not a JSON object")
     original = copy.deepcopy(dict(value))
-    data = _integral(original)
+    data = copy.deepcopy(original)
     kind = KINDS[model]
     newer = _check_version(kind, data)
     unsupported = False
@@ -111,17 +111,6 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
         _check_id(identified.owner, "owner")
     _VALIDATORS[kind](instance)
     return Record(original, instance, newer, unsupported, frozenset(attachments))
-
-
-def _integral(value: Json) -> Json:
-    """Read integral JSON numbers, such as `1.0`, as integers."""
-    if isinstance(value, float) and value.is_integer():
-        return int(value)
-    if isinstance(value, dict):
-        return {key: _integral(item) for key, item in value.items()}
-    if isinstance(value, list):
-        return [_integral(item) for item in value]
-    return value
 
 
 def parse_spec_version(text: object) -> tuple[int, int] | None:
