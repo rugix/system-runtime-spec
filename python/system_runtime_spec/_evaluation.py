@@ -339,7 +339,7 @@ class _Evaluation:
     def _aggregate(self, result: HealthNodeResult, rule: HealthRule_Aggregate) -> None:
         inputs = self.inputs[result.id]
         answers = {child: self._answers(child) for child, _ in inputs}
-        counted = [answers[child] for child, mode in inputs if mode != "Optional"]
+        counted = [answers[child] for child, mode in inputs if mode == "Counted"]
         mandatory = [answers[child] for child, mode in inputs if mode == "Mandatory"]
         optional = [answers[child] for child, mode in inputs if mode == "Optional"]
         min_healthy = rule.min_healthy if rule.min_healthy is not None else len(counted)

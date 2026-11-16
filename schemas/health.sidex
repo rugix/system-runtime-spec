@@ -93,7 +93,7 @@ record Attachment {
 variant InputMode {
     /// The input counts toward `min_usable` and `min_healthy`.
     Counted,
-    /// The input counts, and the node is only usable and healthy if the input is.
+    /// The input does not count; the node is only usable and healthy if the input is.
     Mandatory,
     /// The input does not count; the node is only healthy if the input is healthy.
     Optional,

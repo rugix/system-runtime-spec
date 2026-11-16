@@ -3905,14 +3905,14 @@ pub mod health {
     pub enum InputMode {
         #[doc = "The input counts toward `min_usable` and `min_healthy`.\n"]
         Counted,
-        #[doc = "The input counts, and the node is only usable and healthy if the input is.\n"]
+        #[doc = "The input does not count; the node is only usable and healthy if the input is.\n"]
         Mandatory,
         #[doc = "The input does not count; the node is only healthy if the input is healthy.\n"]
         Optional,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for InputMode {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::InputMode" , :: sidex :: shape :: ShapeKind :: Variant (:: sidex :: shape :: VariantShape :: new (& [:: sidex :: shape :: CaseShape :: new ("Counted" , :: std :: option :: Option :: None) . with_docs ("The input counts toward `min_usable` and `min_healthy`.\n") , :: sidex :: shape :: CaseShape :: new ("Mandatory" , :: std :: option :: Option :: None) . with_docs ("The input counts, and the node is only usable and healthy if the input is.\n") , :: sidex :: shape :: CaseShape :: new ("Optional" , :: std :: option :: Option :: None) . with_docs ("The input does not count; the node is only healthy if the input is healthy.\n")]) . json_tagging (:: sidex :: formats :: json :: Tagging :: External))) . with_docs ("How an input affects the answers of an aggregate node.\n") . with_attrs (& [:: sidex :: shape :: Attr :: List { path : "json" , args : & [:: sidex :: shape :: Attr :: Assign { path : "tagged" , value : :: sidex :: shape :: AttrValue :: Path ("externally") }] } , :: sidex :: shape :: Attr :: List { path : "rust" , args : & [:: sidex :: shape :: Attr :: List { path : "derive" , args : & [:: sidex :: shape :: Attr :: Path ("Copy") , :: sidex :: shape :: Attr :: Path ("Eq")] }] }]) ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::InputMode" , :: sidex :: shape :: ShapeKind :: Variant (:: sidex :: shape :: VariantShape :: new (& [:: sidex :: shape :: CaseShape :: new ("Counted" , :: std :: option :: Option :: None) . with_docs ("The input counts toward `min_usable` and `min_healthy`.\n") , :: sidex :: shape :: CaseShape :: new ("Mandatory" , :: std :: option :: Option :: None) . with_docs ("The input does not count; the node is only usable and healthy if the input is.\n") , :: sidex :: shape :: CaseShape :: new ("Optional" , :: std :: option :: Option :: None) . with_docs ("The input does not count; the node is only healthy if the input is healthy.\n")]) . json_tagging (:: sidex :: formats :: json :: Tagging :: External))) . with_docs ("How an input affects the answers of an aggregate node.\n") . with_attrs (& [:: sidex :: shape :: Attr :: List { path : "json" , args : & [:: sidex :: shape :: Attr :: Assign { path : "tagged" , value : :: sidex :: shape :: AttrValue :: Path ("externally") }] } , :: sidex :: shape :: Attr :: List { path : "rust" , args : & [:: sidex :: shape :: Attr :: List { path : "derive" , args : & [:: sidex :: shape :: Attr :: Path ("Copy") , :: sidex :: shape :: Attr :: Path ("Eq")] }] }]) ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for InputMode {

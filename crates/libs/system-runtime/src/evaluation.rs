@@ -537,7 +537,7 @@ impl<'a> Evaluation<'a> {
             .collect();
         let counted: Vec<Answers> = answers
             .iter()
-            .filter(|(mode, _)| *mode != InputMode::Optional)
+            .filter(|(mode, _)| *mode == InputMode::Counted)
             .map(|(_, answers)| *answers)
             .collect();
         let with_mode = |wanted: InputMode| {

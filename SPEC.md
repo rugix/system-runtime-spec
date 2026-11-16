@@ -1006,7 +1006,7 @@ record AggregationInput {
 variant InputMode {
     /// The input counts toward `min_usable` and `min_healthy`.
     Counted,
-    /// The input counts, and the node is only usable and healthy if the input is.
+    /// The input does not count; the node is only usable and healthy if the input is.
     Mandatory,
     /// The input does not count; the node is only healthy if the input is healthy.
     Optional,
@@ -1016,7 +1016,7 @@ variant InputMode {
 The input modes are:
 
 - `Counted`: The input counts toward `minUsable` and `minHealthy`.
-- `Mandatory`: The input counts, and the node is only usable if the input is usable and only
+- `Mandatory`: The input does not count. The node is only usable if the input is usable and only
   healthy if the input is healthy.
 - `Optional`: The input does not count and does not affect the minimum criteria. The node is only
   healthy if the input is healthy.
@@ -1046,7 +1046,8 @@ decides how its inputs count. An input of the rule that refers to no node has th
 `Unknown`/`Unknown`, and the evaluator adds a diagnostic with the severity `Warning` for it; the
 input appears in the node's result, but has no result of its own.
 
-Inputs with the modes `Counted` and `Mandatory` are the _counted inputs_.
+Inputs with the mode `Counted` are the _counted inputs_. The counts express redundancy among
+interchangeable inputs, such as two of three workers.
 
 The answers combine in three-valued logic. For a list of answers, their _conjunction_ is `No` if
 any answer is `No`, otherwise `Unknown` if any answer is `Unknown`, and `Yes` otherwise; the

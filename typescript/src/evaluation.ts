@@ -315,7 +315,7 @@ class Evaluation {
   private aggregate(result: HealthNodeResult, rule: AggregationRule): void {
     const inputs = (this.inputs.get(result.id) as [string, InputMode][])
       .map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
-    const counted = inputs.filter(([mode]) => mode !== "Optional").map(([, answers]) => answers);
+    const counted = inputs.filter(([mode]) => mode === "Counted").map(([, answers]) => answers);
     const withMode = (wanted: InputMode) => inputs.filter(([mode]) => mode === wanted).map(([, answers]) => answers);
     const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : U64.toBigInt(rule.minHealthy);
     const minUsable = rule.minUsable === undefined ? minHealthy : U64.toBigInt(rule.minUsable);

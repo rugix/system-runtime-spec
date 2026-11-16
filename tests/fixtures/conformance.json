@@ -4463,7 +4463,7 @@
                   "mode": "Optional"
                 }
               ],
-              "minUsable": 2
+              "minUsable": 1
             }
           },
           {
@@ -7864,8 +7864,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 2,
-              "minUsable": 2
+              "minHealthy": 1,
+              "minUsable": 1
             }
           },
           {
@@ -7953,6 +7953,113 @@
       }
     },
     {
+      "name": "mandatory input does not count toward minUsable",
+      "records": {
+        "healthNodes": [
+          {
+            "id": "service",
+            "rule": {
+              "type": "Aggregate",
+              "inputs": [
+                {
+                  "node": "database",
+                  "mode": "Mandatory"
+                },
+                {
+                  "node": "worker-a"
+                },
+                {
+                  "node": "worker-b"
+                }
+              ],
+              "minUsable": 1
+            }
+          },
+          {
+            "id": "database",
+            "rule": {
+              "type": "Observed"
+            }
+          },
+          {
+            "id": "worker-a",
+            "rule": {
+              "type": "Observed"
+            }
+          },
+          {
+            "id": "worker-b",
+            "rule": {
+              "type": "Observed"
+            }
+          }
+        ],
+        "healthStatuses": [
+          {
+            "id": "database",
+            "usable": "Yes",
+            "healthy": "Yes",
+            "bootId": "boot",
+            "observedAtMs": 90,
+            "maxAgeMs": 20
+          },
+          {
+            "id": "worker-a",
+            "usable": "No",
+            "healthy": "No",
+            "bootId": "boot",
+            "observedAtMs": 90,
+            "maxAgeMs": 20
+          },
+          {
+            "id": "worker-b",
+            "usable": "No",
+            "healthy": "No",
+            "bootId": "boot",
+            "observedAtMs": 90,
+            "maxAgeMs": 20
+          }
+        ]
+      },
+      "context": {
+        "bootId": "boot",
+        "nowMs": 100
+      },
+      "report": {
+        "nodes": [
+          {
+            "id": "service",
+            "usable": "No",
+            "healthy": "No",
+            "inputs": [
+              "database",
+              "worker-a",
+              "worker-b"
+            ]
+          },
+          {
+            "id": "database",
+            "usable": "Yes",
+            "healthy": "Yes",
+            "inputs": []
+          },
+          {
+            "id": "worker-a",
+            "usable": "No",
+            "healthy": "No",
+            "inputs": []
+          },
+          {
+            "id": "worker-b",
+            "usable": "No",
+            "healthy": "No",
+            "inputs": []
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
       "name": "missing mandatory evidence prevents confirmed usability despite healthy workers",
       "records": {
         "healthNodes": [
@@ -7972,8 +8079,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 2,
-              "minUsable": 2
+              "minHealthy": 1,
+              "minUsable": 1
             }
           },
           {
@@ -8064,8 +8171,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 2,
-              "minUsable": 2
+              "minHealthy": 1,
+              "minUsable": 1
             }
           },
           {
@@ -8153,7 +8260,7 @@
       }
     },
     {
-      "name": "mandatory input counts toward minimum with degraded worker",
+      "name": "mandatory input and minimum counts with a degraded worker",
       "records": {
         "healthNodes": [
           {
@@ -8172,8 +8279,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 3,
-              "minUsable": 2
+              "minHealthy": 2,
+              "minUsable": 1
             }
           },
           {
@@ -8280,8 +8387,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 2,
-              "minUsable": 2
+              "minHealthy": 1,
+              "minUsable": 1
             }
           },
           {
@@ -8388,8 +8495,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 2,
-              "minUsable": 2
+              "minHealthy": 1,
+              "minUsable": 1
             }
           },
           {
@@ -8490,8 +8597,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 1,
-              "minUsable": 1
+              "minHealthy": 0,
+              "minUsable": 0
             }
           },
           {
@@ -8592,8 +8699,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 1,
-              "minUsable": 1
+              "minHealthy": 0,
+              "minUsable": 0
             }
           },
           {
@@ -8700,8 +8807,8 @@
                   "node": "worker-b"
                 }
               ],
-              "minHealthy": 2,
-              "minUsable": 2
+              "minHealthy": 1,
+              "minUsable": 1
             }
           },
           {
@@ -8826,8 +8933,8 @@
                   "node": "worker"
                 }
               ],
-              "minHealthy": 1,
-              "minUsable": 1
+              "minHealthy": 0,
+              "minUsable": 0
             }
           },
           {
