@@ -10,96 +10,53 @@ import pydantic_core  # noqa: F401
 from . import _sidex  # noqa: F401
 
 
-# Identifier of a metric, unique independently of health node IDs.
+# ID of a metric.
 type MetricId = str
 
 
 class MetricDefinition(_sidex.Model):
-    """A named numeric measurement, independent of any health policy; samples carry no history."""
+    """A named numeric measurement."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: MetricId = pydantic.Field(description="Unique metric ID.")
-    owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
-    label: str | None = pydantic.Field(default=None, description="Human-readable label.")
-    components: list[str] | None = pydantic.Field(default=None, description="Related component IDs; these associations do not imply health dependencies.")
-    unit: MetricUnit = pydantic.Field(description="Unit shared by samples and all thresholds referencing this metric.")
-    max_age_ms: _sidex.U32 | None = pydantic.Field(default=None, description="Optional consumer limit on sample age, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
-    expected_tag: str | None = pydantic.Field(default=None, description="Optional tag that samples must match exactly.", validation_alias="expectedTag", serialization_alias="expectedTag")
+    spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
+    id: MetricId = pydantic.Field(description="Unique ID of the metric.")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the definition, which replaces or removes it as a whole.")
+    label: str | None = pydantic.Field(default=None, description="Human-readable name of the metric.")
+    components: list[str] | None = pydantic.Field(default=None, description="IDs of associated components; associations create no dependencies.")
+    unit: str = pydantic.Field(description="Unit of all samples and thresholds of the metric, as a UCUM code.")
+    max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    expected_tag: str | None = pydantic.Field(default=None, description="Tag that samples need to carry to be fresh.", validation_alias="expectedTag", serialization_alias="expectedTag")
+    annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
 class MetricSample(_sidex.Model):
-    """One measurement within a boot; publishing it does not assert health."""
+    """Current measurement of a metric, published while the system runs."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: MetricId = pydantic.Field(description="Measured metric ID.")
-    owner: str | None = pydantic.Field(default=None, description="Ownership group; must match the definition's owner when specified.")
-    value: _sidex.F64 = pydantic.Field(description="Finite measurement in the definition's unit.")
-    boot_id: str = pydantic.Field(description="Boot identifier defining the sample clock domain.", validation_alias="bootId", serialization_alias="bootId")
-    observed_at_ms: _sidex.U64 = pydantic.Field(description="Milliseconds on the boot-time clock when the measurement was taken.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
-    max_age_ms: _sidex.U32 = pydantic.Field(description="Positive validity duration in milliseconds.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
-    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the measurement configuration or instance.")
-    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the observer.")
+    spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
+    id: MetricId = pydantic.Field(description="ID of the metric.")
+    value: _sidex.F64 = pydantic.Field(description="Measured value in the metric's unit; must be finite.")
+    boot_id: str = pydantic.Field(description="ID of the boot during which the measurement took place.", validation_alias="bootId", serialization_alias="bootId")
+    observed_at_ms: _sidex.U64 = pydantic.Field(description="Boot-time clock value, in milliseconds, when the measurement took place.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
+    max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the sample is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the sample.")
+    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
+    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
+    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display, in any structure.")
+    annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
 class MetricBound(_sidex.Model):
-    """One endpoint of a numeric range, in the referenced metric's unit."""
+    """One bound of a range, in the metric's unit."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    value: _sidex.F64 = pydantic.Field(description="Finite endpoint in the referenced metric's unit.")
-    inclusive: _sidex.Bool = pydantic.Field(description="Whether equality with this endpoint is inside the range.")
+    value: _sidex.F64 = pydantic.Field(description="Finite value of the bound.")
+    inclusive: _sidex.Bool = pydantic.Field(description="Whether the bound itself belongs to the range.")
 
 
 class MetricRange(_sidex.Model):
-    """A nonempty interval; omitted endpoints are unbounded."""
+    """A non-empty range; a missing bound leaves the range unbounded on that side."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    lower: MetricBound | None = pydantic.Field(default=None, description="Optional lower endpoint.")
-    upper: MetricBound | None = pydantic.Field(default=None, description="Optional upper endpoint.")
-
-
-class MetricUnit_Celsius(pydantic.RootModel[Literal["celsius"]]):
-    pass
-
-
-class MetricUnit_Bytes(pydantic.RootModel[Literal["bytes"]]):
-    pass
-
-
-class MetricUnit_Seconds(pydantic.RootModel[Literal["seconds"]]):
-    pass
-
-
-class MetricUnit_Ratio(pydantic.RootModel[Literal["ratio"]]):
-    pass
-
-
-class MetricUnit_Count(pydantic.RootModel[Literal["count"]]):
-    pass
-
-
-class MetricUnit_BytesPerSecond(pydantic.RootModel[Literal["bytes-per-second"]]):
-    pass
-
-
-class MetricUnit_Hertz(pydantic.RootModel[Literal["hertz"]]):
-    pass
-
-
-class MetricUnit_Volts(pydantic.RootModel[Literal["volts"]]):
-    pass
-
-
-class MetricUnit_Amperes(pydantic.RootModel[Literal["amperes"]]):
-    pass
-
-
-class MetricUnit_Watts(pydantic.RootModel[Literal["watts"]]):
-    pass
-
-
-class MetricUnit_RevolutionsPerMinute(pydantic.RootModel[Literal["revolutions-per-minute"]]):
-    pass
-
-
-# Semantic unit; display prefixes, precision, and conversions are consumer choices.
-type MetricUnit = MetricUnit_Celsius | MetricUnit_Bytes | MetricUnit_Seconds | MetricUnit_Ratio | MetricUnit_Count | MetricUnit_BytesPerSecond | MetricUnit_Hertz | MetricUnit_Volts | MetricUnit_Amperes | MetricUnit_Watts | MetricUnit_RevolutionsPerMinute
+    lower: MetricBound | None = pydantic.Field(default=None, description="Lower bound.")
+    upper: MetricBound | None = pydantic.Field(default=None, description="Upper bound.")

@@ -1,5 +1,3 @@
-"""Rugix-compatible version ordering and comparator requirements."""
-
 import re
 from dataclasses import dataclass
 from itertools import zip_longest
@@ -7,8 +5,15 @@ from itertools import zip_longest
 _VERSION = re.compile(
     r"([0-9]+(?:\.[0-9]+)*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?"
 )
-_COMPARATOR = re.compile(r"(==|!=|>=|<=|=|>|<)?\s*(.+?)(\.\*)?")
+_OPERATORS = (">=", "<=", "==", "!=", ">", "<", "=")
 _MAX = 2**64 - 1
+
+# Characters with the Unicode property White_Space.
+_WHITESPACE = "\t\n\v\f\r \x85\xa0                　"
+
+
+def _trim(text: str) -> str:
+    return text.strip(_WHITESPACE)
 
 
 @dataclass(frozen=True)
@@ -20,7 +25,7 @@ class Version:
 
     @classmethod
     def parse(cls, text: str) -> "Version":
-        match = _VERSION.fullmatch(text.strip())
+        match = _VERSION.fullmatch(_trim(text))
         if match is None:
             raise ValueError(f"Invalid version: {text!r}")
         release = tuple(int(part.lstrip("0") or "0") for part in match[1].split("."))
@@ -35,9 +40,9 @@ class Version:
         return cls(release, prerelease)
 
     def compare(self, other: "Version") -> int:
-        for left, right in zip_longest(self.release, other.release, fillvalue=0):
-            if left != right:
-                return 1 if left > right else -1
+        release = _compare_release(self.release, other.release)
+        if release != 0:
+            return release
         if not self.prerelease or not other.prerelease:
             return (not self.prerelease) - (not other.prerelease)
         for left_id, right_id in zip(self.prerelease, other.prerelease, strict=False):
@@ -65,18 +70,24 @@ class Comparator:
 
 def parse_requirement(text: str) -> list[Comparator]:
     """Parse comma-separated comparators, or `*` alone for any version."""
-    if text.strip() == "*":
+    if _trim(text) == "*":
         return []
     comparators = []
     for part in text.split(","):
-        match = _COMPARATOR.fullmatch(part.strip())
-        if match is None:
+        part = _trim(part)
+        if not part:
             raise ValueError(f"Invalid version requirement: {text!r}")
-        operator = match[1] or "="
-        version = Version.parse(match[2])
-        wildcard = match[3] is not None
+        operator = next((op for op in _OPERATORS if part.startswith(op)), "")
+        part = _trim(part[len(operator) :])
+        wildcard = part.endswith(".*")
+        if wildcard:
+            part = part[:-2]
+        if not part:
+            raise ValueError(f"Invalid version requirement: {text!r}")
+        version = Version.parse(part)
+        operator = operator or "="
         if wildcard and (
-            operator not in ("=", "==", "!=") or version.prerelease or "+" in match[2]
+            operator not in ("=", "==", "!=") or version.prerelease or "+" in part
         ):
             raise ValueError(f"Invalid wildcard comparator: {text!r}")
         comparators.append(Comparator(operator, version, wildcard))
@@ -84,7 +95,6 @@ def parse_requirement(text: str) -> list[Comparator]:
 
 
 def matches_requirement(requirement: list[Comparator], version: Version) -> bool:
-    """Match all comparators of a requirement."""
     return all(_matches(comparator, version) for comparator in requirement)
 
 

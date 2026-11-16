@@ -2,44 +2,51 @@
 /* eslint-disable */
 
 import * as __sidex_types from "@sidex/types";
+import * as __schema_common from "./common.js";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
 import * as __schema_metric from "./metric.js";
 /**
- * A participant in a system composition.
+ * One part of a system, such as the system image, an app, a runtime, or a hardware module.
  */
  export type ComponentDeclaration = { /**
-                                            * Unique component ID within the composition.
+                                            * Version of the specification that the record follows; omitted means `1.0`.
+                                            */
+                                                        "specVersion"?: __sidex_types.builtins.String, /**
+                                            * Unique ID of the component within the composition.
                                             */
                                                         "id": __sidex_types.builtins.String, /**
-                                            * Ownership group for replacement or removal, matched exactly.
+                                            * Owner of the declaration, which replaces or removes it as a whole.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
-                                            * Component version, also provided as an implicit capability.
+                                            * Version of the component, also provided as its implicit capability.
                                             */
                                                         "version"?: __sidex_types.builtins.String, /**
-                                            * Explicit capabilities.
+                                            * Capabilities the component provides.
                                             */
                                                         "provides"?: CapabilityDeclaration[], /**
-                                            * Exclusive resource ownership.
+                                            * Resources the component claims.
                                             */
                                                         "claims"?: ClaimDeclaration[], /**
-                                            * Selectors that must each match at least one capability.
+                                            * Selectors that each need to match a capability.
                                             */
                                                         "requires"?: CapabilitySelectorDeclaration[], /**
-                                            * Selectors that must not match any capability, including this component's.
+                                            * Selectors that must not match any capability, including the component's own.
                                             */
-                                                        "conflicts"?: CapabilitySelectorDeclaration[] };
+                                                        "conflicts"?: CapabilitySelectorDeclaration[], /**
+                                            * Further data that the specification does not define, with namespaced member names.
+                                            */
+                                                        "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const ComponentDeclaration = {
-    ...__sidex_types.checker<ComponentDeclaration>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false], ["owner", __sidex_types.builtin("string"), true], ["version", __sidex_types.builtin("string"), true], ["provides", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilityDeclaration)), true], ["claims", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimDeclaration)), true], ["requires", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["conflicts", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true]], [])),
+    ...__sidex_types.checker<ComponentDeclaration>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.builtin("string"), false], ["owner", __sidex_types.builtin("string"), true], ["version", __sidex_types.builtin("string"), true], ["provides", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilityDeclaration)), true], ["claims", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimDeclaration)), true], ["requires", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["conflicts", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration)), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
- * An exclusive resource key.
+ * A resource that at most one component may claim.
  */
  export type ClaimDeclaration = { /**
-                                            * Resource ID.
+                                            * ID of the resource.
                                             */
                                                         "id": __sidex_types.builtins.String };
 
@@ -47,16 +54,16 @@ export const ClaimDeclaration = {
     ...__sidex_types.checker<ClaimDeclaration>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false]], [])),
 };
 /**
- * A fact supplied by a component.
+ * A fact that a component provides.
  */
  export type CapabilityDeclaration = { /**
-                                            * Capability ID.
+                                            * ID of the capability.
                                             */
                                                         "id": __sidex_types.builtins.String, /**
-                                            * Version, mutually exclusive with value.
+                                            * Version of what is present; mutually exclusive with `value`.
                                             */
                                                         "version"?: __sidex_types.builtins.String, /**
-                                            * Exact string value, mutually exclusive with version.
+                                            * Exact property; mutually exclusive with `version`.
                                             */
                                                         "value"?: __sidex_types.builtins.String };
 
@@ -64,16 +71,16 @@ export const CapabilityDeclaration = {
     ...__sidex_types.checker<CapabilityDeclaration>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false], ["version", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("string"), true]], [])),
 };
 /**
- * A selector over provided capabilities.
+ * A selector over capabilities.
  */
  export type CapabilitySelectorDeclaration = { /**
-                                            * Capability ID.
+                                            * ID of the capability.
                                             */
                                                         "id": __sidex_types.builtins.String, /**
-                                            * Version requirement, mutually exclusive with value.
+                                            * Version requirement; mutually exclusive with `value`.
                                             */
                                                         "version"?: __sidex_types.builtins.String, /**
-                                            * Exact value requirement, mutually exclusive with version.
+                                            * Exact value; mutually exclusive with `version`.
                                             */
                                                         "value"?: __sidex_types.builtins.String };
 
@@ -81,32 +88,35 @@ export const CapabilitySelectorDeclaration = {
     ...__sidex_types.checker<CapabilitySelectorDeclaration>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false], ["version", __sidex_types.builtin("string"), true], ["value", __sidex_types.builtin("string"), true]], [])),
 };
 /**
- * Result of evaluating the complete component set.
+ * Result of checking a composition.
  */
  export type CompatibilityReport = { /**
-                                            * Whether all constraints are satisfied.
+                                            * Whether there are no problems and no diagnostics with the severity `Error`.
                                             */
                                                         "consistent": __sidex_types.builtins.Bool, /**
-                                            * Violated constraints in deterministic evaluation order.
+                                            * Violated constraints, in the order that the specification defines.
                                             */
-                                                        "problems": CompatibilityProblem[] };
+                                                        "problems": CompatibilityProblem[], /**
+                                            * Diagnostics about component declarations and directory configurations.
+                                            */
+                                                        "diagnostics": __schema_common.Diagnostic[] };
 
 export const CompatibilityReport = {
-    ...__sidex_types.checker<CompatibilityReport>((): __sidex_types.Check => __sidex_types.record([["consistent", __sidex_types.builtin("bool"), false], ["problems", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CompatibilityProblem)), false]], [])),
+    ...__sidex_types.checker<CompatibilityReport>((): __sidex_types.Check => __sidex_types.record([["consistent", __sidex_types.builtin("bool"), false], ["problems", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => CompatibilityProblem)), false], ["diagnostics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_common.Diagnostic)), false]], [])),
 };
 /**
- * A violated composition constraint.
+ * A violated constraint.
  */
- export type CompatibilityProblem = (({ "problem": "duplicateComponent" } & ComponentIdProblem) | ({ "problem": "duplicateClaim" } & ClaimProblem) | ({ "problem": "unsatisfiedRequirement" } & SelectorProblem) | ({ "problem": "conflict" } & ConflictProblem));
+ export type CompatibilityProblem = (({ "problem": "DuplicateComponent" } & ComponentIdProblem) | ({ "problem": "DuplicateClaim" } & ClaimProblem) | ({ "problem": "UnsatisfiedRequirement" } & SelectorProblem) | ({ "problem": "Conflict" } & ConflictProblem));
 
 export const CompatibilityProblem = {
-    ...__sidex_types.checker<CompatibilityProblem>((): __sidex_types.Check => __sidex_types.variant("internal", "problem", [["duplicateComponent", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ComponentIdProblem), null], ["duplicateClaim", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimProblem), null], ["unsatisfiedRequirement", __sidex_types.lazy((): __sidex_types.Checker<unknown> => SelectorProblem), null], ["conflict", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ConflictProblem), null]])),
+    ...__sidex_types.checker<CompatibilityProblem>((): __sidex_types.Check => __sidex_types.variant("internal", "problem", [["DuplicateComponent", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ComponentIdProblem), null], ["DuplicateClaim", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ClaimProblem), null], ["UnsatisfiedRequirement", __sidex_types.lazy((): __sidex_types.Checker<unknown> => SelectorProblem), null], ["Conflict", __sidex_types.lazy((): __sidex_types.Checker<unknown> => ConflictProblem), null]])),
 };
 /**
- * Duplicate component ID.
+ * A component ID that more than one component uses.
  */
  export type ComponentIdProblem = { /**
-                                            * Component ID.
+                                            * ID of the components.
                                             */
                                                         "id": __sidex_types.builtins.String };
 
@@ -114,13 +124,13 @@ export const ComponentIdProblem = {
     ...__sidex_types.checker<ComponentIdProblem>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false]], [])),
 };
 /**
- * Duplicate exclusive ownership.
+ * A resource that more than one component claims.
  */
  export type ClaimProblem = { /**
-                                            * Resource ID.
+                                            * ID of the resource.
                                             */
                                                         "id": __sidex_types.builtins.String, /**
-                                            * IDs of owning components.
+                                            * IDs of the claiming components, in declaration order.
                                             */
                                                         "components": __sidex_types.builtins.String[] };
 
@@ -128,13 +138,13 @@ export const ClaimProblem = {
     ...__sidex_types.checker<ClaimProblem>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.builtin("string"), false], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), false]], [])),
 };
 /**
- * Unsatisfied selector.
+ * A requirement that matches no capability.
  */
  export type SelectorProblem = { /**
-                                            * Requiring component.
+                                            * ID of the requiring component.
                                             */
                                                         "component": __sidex_types.builtins.String, /**
-                                            * Unsatisfied requirement.
+                                            * The requirement as declared.
                                             */
                                                         "selector": CapabilitySelectorDeclaration };
 
@@ -142,19 +152,19 @@ export const SelectorProblem = {
     ...__sidex_types.checker<SelectorProblem>((): __sidex_types.Check => __sidex_types.record([["component", __sidex_types.builtin("string"), false], ["selector", __sidex_types.lazy((): __sidex_types.Checker<unknown> => CapabilitySelectorDeclaration), false]], [])),
 };
 /**
- * A matching conflict.
+ * A conflict that matches a capability.
  */
  export type ConflictProblem = { /**
-                                            * Component declaring the conflict.
+                                            * ID of the component declaring the conflict.
                                             */
                                                         "component": __sidex_types.builtins.String, /**
-                                            * Matching selector.
+                                            * The conflict as declared.
                                             */
                                                         "selector": CapabilitySelectorDeclaration, /**
-                                            * Component providing the capability.
+                                            * ID of the component providing the capability.
                                             */
                                                         "provider": __sidex_types.builtins.String, /**
-                                            * Matching capability.
+                                            * The matching capability as declared.
                                             */
                                                         "capability": CapabilityDeclaration };
 

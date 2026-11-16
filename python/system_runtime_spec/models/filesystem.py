@@ -10,30 +10,39 @@ import pydantic_core  # noqa: F401
 from . import _sidex  # noqa: F401
 
 if TYPE_CHECKING:
+    from . import common as _schema_common  # noqa: F401
     from . import component as _schema_component  # noqa: F401
     from . import health as _schema_health  # noqa: F401
     from . import metric as _schema_metric  # noqa: F401
 
 
 class DirectoryConfig(_sidex.Model):
-    """Additional absolute directory paths supplied by packages or administrators.
-    Whole `*` path segments match real directories in lexical order on each load.
-    Explicit path segments may follow symlinks; `..` and partial wildcards are invalid."""
+    """Directories that a contributor adds, as absolute paths without `..` segments.
+
+    A segment consisting only of `*` matches every directory at that level whose name does not
+    start with `.`, in byte order, but no symlink."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    components: list[str] | None = pydantic.Field(default=None, description="Additional component declaration directories.")
-    health_nodes: list[str] | None = pydantic.Field(default=None, description="Additional health definition directories.", validation_alias="healthNodes", serialization_alias="healthNodes")
-    health_statuses: list[str] | None = pydantic.Field(default=None, description="Additional health status directories.", validation_alias="healthStatuses", serialization_alias="healthStatuses")
-    metrics: list[str] | None = pydantic.Field(default=None, description="Additional metric definition directories.")
-    metric_samples: list[str] | None = pydantic.Field(default=None, description="Additional metric sample directories.", validation_alias="metricSamples", serialization_alias="metricSamples")
+    spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
+    components: list[str] | None = pydantic.Field(default=None, description="Directories of component declarations.")
+    health_nodes: list[str] | None = pydantic.Field(default=None, description="Directories of health nodes.", validation_alias="healthNodes", serialization_alias="healthNodes")
+    health_statuses: list[str] | None = pydantic.Field(default=None, description="Directories of status records.", validation_alias="healthStatuses", serialization_alias="healthStatuses")
+    metrics: list[str] | None = pydantic.Field(default=None, description="Directories of metric definitions.")
+    metric_samples: list[str] | None = pydantic.Field(default=None, description="Directories of metric samples.", validation_alias="metricSamples", serialization_alias="metricSamples")
 
 
 class RuntimeSnapshot(_sidex.Model):
-    """Complete collection loaded from a filesystem or supplied directly."""
+    """Records read from a system, for sending them to another system.
+
+    An omitted list means that the snapshot does not include records of its kind. The lists of the
+    health part are either all present or all omitted."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    components: list[_schema_component.ComponentDeclaration] = pydantic.Field(description="Component declarations.")
-    health_nodes: list[_schema_health.HealthNode] = pydantic.Field(description="Health definitions.", validation_alias="healthNodes", serialization_alias="healthNodes")
-    health_statuses: list[_schema_health.HealthStatus] = pydantic.Field(description="Published health status records.", validation_alias="healthStatuses", serialization_alias="healthStatuses")
-    metrics: list[_schema_metric.MetricDefinition] | None = pydantic.Field(default=None, description="Numeric metric definitions.")
-    metric_samples: list[_schema_metric.MetricSample] | None = pydantic.Field(default=None, description="Published metric samples.", validation_alias="metricSamples", serialization_alias="metricSamples")
+    spec_version: str = pydantic.Field(description="Version of the specification that the snapshot's own fields follow.", validation_alias="specVersion", serialization_alias="specVersion")
+    clock: _schema_health.HealthClockSample = pydantic.Field(description="Correlation of the boot-time clock with wall-clock time, sampled after collecting the\nrecords.")
+    components: list[_schema_component.ComponentDeclaration] | None = pydantic.Field(default=None, description="Component declarations.")
+    health_nodes: list[_schema_health.HealthNode] | None = pydantic.Field(default=None, description="Health nodes.", validation_alias="healthNodes", serialization_alias="healthNodes")
+    health_statuses: list[_schema_health.HealthStatus] | None = pydantic.Field(default=None, description="Status records.", validation_alias="healthStatuses", serialization_alias="healthStatuses")
+    metrics: list[_schema_metric.MetricDefinition] | None = pydantic.Field(default=None, description="Metric definitions.")
+    metric_samples: list[_schema_metric.MetricSample] | None = pydantic.Field(default=None, description="Metric samples.", validation_alias="metricSamples", serialization_alias="metricSamples")
+    diagnostics: list[_schema_common.Diagnostic] | None = pydantic.Field(default=None, description="Diagnostics about the included records and about directory configurations.")

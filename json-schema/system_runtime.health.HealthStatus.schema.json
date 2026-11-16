@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthStatus",
   "type": "object",
-  "description": "Reported status of one observed node within a boot.",
+  "description": "Result of a check, published while the system runs.",
   "properties": {
+    "specVersion": {
+      "type": "string"
+    },
     "id": {
       "$ref": "#/$defs/system_runtime.health.HealthNodeId"
-    },
-    "owner": {
-      "type": "string"
     },
     "state": {
       "$ref": "#/$defs/system_runtime.health.HealthState"
@@ -26,16 +26,30 @@
       "pattern": "^[0-9]+$"
     },
     "maxAgeMs": {
-      "type": "integer",
-      "format": "uint32",
-      "maximum": 4294967295,
-      "minimum": 0
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
+    },
+    "owner": {
+      "type": "string"
     },
     "tag": {
       "type": "string"
     },
     "message": {
       "type": "string"
+    },
+    "details": {
+      "type": "object",
+      "additionalProperties": {}
+    },
+    "annotations": {
+      "type": "object",
+      "additionalProperties": {}
     }
   },
   "required": [
@@ -49,16 +63,16 @@
   "$defs": {
     "system_runtime.health.HealthNodeId": {
       "type": "string",
-      "description": "Identifier of a health graph node, serialized as a string."
+      "description": "ID of a health node."
     },
     "system_runtime.health.HealthState": {
       "enum": [
-        "healthy",
-        "degraded",
-        "unhealthy",
-        "unknown"
+        "Healthy",
+        "Degraded",
+        "Unhealthy",
+        "Unknown"
       ],
-      "description": "Health relative to a node's declared expectations."
+      "description": "Summary of the answers of a node."
     }
   }
 }

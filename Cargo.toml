@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/libs/system-runtime"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Silitics GmbH <info@silitics.com>"]
 license = "MIT OR Apache-2.0"
@@ -14,7 +14,6 @@ anyver = "0.3.0"
 sidex = { version = "0.5.0", features = ["serde-1"] }
 thiserror = "2"
 tracing = "0.1"
-rustix = { version = "1", features = ["time"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+rustix = { version = "1", features = ["fs", "time"] }
+serde = "1"
 tempfile = "3"

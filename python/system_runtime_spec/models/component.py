@@ -9,91 +9,97 @@ import pydantic_core  # noqa: F401
 
 from . import _sidex  # noqa: F401
 
+if TYPE_CHECKING:
+    from . import common as _schema_common  # noqa: F401
+
 
 class ComponentDeclaration(_sidex.Model):
-    """A participant in a system composition."""
+    """One part of a system, such as the system image, an app, a runtime, or a hardware module."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: str = pydantic.Field(description="Unique component ID within the composition.")
-    owner: str | None = pydantic.Field(default=None, description="Ownership group for replacement or removal, matched exactly.")
-    version: str | None = pydantic.Field(default=None, description="Component version, also provided as an implicit capability.")
-    provides: list[CapabilityDeclaration] | None = pydantic.Field(default=None, description="Explicit capabilities.")
-    claims: list[ClaimDeclaration] | None = pydantic.Field(default=None, description="Exclusive resource ownership.")
-    requires: list[CapabilitySelectorDeclaration] | None = pydantic.Field(default=None, description="Selectors that must each match at least one capability.")
-    conflicts: list[CapabilitySelectorDeclaration] | None = pydantic.Field(default=None, description="Selectors that must not match any capability, including this component's.")
+    spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
+    id: str = pydantic.Field(description="Unique ID of the component within the composition.")
+    owner: str | None = pydantic.Field(default=None, description="Owner of the declaration, which replaces or removes it as a whole.")
+    version: str | None = pydantic.Field(default=None, description="Version of the component, also provided as its implicit capability.")
+    provides: list[CapabilityDeclaration] | None = pydantic.Field(default=None, description="Capabilities the component provides.")
+    claims: list[ClaimDeclaration] | None = pydantic.Field(default=None, description="Resources the component claims.")
+    requires: list[CapabilitySelectorDeclaration] | None = pydantic.Field(default=None, description="Selectors that each need to match a capability.")
+    conflicts: list[CapabilitySelectorDeclaration] | None = pydantic.Field(default=None, description="Selectors that must not match any capability, including the component's own.")
+    annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
 class ClaimDeclaration(_sidex.Model):
-    """An exclusive resource key."""
+    """A resource that at most one component may claim."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: str = pydantic.Field(description="Resource ID.")
+    id: str = pydantic.Field(description="ID of the resource.")
 
 
 class CapabilityDeclaration(_sidex.Model):
-    """A fact supplied by a component."""
+    """A fact that a component provides."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: str = pydantic.Field(description="Capability ID.")
-    version: str | None = pydantic.Field(default=None, description="Version, mutually exclusive with value.")
-    value: str | None = pydantic.Field(default=None, description="Exact string value, mutually exclusive with version.")
+    id: str = pydantic.Field(description="ID of the capability.")
+    version: str | None = pydantic.Field(default=None, description="Version of what is present; mutually exclusive with `value`.")
+    value: str | None = pydantic.Field(default=None, description="Exact property; mutually exclusive with `version`.")
 
 
 class CapabilitySelectorDeclaration(_sidex.Model):
-    """A selector over provided capabilities."""
+    """A selector over capabilities."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: str = pydantic.Field(description="Capability ID.")
-    version: str | None = pydantic.Field(default=None, description="Version requirement, mutually exclusive with value.")
-    value: str | None = pydantic.Field(default=None, description="Exact value requirement, mutually exclusive with version.")
+    id: str = pydantic.Field(description="ID of the capability.")
+    version: str | None = pydantic.Field(default=None, description="Version requirement; mutually exclusive with `value`.")
+    value: str | None = pydantic.Field(default=None, description="Exact value; mutually exclusive with `version`.")
 
 
 class CompatibilityReport(_sidex.Model):
-    """Result of evaluating the complete component set."""
+    """Result of checking a composition."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    consistent: _sidex.Bool = pydantic.Field(description="Whether all constraints are satisfied.")
-    problems: list[CompatibilityProblem] = pydantic.Field(description="Violated constraints in deterministic evaluation order.")
+    consistent: _sidex.Bool = pydantic.Field(description="Whether there are no problems and no diagnostics with the severity `Error`.")
+    problems: list[CompatibilityProblem] = pydantic.Field(description="Violated constraints, in the order that the specification defines.")
+    diagnostics: list[_schema_common.Diagnostic] = pydantic.Field(description="Diagnostics about component declarations and directory configurations.")
 
 
 class ComponentIdProblem(_sidex.Model):
-    """Duplicate component ID."""
+    """A component ID that more than one component uses."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: str = pydantic.Field(description="Component ID.")
+    id: str = pydantic.Field(description="ID of the components.")
 
 
 class ClaimProblem(_sidex.Model):
-    """Duplicate exclusive ownership."""
+    """A resource that more than one component claims."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    id: str = pydantic.Field(description="Resource ID.")
-    components: list[str] = pydantic.Field(description="IDs of owning components.")
+    id: str = pydantic.Field(description="ID of the resource.")
+    components: list[str] = pydantic.Field(description="IDs of the claiming components, in declaration order.")
 
 
 class SelectorProblem(_sidex.Model):
-    """Unsatisfied selector."""
+    """A requirement that matches no capability."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    component: str = pydantic.Field(description="Requiring component.")
-    selector: CapabilitySelectorDeclaration = pydantic.Field(description="Unsatisfied requirement.")
+    component: str = pydantic.Field(description="ID of the requiring component.")
+    selector: CapabilitySelectorDeclaration = pydantic.Field(description="The requirement as declared.")
 
 
 class ConflictProblem(_sidex.Model):
-    """A matching conflict."""
+    """A conflict that matches a capability."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    component: str = pydantic.Field(description="Component declaring the conflict.")
-    selector: CapabilitySelectorDeclaration = pydantic.Field(description="Matching selector.")
-    provider: str = pydantic.Field(description="Component providing the capability.")
-    capability: CapabilityDeclaration = pydantic.Field(description="Matching capability.")
+    component: str = pydantic.Field(description="ID of the component declaring the conflict.")
+    selector: CapabilitySelectorDeclaration = pydantic.Field(description="The conflict as declared.")
+    provider: str = pydantic.Field(description="ID of the component providing the capability.")
+    capability: CapabilityDeclaration = pydantic.Field(description="The matching capability as declared.")
 
 
 class CompatibilityProblem_DuplicateComponent(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    problem: Literal["duplicateComponent"] = "duplicateComponent"
-    id: str = pydantic.Field(description="Component ID.")
+    problem: Literal["DuplicateComponent"] = "DuplicateComponent"
+    id: str = pydantic.Field(description="ID of the components.")
     def payload(self) -> "ComponentIdProblem":
         return ComponentIdProblem(id=self.id)
 
@@ -101,9 +107,9 @@ class CompatibilityProblem_DuplicateComponent(_sidex.Model):
 class CompatibilityProblem_DuplicateClaim(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    problem: Literal["duplicateClaim"] = "duplicateClaim"
-    id: str = pydantic.Field(description="Resource ID.")
-    components: list[str] = pydantic.Field(description="IDs of owning components.")
+    problem: Literal["DuplicateClaim"] = "DuplicateClaim"
+    id: str = pydantic.Field(description="ID of the resource.")
+    components: list[str] = pydantic.Field(description="IDs of the claiming components, in declaration order.")
     def payload(self) -> "ClaimProblem":
         return ClaimProblem(id=self.id, components=self.components)
 
@@ -111,9 +117,9 @@ class CompatibilityProblem_DuplicateClaim(_sidex.Model):
 class CompatibilityProblem_UnsatisfiedRequirement(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    problem: Literal["unsatisfiedRequirement"] = "unsatisfiedRequirement"
-    component: str = pydantic.Field(description="Requiring component.")
-    selector: CapabilitySelectorDeclaration = pydantic.Field(description="Unsatisfied requirement.")
+    problem: Literal["UnsatisfiedRequirement"] = "UnsatisfiedRequirement"
+    component: str = pydantic.Field(description="ID of the requiring component.")
+    selector: CapabilitySelectorDeclaration = pydantic.Field(description="The requirement as declared.")
     def payload(self) -> "SelectorProblem":
         return SelectorProblem(component=self.component, selector=self.selector)
 
@@ -121,14 +127,14 @@ class CompatibilityProblem_UnsatisfiedRequirement(_sidex.Model):
 class CompatibilityProblem_Conflict(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    problem: Literal["conflict"] = "conflict"
-    component: str = pydantic.Field(description="Component declaring the conflict.")
-    selector: CapabilitySelectorDeclaration = pydantic.Field(description="Matching selector.")
-    provider: str = pydantic.Field(description="Component providing the capability.")
-    capability: CapabilityDeclaration = pydantic.Field(description="Matching capability.")
+    problem: Literal["Conflict"] = "Conflict"
+    component: str = pydantic.Field(description="ID of the component declaring the conflict.")
+    selector: CapabilitySelectorDeclaration = pydantic.Field(description="The conflict as declared.")
+    provider: str = pydantic.Field(description="ID of the component providing the capability.")
+    capability: CapabilityDeclaration = pydantic.Field(description="The matching capability as declared.")
     def payload(self) -> "ConflictProblem":
         return ConflictProblem(component=self.component, selector=self.selector, provider=self.provider, capability=self.capability)
 
 
-# A violated composition constraint.
+# A violated constraint.
 type CompatibilityProblem = Annotated[CompatibilityProblem_DuplicateComponent | CompatibilityProblem_DuplicateClaim | CompatibilityProblem_UnsatisfiedRequirement | CompatibilityProblem_Conflict, pydantic.Discriminator("problem")]

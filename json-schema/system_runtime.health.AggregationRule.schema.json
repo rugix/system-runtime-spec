@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.AggregationRule",
   "type": "object",
-  "description": "Minimum and desired health targets.",
+  "description": "Inputs of an aggregate node and the counts they need to meet.",
   "properties": {
     "inputs": {
       "type": "array",
@@ -10,36 +10,37 @@
         "$ref": "#/$defs/system_runtime.health.AggregationInput"
       }
     },
-    "required": {
-      "type": "integer",
-      "format": "uint32",
-      "maximum": 4294967295,
-      "minimum": 0
+    "minUsable": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
     },
-    "healthy": {
-      "type": "integer",
-      "format": "uint32",
-      "maximum": 4294967295,
-      "minimum": 0
+    "minHealthy": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
     }
   },
-  "required": [
-    "inputs"
-  ],
+  "required": [],
   "unevaluatedProperties": false,
   "$defs": {
     "system_runtime.health.AggregationInput": {
       "type": "object",
-      "description": "One dependency of an aggregate health node.",
+      "description": "One input of an aggregate node.",
       "properties": {
         "node": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "required": {
-          "type": "boolean"
-        },
-        "optional": {
-          "type": "boolean"
+        "mode": {
+          "$ref": "#/$defs/system_runtime.health.InputMode"
         }
       },
       "required": [
@@ -49,7 +50,15 @@
     },
     "system_runtime.health.HealthNodeId": {
       "type": "string",
-      "description": "Identifier of a health graph node, serialized as a string."
+      "description": "ID of a health node."
+    },
+    "system_runtime.health.InputMode": {
+      "enum": [
+        "Counted",
+        "Mandatory",
+        "Optional"
+      ],
+      "description": "How an input affects the answers of an aggregate node."
     }
   }
 }

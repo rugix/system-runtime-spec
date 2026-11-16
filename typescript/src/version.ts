@@ -1,15 +1,25 @@
-/** Rugix-compatible version ordering and comparator requirements. */
-
 type Identifier = bigint | string;
-type Version = { release: bigint[]; prerelease: Identifier[] };
+export type Version = { release: bigint[]; prerelease: Identifier[] };
 export type Requirement = { operator: string; version: Version; wildcard: boolean }[];
 
 const grammar = /^([0-9]+(?:\.[0-9]+)*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const max = (1n << 64n) - 1n;
+const operators = [">=", "<=", "==", "!=", ">", "<", "="];
 
-/** Parse numeric releases and prereleases, ignoring build metadata in ordering. */
+/** Characters with the Unicode property White_Space. */
+const whitespace = "\t\n\v\f\r \u0085\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000";
+
+function trim(text: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && whitespace.includes(text[start])) start++;
+  while (end > start && whitespace.includes(text[end - 1])) end--;
+  return text.slice(start, end);
+}
+
+/** Parse a version into its release components and prerelease identifiers. */
 export function parseVersion(text: string): Version {
-  const match = grammar.exec(text.trim());
+  const match = grammar.exec(trim(text));
   if (!match) throw new Error(`Invalid version: ${text}`);
   const release = match[1].split(".").map(BigInt);
   const prerelease = (match[2]?.split(".") ?? []).map(
@@ -23,17 +33,20 @@ export function parseVersion(text: string): Version {
 
 /** Parse comma-separated comparators, or `*` alone for any version. */
 export function parseRequirement(text: string): Requirement {
-  if (text.trim() === "*") return [];
-  return text.split(",").map((part) => {
-    const match = /^(==|!=|>=|<=|=|>|<)?\s*(.+?)(\.\*)?$/.exec(part.trim());
-    if (!match) throw new Error(`Invalid version requirement: ${text}`);
-    const operator = match[1] ?? "=";
-    const version = parseVersion(match[2]);
-    const wildcard = match[3] !== undefined;
-    if (wildcard && (!["=", "==", "!="].includes(operator) || version.prerelease.length > 0 || match[2].includes("+"))) {
+  if (trim(text) === "*") return [];
+  return text.split(",").map((comparator) => {
+    let part = trim(comparator);
+    const operator = operators.find((symbol) => part.startsWith(symbol));
+    part = trim(part.slice(operator?.length ?? 0));
+    const wildcard = part.endsWith(".*");
+    if (wildcard) part = part.slice(0, -2);
+    if (!part) throw new Error(`Invalid version requirement: ${text}`);
+    const version = parseVersion(part);
+    const op = operator ?? "=";
+    if (wildcard && (!["=", "==", "!="].includes(op) || version.prerelease.length > 0 || part.includes("+"))) {
       throw new Error(`Invalid wildcard comparator: ${text}`);
     }
-    return { operator, version, wildcard };
+    return { operator: op, version, wildcard };
   });
 }
 

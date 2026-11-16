@@ -2,55 +2,73 @@
 /* eslint-disable */
 
 import * as __sidex_types from "@sidex/types";
+import * as __schema_common from "./common.js";
 import * as __schema_component from "./component.js";
 import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
 import * as __schema_metric from "./metric.js";
 /**
- * Additional absolute directory paths supplied by packages or administrators.
- * Whole `*` path segments match real directories in lexical order on each load.
- * Explicit path segments may follow symlinks; `..` and partial wildcards are invalid.
+ * Directories that a contributor adds, as absolute paths without `..` segments.
+ * 
+ * A segment consisting only of `*` matches every directory at that level whose name does not
+ * start with `.`, in byte order, but no symlink.
  */
  export type DirectoryConfig = { /**
-                                            * Additional component declaration directories.
+                                            * Version of the specification that the record follows; omitted means `1.0`.
+                                            */
+                                                        "specVersion"?: __sidex_types.builtins.String, /**
+                                            * Directories of component declarations.
                                             */
                                                         "components"?: __sidex_types.builtins.String[], /**
-                                            * Additional health definition directories.
+                                            * Directories of health nodes.
                                             */
                                                         "healthNodes"?: __sidex_types.builtins.String[], /**
-                                            * Additional health status directories.
+                                            * Directories of status records.
                                             */
                                                         "healthStatuses"?: __sidex_types.builtins.String[], /**
-                                            * Additional metric definition directories.
+                                            * Directories of metric definitions.
                                             */
                                                         "metrics"?: __sidex_types.builtins.String[], /**
-                                            * Additional metric sample directories.
+                                            * Directories of metric samples.
                                             */
                                                         "metricSamples"?: __sidex_types.builtins.String[] };
 
 export const DirectoryConfig = {
-    ...__sidex_types.checker<DirectoryConfig>((): __sidex_types.Check => __sidex_types.record([["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthNodes", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthStatuses", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["metrics", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["metricSamples", __sidex_types.sequence(__sidex_types.builtin("string")), true]], [])),
+    ...__sidex_types.checker<DirectoryConfig>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["components", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthNodes", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["healthStatuses", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["metrics", __sidex_types.sequence(__sidex_types.builtin("string")), true], ["metricSamples", __sidex_types.sequence(__sidex_types.builtin("string")), true]], [])),
 };
 /**
- * Complete collection loaded from a filesystem or supplied directly.
+ * Records read from a system, for sending them to another system.
+ * 
+ * An omitted list means that the snapshot does not include records of its kind. The lists of the
+ * health part are either all present or all omitted.
  */
  export type RuntimeSnapshot = { /**
+                                            * Version of the specification that the snapshot's own fields follow.
+                                            */
+                                                        "specVersion": __sidex_types.builtins.String, /**
+                                            * Correlation of the boot-time clock with wall-clock time, sampled after collecting the
+                                            * records.
+                                            */
+                                                        "clock": __schema_health.HealthClockSample, /**
                                             * Component declarations.
                                             */
-                                                        "components": __schema_component.ComponentDeclaration[], /**
-                                            * Health definitions.
+                                                        "components"?: __schema_component.ComponentDeclaration[], /**
+                                            * Health nodes.
                                             */
-                                                        "healthNodes": __schema_health.HealthNode[], /**
-                                            * Published health status records.
+                                                        "healthNodes"?: __schema_health.HealthNode[], /**
+                                            * Status records.
                                             */
-                                                        "healthStatuses": __schema_health.HealthStatus[], /**
-                                            * Numeric metric definitions.
+                                                        "healthStatuses"?: __schema_health.HealthStatus[], /**
+                                            * Metric definitions.
                                             */
                                                         "metrics"?: __schema_metric.MetricDefinition[], /**
-                                            * Published metric samples.
+                                            * Metric samples.
                                             */
-                                                        "metricSamples"?: __schema_metric.MetricSample[] };
+                                                        "metricSamples"?: __schema_metric.MetricSample[], /**
+                                            * Diagnostics about the included records and about directory configurations.
+                                            */
+                                                        "diagnostics"?: __schema_common.Diagnostic[] };
 
 export const RuntimeSnapshot = {
-    ...__sidex_types.checker<RuntimeSnapshot>((): __sidex_types.Check => __sidex_types.record([["components", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_component.ComponentDeclaration)), false], ["healthNodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthNode)), false], ["healthStatuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthStatus)), false], ["metrics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricDefinition)), true], ["metricSamples", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricSample)), true]], [])),
+    ...__sidex_types.checker<RuntimeSnapshot>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), false], ["clock", __sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthClockSample), false], ["components", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_component.ComponentDeclaration)), true], ["healthNodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthNode)), true], ["healthStatuses", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_health.HealthStatus)), true], ["metrics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricDefinition)), true], ["metricSamples", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_metric.MetricSample)), true], ["diagnostics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_common.Diagnostic)), true]], [])),
 };

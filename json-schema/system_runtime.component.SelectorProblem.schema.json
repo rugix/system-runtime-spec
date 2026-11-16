@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.SelectorProblem",
   "type": "object",
-  "description": "Unsatisfied selector.",
+  "description": "A requirement that matches no capability.",
   "properties": {
     "component": {
       "type": "string"
@@ -19,7 +19,7 @@
   "$defs": {
     "system_runtime.component.CapabilitySelectorDeclaration": {
       "type": "object",
-      "description": "A selector over provided capabilities.",
+      "description": "A selector over capabilities.",
       "properties": {
         "id": {
           "type": "string"

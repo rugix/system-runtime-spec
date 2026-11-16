@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.InputMode",
+  "enum": [
+    "Counted",
+    "Mandatory",
+    "Optional"
+  ],
+  "description": "How an input affects the answers of an aggregate node."
+}

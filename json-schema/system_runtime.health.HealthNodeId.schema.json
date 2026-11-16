@@ -2,5 +2,5 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthNodeId",
   "type": "string",
-  "description": "Identifier of a health graph node, serialized as a string."
+  "description": "ID of a health node."
 }

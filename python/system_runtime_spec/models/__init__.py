@@ -2,12 +2,13 @@
 
 import pydantic
 
+from . import common  # noqa: F401
 from . import component  # noqa: F401
 from . import filesystem  # noqa: F401
 from . import health  # noqa: F401
 from . import metric  # noqa: F401
 
-_schemas = {"component": component, "filesystem": filesystem, "health": health, "metric": metric}
+_schemas = {"common": common, "component": component, "filesystem": filesystem, "health": health, "metric": metric}
 for _m in _schemas.values():
     for _name, _other in _schemas.items():
         _alias = f"_schema_{_name}"

@@ -1,173 +1,113 @@
-# System Runtime for Python
+# System Runtime Specification for Python
 
-Use `system-runtime-spec` to load component and health files on Linux, check component
-compatibility, and evaluate health graphs. Its models implement the
-[System Runtime Specification](https://github.com/rugix/system-runtime-spec).
+`system-runtime-spec` implements the
+[System Runtime Specification](https://github.com/rugix/system-runtime-spec/blob/main/SPEC.md)
+in Python: it discovers records on Linux, checks the compatibility of compositions and updates,
+evaluates health, and sends records to other systems as snapshots.
 
 ## Installation
 
-Python 3.12 or later is required. Install from PyPI:
+Python 3.12 or later is required:
 
 ```sh
 python -m pip install system-runtime-spec
 ```
 
-The distribution is named `system-runtime-spec`; import it as `system_runtime_spec`.
+Import the package as `system_runtime_spec`. `Records` holds the records of a system and the
+diagnostics about them. The Pydantic models in `system_runtime_spec.models` are generated from the
+specification's schemas.
 
 ## Read and Check a System
 
-`RuntimeDirectories.standard()` loads the specification's standard directories
-and extension configurations. The returned `RuntimeSnapshot` contains components,
-health nodes and statuses, and optional metric definitions and samples.
-
 ```python
-from system_runtime_spec import (
-    RuntimeDirectories,
-    check_components,
-    current_context,
-    evaluate_health,
-)
+from system_runtime_spec import Records, current_context
 
-snapshot = RuntimeDirectories.standard().load()
-compatibility = check_components(snapshot.components)
-health = evaluate_health(
-    snapshot.health_nodes,
-    snapshot.health_statuses,
-    current_context(),
-    metrics=snapshot.metrics or [],
-    metric_samples=snapshot.metric_samples or [],
-)
-print(compatibility.model_dump_json(), health.model_dump_json())
+records = Records.discover("/")
+compatibility = records.check_compatibility()
+health = records.evaluate_health(current_context())
+print("consistent:", compatibility.consistent)
+for node in health.nodes:
+    print(f"{node.id}: usable {node.usable}, healthy {node.healthy}")
 ```
 
-`current_context()` reads the Linux boot ID and `CLOCK_BOOTTIME` for freshness
-checks. For records from another system, supply that system's `HealthContext`.
-Invalid declarations and discovery failures raise exceptions; a valid but
-incompatible composition returns a report with `consistent == False`.
+`Records.discover` reads the standard directories and the directories that directory
+configurations add, and applies overrides. Files that cannot be read or do not contain a valid
+record are skipped and reported as diagnostics. Reports take the diagnostics of their part into
+account: an error about component declarations makes a composition inconsistent, and a decision
+should not rely on a health report with errors about health nodes or directory configurations.
 
-Pass `metrics` and `metric_samples` to evaluate numeric threshold nodes.
-The [metric and threshold reference](https://github.com/rugix/system-runtime-spec#metrics-and-thresholds)
-describes units, ranges, and evidence freshness.
+## Add Records in Code
 
-## Add Directories
-
-Use extension files as described in the
-[file discovery specification](https://github.com/rugix/system-runtime-spec#file-discovery),
-or extend the sources in code:
+`push` adds a record given as a model, and `push_json` one given as JSON, such as a record
+received from another system. Both validate the record and skip it with an error diagnostic if it
+is invalid:
 
 ```python
-from system_runtime_spec import RuntimeDirectories
-from system_runtime_spec.filesystem import DirectoryConfig
+from system_runtime_spec import Records
+from system_runtime_spec.models.component import (
+    CapabilitySelectorDeclaration,
+    ComponentDeclaration,
+)
 
-directories = RuntimeDirectories.standard()
-directories.extend(DirectoryConfig(components=["/opt/example/components"]))
-snapshot = directories.load()
+records = Records()
+records.push(ComponentDeclaration(id="os", version="2.1"))
+records.push(
+    ComponentDeclaration(
+        id="app",
+        requires=[CapabilitySelectorDeclaration(id="os", version=">=2")],
+    )
+)
+records.push_json(ComponentDeclaration, {"id": "tool"})
+assert records.check_compatibility().consistent
 ```
 
-Use `RuntimeDirectories()` to start with empty source lists.
-`RuntimeDirectories.standard("/mnt/system")` relocates absolute source paths for
-tests or alternate installations. Absolute symlink targets still resolve against
-the host's root, rather than the supplied root.
+## Check an Update
 
-## Check an Update Candidate
-
-An owner groups records owned by a system image, app, or other contributor.
-`without_owner` returns a snapshot with new lists that exclude records owned by
-that exact owner. Other records keep their requirements and references. Retained
-record objects are shared with the original snapshot; copy a record before
-modifying its fields.
+`with_update` builds the composition that an update would produce: it replaces all component
+declarations of the given owners with those of the update.
 
 ```python
-from system_runtime_spec import RuntimeDirectories, check_components, without_owner
+from system_runtime_spec import Records
 from system_runtime_spec.models.component import ComponentDeclaration
 
-current = RuntimeDirectories.standard().load()
-candidate = without_owner(current, "rugix.system")
-candidate.components.append(
-    ComponentDeclaration(id="example.system", owner="rugix.system", version="2.0")
-)
-report = check_components(candidate.components)
-print(report.consistent)
+records = Records.discover("/")
+update = Records()
+update.push(ComponentDeclaration(id="os", owner="rugix.system", version="2.0"))
+candidate = records.with_update(["rugix.system"], update)
+print("consistent:", candidate.check_compatibility().consistent)
 ```
 
-The current records must already carry owners. Discovery does not infer
-ownership from paths; attribute imported records before assembling the snapshot.
-This operation changes only the in-memory candidate. After activation, evaluate
-health using fresh records from the running system.
+## Send Records as a Snapshot
 
-### Import Records Without Owners
-
-For existing records without owners, load each set of directories once before
-constructing a candidate. This example builds a snapshot of components from
-system-image and device-local directories without loading directory configuration
-files:
+A `Snapshot` contains the original records, so the receiving system evaluates them as the sending
+system read them. Take the clock sample after reading the records:
 
 ```python
-from system_runtime_spec import RuntimeDirectories
+import json
 
-current = RuntimeDirectories(
-    components=["/etc/rugix/components", "/run/rugix/components"],
-).load()
-image = RuntimeDirectories(components=["/usr/lib/rugix/components"]).load()
-for component in image.components:
-    component.owner = "rugix.system"
-current.components.extend(image.components)
-```
-
-Use this prepared `current` in the replacement example instead of loading it with
-`standard()`. Before evaluating the complete system, add app contributions and
-any components from standard directories that the system relies on. Load health
-nodes and statuses separately for health evaluation. Read each set of directories
-once; combining this import with a standard load of the same files would
-duplicate records. The assignments change only in-memory records. Device-local
-records without an owner survive replacement.
-
-## Transport a Health Snapshot
-
-Collect records first, then sample the observed system's clock:
-
-```python
 from system_runtime_spec import (
-    RuntimeDirectories,
+    Records,
+    Snapshot,
     current_clock_sample,
-    status_timestamp,
+    estimate_timestamp,
 )
-from system_runtime_spec.models.health import HealthSnapshot
 
-records = RuntimeDirectories.standard().load()
-snapshot = HealthSnapshot(
-    clock=current_clock_sample(),
-    nodes=records.health_nodes,
-    statuses=records.health_statuses,
-    metrics=records.metrics,
-    metric_samples=records.metric_samples,
-)
-payload = snapshot.model_dump_json()
-received = HealthSnapshot.model_validate_json(payload)
-for status in received.statuses:
-    print(status.id, status_timestamp(status, received.clock))
+records = Records.discover("/")
+payload = json.dumps(Snapshot(records, current_clock_sample()).to_json())
+
+# On the receiving system:
+received = Snapshot.from_json(json.loads(payload))
+report = received.records.evaluate_health(received.clock.context)
+for status in received.records.health_statuses:
+    print(status.id, estimate_timestamp(received.clock, status))
 ```
 
-`current_clock_sample()` samples UTC between two boot-time reads and pairs it
-with their midpoint. `status_timestamp` returns an estimated UTC `datetime` for
-display, or `None` for a wrong boot, future observation, or unsupported timestamp
-range. Sampling uncertainty and wall-clock corrections limit the estimate.
+`Snapshot` takes `components=False` or `health=False` to leave out a part. `Snapshot.from_json`
+raises a `SnapshotError` for snapshots of an unsupported version or with an invalid structure.
+Evaluating a snapshot gives health at the time of its clock sample, and `estimate_timestamp`
+places evidence in wall-clock time for display.
 
-Evaluating with `received.clock.context` gives health at capture time. Obtain
-current evidence before making an update decision.
-
-## Models
-
-Sidex generates Pydantic models in `system_runtime_spec.models.component`,
-`system_runtime_spec.models.health`, `system_runtime_spec.models.metric`, and
-`system_runtime_spec.models.filesystem`. Python
-attributes use snake_case, such as `boot_id`; serialized fields use names such as
-`bootId`. Use `model_validate` or `model_validate_json` to parse records and
-`model_dump_json()` to serialize them in the specified wire format. Unset
-optional fields are omitted. Health node IDs are string type aliases.
-
-See the [specification](https://github.com/rugix/system-runtime-spec) for wire
-formats, version matching, and health semantics.
+`Records.discover`, `current_context`, and `current_clock_sample` are available on Linux only.
 
 ## License
 

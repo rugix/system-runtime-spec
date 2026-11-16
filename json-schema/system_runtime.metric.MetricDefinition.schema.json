@@ -2,8 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.metric.MetricDefinition",
   "type": "object",
-  "description": "A named numeric measurement, independent of any health policy; samples carry no history.",
+  "description": "A named numeric measurement.",
   "properties": {
+    "specVersion": {
+      "type": "string"
+    },
     "id": {
       "$ref": "#/$defs/system_runtime.metric.MetricId"
     },
@@ -20,16 +23,23 @@
       }
     },
     "unit": {
-      "$ref": "#/$defs/system_runtime.metric.MetricUnit"
+      "type": "string"
     },
     "maxAgeMs": {
-      "type": "integer",
-      "format": "uint32",
-      "maximum": 4294967295,
-      "minimum": 0
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
     },
     "expectedTag": {
       "type": "string"
+    },
+    "annotations": {
+      "type": "object",
+      "additionalProperties": {}
     }
   },
   "required": [
@@ -40,23 +50,7 @@
   "$defs": {
     "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a metric, unique independently of health node IDs."
-    },
-    "system_runtime.metric.MetricUnit": {
-      "enum": [
-        "celsius",
-        "bytes",
-        "seconds",
-        "ratio",
-        "count",
-        "bytes-per-second",
-        "hertz",
-        "volts",
-        "amperes",
-        "watts",
-        "revolutions-per-minute"
-      ],
-      "description": "Semantic unit; display prefixes, precision, and conversions are consumer choices."
+      "description": "ID of a metric."
     }
   }
 }

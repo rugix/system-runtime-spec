@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.common.Severity",
+  "enum": [
+    "Error",
+    "Warning"
+  ],
+  "description": "Effect of a diagnostic on the results."
+}

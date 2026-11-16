@@ -1,308 +1,565 @@
-//! Evaluate health graphs using caller-supplied boot-time evidence.
+use std::collections::{BTreeMap, BTreeSet};
 
-use std::collections::{BTreeMap, BTreeSet, VecDeque};
-
-use crate::Error;
-use crate::threshold::MetricEvidence;
+use crate::Records;
+use crate::records::Record;
+use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::health::*;
-use crate::types::metric::{MetricDefinition, MetricSample};
+use crate::types::metric::{MetricDefinition, MetricRange, MetricSample};
 
-/// Read the Linux boot identifier and CLOCK_BOOTTIME in milliseconds.
-#[cfg(target_os = "linux")]
-pub fn current_context() -> Result<HealthContext, Error> {
-    let path = std::path::PathBuf::from("/proc/sys/kernel/random/boot_id");
-    let boot_id = std::fs::read_to_string(&path).map_err(|source| Error::Io { path, source })?;
-    let time = rustix::time::clock_gettime(rustix::time::ClockId::Boottime);
-    Ok(HealthContext {
-        boot_id: boot_id.trim().into(),
-        now_ms: (time.tv_sec as u64) * 1_000 + (time.tv_nsec as u64) / 1_000_000,
-    })
+impl HealthContext {
+    /// Read the current Linux boot ID and boot-time clock.
+    #[cfg(target_os = "linux")]
+    pub fn current() -> std::io::Result<Self> {
+        const BOOT_ID: &str = "/proc/sys/kernel/random/boot_id";
+        let boot_id = std::fs::read_to_string(BOOT_ID).map_err(|error| {
+            std::io::Error::new(error.kind(), format!("failed to read {BOOT_ID}: {error}"))
+        })?;
+        let time = rustix::time::clock_gettime(rustix::time::ClockId::Boottime);
+        Ok(Self {
+            boot_id: boot_id.trim().into(),
+            now_ms: (time.tv_sec as u64) * 1_000 + (time.tv_nsec as u64) / 1_000_000,
+        })
+    }
 }
 
-/// Validate the graph, then evaluate every node in declaration order.
-///
-/// Missing, expired, future, wrong-boot, or wrong-tag evidence yields unknown.
-#[tracing::instrument(level = "debug", skip_all, fields(nodes = nodes.len(), statuses = statuses.len()))]
-pub fn evaluate_health(
-    nodes: &[HealthNode],
-    statuses: &[HealthStatus],
-    context: &HealthContext,
-) -> Result<HealthReport, Error> {
-    evaluate_health_with_metrics(nodes, statuses, &[], &[], context)
+impl Records {
+    /// Evaluate the health records in a health context.
+    ///
+    /// The report contains one result per node ID, in the order of the node definitions, and
+    /// the diagnostics about health records and directory configurations, including those
+    /// that evaluation adds.
+    #[tracing::instrument(level = "debug", skip_all)]
+    pub fn evaluate_health(&self, context: &HealthContext) -> HealthReport {
+        Evaluation::new(self, context).report()
+    }
 }
 
-/// Validate numeric evidence and evaluate observed, threshold, and aggregate nodes.
-#[tracing::instrument(level = "debug", skip_all)]
-pub fn evaluate_health_with_metrics(
-    nodes: &[HealthNode],
-    statuses: &[HealthStatus],
-    metrics: &[MetricDefinition],
-    metric_samples: &[MetricSample],
-    context: &HealthContext,
-) -> Result<HealthReport, Error> {
-    let evidence = MetricEvidence::new(metrics, metric_samples)?;
-    let indices: BTreeMap<_, _> = nodes
-        .iter()
-        .enumerate()
-        .map(|(i, node)| (&node.id, i))
-        .collect();
-    if indices.len() != nodes.len() {
-        return Err(Error::Invalid("duplicate health node ID".into()));
+type Answers = (Answer, Answer);
+
+const UNKNOWN: Answers = (Answer::Unknown, Answer::Unknown);
+
+fn state_answers(state: HealthState) -> Answers {
+    match state {
+        HealthState::Healthy => (Answer::Yes, Answer::Yes),
+        HealthState::Degraded => (Answer::Yes, Answer::No),
+        HealthState::Unhealthy => (Answer::No, Answer::No),
+        HealthState::Unknown => UNKNOWN,
     }
-    let observations: BTreeMap<_, _> = statuses.iter().map(|a| (&a.id, a)).collect();
-    if observations.len() != statuses.len() {
-        return Err(Error::Invalid("duplicate health status ID".into()));
-    }
-    for status in statuses {
-        if status.max_age_ms == 0 {
-            return Err(Error::Invalid(format!(
-                "status {:?} has zero maxAgeMs",
-                status.id
-            )));
-        }
-        if indices
-            .get(&status.id)
-            .is_some_and(|i| !matches!(node_rule(&nodes[*i]), HealthRule::Observed(_)))
-        {
-            return Err(Error::Invalid(format!(
-                "status supplied for derived node {:?}",
-                status.id
-            )));
-        }
-    }
-    let mut remaining = vec![0usize; nodes.len()];
-    let mut dependents = vec![Vec::new(); nodes.len()];
-    for (index, node) in nodes.iter().enumerate() {
-        match node_rule(node) {
-            HealthRule::Observed(rule) => {
-                if rule.max_age_ms == Some(0) {
-                    return Err(Error::Invalid(format!(
-                        "node {:?} has zero maxAgeMs",
-                        node.id
-                    )));
-                }
-            }
-            HealthRule::Threshold(rule) => evidence.validate(rule)?,
-            HealthRule::Aggregate(rule) => {
-                if rule
-                    .inputs
-                    .iter()
-                    .any(|input| input.required == Some(true) && input.optional == Some(true))
-                {
-                    return Err(Error::Invalid(format!(
-                        "input both required and optional for {:?}",
-                        node.id
-                    )));
-                }
-                let (required, healthy) = counts(rule);
-                let counted = rule
-                    .inputs
-                    .iter()
-                    .filter(|input| !is_optional(input))
-                    .count();
-                if !(1 <= required && required <= healthy && healthy <= counted) {
-                    return Err(Error::Invalid(format!(
-                        "invalid thresholds for {:?}",
-                        node.id
-                    )));
-                }
-                let unique: BTreeSet<_> = rule.inputs.iter().map(|input| &input.node).collect();
-                if unique.len() != rule.inputs.len() {
-                    return Err(Error::Invalid(format!("duplicate input for {:?}", node.id)));
-                }
-                remaining[index] = rule.inputs.len();
-                for dependency in &rule.inputs {
-                    let id = &dependency.node;
-                    let input = indices
-                        .get(id)
-                        .ok_or_else(|| Error::Invalid(format!("missing health node {id:?}")))?;
-                    dependents[*input].push(index);
-                }
-            }
-        }
-    }
-    let mut ready: VecDeque<_> = remaining
-        .iter()
-        .enumerate()
-        .filter_map(|(i, count)| (*count == 0).then_some(i))
-        .collect();
-    let mut results: Vec<Option<HealthNodeResult>> = vec![None; nodes.len()];
-    while let Some(index) = ready.pop_front() {
-        let node = &nodes[index];
-        results[index] = Some(match node_rule(node) {
-            HealthRule::Observed(rule) => {
-                observe(node, rule, observations.get(&node.id).copied(), context)
-            }
-            HealthRule::Threshold(rule) => evidence.evaluate(node, rule, context),
-            HealthRule::Aggregate(rule) => {
-                let inputs: Vec<_> = rule
-                    .inputs
-                    .iter()
-                    .map(|input| {
-                        results[indices[&input.node]]
-                            .as_ref()
-                            .expect("topological inputs have been evaluated")
-                    })
-                    .collect();
-                aggregate(node, rule, &inputs)
-            }
-        });
-        for &dependent in &dependents[index] {
-            remaining[dependent] -= 1;
-            if remaining[dependent] == 0 {
-                ready.push_back(dependent);
-            }
-        }
-    }
-    let nodes = results
-        .into_iter()
-        .collect::<Option<Vec<_>>>()
-        .ok_or_else(|| Error::Invalid("cycle in health graph".into()))?;
-    Ok(HealthReport { nodes })
 }
 
-/// Apply identity and finite-age constraints to one status.
-fn observe(
-    node: &HealthNode,
-    rule: &ObservationRule,
-    status: Option<&HealthStatus>,
-    context: &HealthContext,
-) -> HealthNodeResult {
-    let reason = match status {
-        None => Some("Missing status"),
-        Some(a) if a.boot_id != context.boot_id => Some("Status belongs to another boot"),
-        Some(a)
-            if node
-                .owner
-                .as_ref()
-                .is_some_and(|owner| a.owner.as_ref() != Some(owner)) =>
-        {
-            Some("Status owner does not match")
+fn conjunction(answers: impl IntoIterator<Item = Answer>) -> Answer {
+    let mut result = Answer::Yes;
+    for answer in answers {
+        match answer {
+            Answer::No => return Answer::No,
+            Answer::Unknown => result = Answer::Unknown,
+            Answer::Yes => {}
         }
-        Some(a)
-            if rule
-                .expected_tag
-                .as_ref()
-                .is_some_and(|expected| a.tag.as_ref() != Some(expected)) =>
-        {
-            Some("Status tag does not match")
+    }
+    result
+}
+
+fn count_answer(minimum: u64, answers: &[Answer]) -> Answer {
+    let yes = answers.iter().filter(|a| **a == Answer::Yes).count() as u64;
+    let unknown = answers.iter().filter(|a| **a == Answer::Unknown).count() as u64;
+    if yes >= minimum {
+        Answer::Yes
+    } else if yes + unknown < minimum {
+        Answer::No
+    } else {
+        Answer::Unknown
+    }
+}
+
+fn contains(range: &MetricRange, value: f64) -> bool {
+    range
+        .lower
+        .as_ref()
+        .is_none_or(|b| value > b.value || (value == b.value && b.inclusive))
+        && range
+            .upper
+            .as_ref()
+            .is_none_or(|b| value < b.value || (value == b.value && b.inclusive))
+}
+
+fn group<T: Clone>(
+    items: &[Record<T>],
+    id: impl Fn(&T) -> &str,
+) -> BTreeMap<String, Vec<Record<T>>> {
+    let mut groups: BTreeMap<String, Vec<Record<T>>> = BTreeMap::new();
+    for item in items {
+        groups
+            .entry(id(&item.value).to_owned())
+            .or_default()
+            .push(item.clone());
+    }
+    groups
+}
+
+struct Evidence<'a> {
+    boot_id: &'a str,
+    observed_at_ms: u64,
+    max_age_ms: u64,
+    owner: Option<&'a str>,
+    tag: Option<&'a str>,
+}
+
+struct Evaluation<'a> {
+    context: &'a HealthContext,
+    diagnostics: Vec<Diagnostic>,
+    reported: BTreeSet<String>,
+    order: Vec<String>,
+    nodes: BTreeMap<String, Record<HealthNode>>,
+    conflicts: BTreeSet<String>,
+    statuses: BTreeMap<String, Vec<Record<HealthStatus>>>,
+    metrics: BTreeMap<String, Vec<Record<MetricDefinition>>>,
+    samples: BTreeMap<String, Vec<Record<MetricSample>>>,
+    inputs: BTreeMap<String, Vec<(String, InputMode)>>,
+    unsupported: BTreeSet<String>,
+    on_cycle: BTreeSet<String>,
+    results: BTreeMap<String, HealthNodeResult>,
+}
+
+impl<'a> Evaluation<'a> {
+    fn new(records: &Records, context: &'a HealthContext) -> Self {
+        let diagnostics = records.diagnostics_about(&[
+            RecordKind::HealthNode,
+            RecordKind::HealthStatus,
+            RecordKind::MetricDefinition,
+            RecordKind::MetricSample,
+            RecordKind::DirectoryConfig,
+        ]);
+        let nodes = &records.health_nodes;
+        let mut order = Vec::new();
+        for node in nodes {
+            if !order.contains(&node.value.id.0) {
+                order.push(node.value.id.0.clone());
+            }
         }
-        Some(a) if a.observed_at_ms > context.now_ms => Some("Status is in the future"),
-        Some(a)
-            if context.now_ms - a.observed_at_ms
-                >= u64::from(a.max_age_ms.min(rule.max_age_ms.unwrap_or(a.max_age_ms))) =>
-        {
-            Some("Status has expired")
+        let groups = group(nodes, |node| &node.id.0);
+        let mut evaluation = Self {
+            context,
+            diagnostics,
+            reported: BTreeSet::new(),
+            order,
+            nodes: BTreeMap::new(),
+            conflicts: BTreeSet::new(),
+            statuses: group(&records.health_statuses, |status| &status.id.0),
+            metrics: group(&records.metrics, |metric| &metric.id.0),
+            samples: group(&records.metric_samples, |sample| &sample.id.0),
+            inputs: BTreeMap::new(),
+            unsupported: BTreeSet::new(),
+            on_cycle: BTreeSet::new(),
+            results: BTreeMap::new(),
+        };
+        for (id, mut group) in groups {
+            if group.len() > 1 {
+                evaluation.diagnose(
+                    Severity::Error,
+                    RecordKind::HealthNode,
+                    format!("several nodes have the ID {id:?}"),
+                );
+                evaluation.conflicts.insert(id);
+            } else {
+                let node = group.pop().expect("groups are not empty");
+                if node.unsupported {
+                    evaluation.unsupported.insert(id.clone());
+                }
+                evaluation.nodes.insert(id, node);
+            }
         }
-        Some(_) => None,
-    };
-    if let Some(reason) = reason {
-        return HealthNodeResult {
+        evaluation.resolve_inputs();
+        evaluation.on_cycle = evaluation.find_cycles();
+        evaluation
+    }
+
+    fn diagnose(&mut self, severity: Severity, kind: RecordKind, message: String) {
+        if self.reported.insert(message.clone()) {
+            self.diagnostics
+                .push(Diagnostic::new(severity, kind, message));
+        }
+    }
+
+    fn aggregate_rule(&self, id: &str) -> Option<&AggregationRule> {
+        match &self.nodes.get(id)?.value.rule {
+            Some(HealthRule::Aggregate(rule)) => Some(rule),
+            _ => None,
+        }
+    }
+
+    fn resolve_inputs(&mut self) {
+        let mut attached: BTreeMap<String, Vec<(String, InputMode)>> = BTreeMap::new();
+        let mut unsupported = Vec::new();
+        for id in &self.order {
+            let Some(node) = self.nodes.get(id) else {
+                continue;
+            };
+            for attachment in node.value.part_of.iter().flatten() {
+                let parent = &attachment.node.0;
+                if self.aggregate_rule(parent).is_none() {
+                    continue;
+                }
+                if node.unsupported_parents.contains(parent) {
+                    unsupported.push(parent.clone());
+                }
+                attached
+                    .entry(parent.clone())
+                    .or_default()
+                    .push((id.clone(), attachment.mode.unwrap_or(InputMode::Counted)));
+            }
+        }
+        self.unsupported.extend(unsupported);
+        let mut missing = Vec::new();
+        for id in &self.order {
+            let Some(rule) = self.aggregate_rule(id) else {
+                continue;
+            };
+            let mut inputs: Vec<(String, InputMode)> = Vec::new();
+            for entry in rule.inputs.iter().flatten() {
+                let child = &entry.node.0;
+                if !self.nodes.contains_key(child) && !self.conflicts.contains(child) {
+                    missing.push(format!("input {child:?} of {id:?} does not exist"));
+                }
+                if !inputs.iter().any(|(existing, _)| existing == child) {
+                    inputs.push((child.clone(), entry.mode.unwrap_or(InputMode::Counted)));
+                }
+            }
+            for (child, mode) in attached.remove(id).unwrap_or_default() {
+                if !inputs.iter().any(|(existing, _)| *existing == child) {
+                    inputs.push((child, mode));
+                }
+            }
+            self.inputs.insert(id.clone(), inputs);
+        }
+        for message in missing {
+            self.diagnose(Severity::Warning, RecordKind::HealthNode, message);
+        }
+    }
+
+    /// Find the nodes on a cycle with Tarjan's algorithm.
+    fn find_cycles(&self) -> BTreeSet<String> {
+        let edges = |id: &str| -> Vec<&str> {
+            self.inputs
+                .get(id)
+                .into_iter()
+                .flatten()
+                .filter(|(child, _)| self.nodes.contains_key(child))
+                .map(|(child, _)| child.as_str())
+                .collect()
+        };
+        let mut index: BTreeMap<&str, usize> = BTreeMap::new();
+        let mut low: BTreeMap<&str, usize> = BTreeMap::new();
+        let mut stack: Vec<&str> = Vec::new();
+        let mut on_stack: BTreeSet<&str> = BTreeSet::new();
+        let mut on_cycle = BTreeSet::new();
+        for start in self.inputs.keys() {
+            if index.contains_key(start.as_str()) {
+                continue;
+            }
+            let mut work = vec![(start.as_str(), 0usize)];
+            let next = index.len();
+            index.insert(start, next);
+            low.insert(start, next);
+            stack.push(start);
+            on_stack.insert(start);
+            while let Some(&(id, position)) = work.last() {
+                let children = edges(id);
+                if position < children.len() {
+                    work.last_mut().expect("not empty").1 += 1;
+                    let child = children[position];
+                    if !index.contains_key(child) {
+                        let next = index.len();
+                        index.insert(child, next);
+                        low.insert(child, next);
+                        stack.push(child);
+                        on_stack.insert(child);
+                        work.push((child, 0));
+                    } else if on_stack.contains(child) {
+                        let value = low[id].min(index[child]);
+                        low.insert(id, value);
+                    }
+                    continue;
+                }
+                work.pop();
+                if let Some(&(parent, _)) = work.last() {
+                    let value = low[parent].min(low[id]);
+                    low.insert(parent, value);
+                }
+                if low[id] == index[id] {
+                    let mut component = Vec::new();
+                    loop {
+                        let member = stack.pop().expect("member on stack");
+                        on_stack.remove(member);
+                        component.push(member);
+                        if member == id {
+                            break;
+                        }
+                    }
+                    if component.len() > 1 || children.contains(&id) {
+                        on_cycle.extend(component.into_iter().map(str::to_owned));
+                    }
+                }
+            }
+        }
+        on_cycle
+    }
+
+    fn report(mut self) -> HealthReport {
+        let mut nodes = Vec::new();
+        for id in self.order.clone() {
+            if self.conflicts.contains(&id) {
+                nodes.push(HealthNodeResult {
+                    id: HealthNodeId(id),
+                    owner: None,
+                    usable: Answer::Unknown,
+                    healthy: Answer::Unknown,
+                    inputs: Vec::new(),
+                    reason: Some(Reason::Conflict),
+                    message: None,
+                    details: None,
+                });
+            } else {
+                nodes.push(self.result(&id));
+            }
+        }
+        HealthReport {
+            nodes,
+            diagnostics: self.diagnostics,
+        }
+    }
+
+    fn answers(&mut self, id: &str) -> Answers {
+        if self.nodes.contains_key(id) {
+            let result = self.result(id);
+            (result.usable, result.healthy)
+        } else {
+            UNKNOWN
+        }
+    }
+
+    fn result(&mut self, id: &str) -> HealthNodeResult {
+        if let Some(result) = self.results.get(id) {
+            return result.clone();
+        }
+        let node = &self.nodes[id].value;
+        let mut result = HealthNodeResult {
             id: node.id.clone(),
             owner: node.owner.clone(),
-            state: HealthState::Unknown,
-            inputs: Vec::new(),
-            message: Some(reason.into()),
+            usable: Answer::Unknown,
+            healthy: Answer::Unknown,
+            inputs: self
+                .inputs
+                .get(id)
+                .into_iter()
+                .flatten()
+                .map(|(child, _)| HealthNodeId(child.clone()))
+                .collect(),
+            reason: None,
+            message: None,
+            details: None,
         };
+        let rule = node.rule.clone();
+        if self.on_cycle.contains(id) {
+            result.reason = Some(Reason::Cycle);
+        } else if self.unsupported.contains(id) {
+            result.reason = Some(Reason::Unsupported);
+        } else {
+            match rule {
+                None => self.observe(
+                    &mut result,
+                    id,
+                    &ObservationRule {
+                        max_age_ms: None,
+                        expected_tag: None,
+                    },
+                ),
+                Some(HealthRule::Observed(rule)) => self.observe(&mut result, id, &rule),
+                Some(HealthRule::Threshold(rule)) => self.threshold(&mut result, id, &rule),
+                Some(HealthRule::Aggregate(rule)) => self.aggregate(&mut result, id, &rule),
+            }
+        }
+        self.results.insert(id.to_owned(), result.clone());
+        result
     }
-    let status = status.expect("absence produces a freshness reason");
-    HealthNodeResult {
-        id: node.id.clone(),
-        owner: node.owner.clone(),
-        state: status.state,
-        inputs: Vec::new(),
-        message: status.message.clone(),
+
+    /// Return why evidence is not fresh, or None if it is fresh.
+    fn freshness_reason(
+        &self,
+        evidence: &Evidence<'_>,
+        owner: Option<&str>,
+        tag: Option<&str>,
+        max_ages: &[Option<u64>],
+    ) -> Option<Reason> {
+        if evidence.boot_id != self.context.boot_id {
+            return Some(Reason::OtherBoot);
+        }
+        if owner.is_some_and(|owner| evidence.owner != Some(owner)) {
+            return Some(Reason::OwnerMismatch);
+        }
+        if tag.is_some_and(|tag| evidence.tag != Some(tag)) {
+            return Some(Reason::TagMismatch);
+        }
+        if evidence.observed_at_ms > self.context.now_ms {
+            return Some(Reason::Future);
+        }
+        let age = self.context.now_ms - evidence.observed_at_ms;
+        if std::iter::once(evidence.max_age_ms)
+            .chain(max_ages.iter().flatten().copied())
+            .any(|limit| age >= limit)
+        {
+            return Some(Reason::Expired);
+        }
+        None
     }
-}
 
-/// Rule of nodes that omit their rule: observed without constraints.
-const OBSERVED: HealthRule = HealthRule::Observed(ObservationRule {
-    max_age_ms: None,
-    expected_tag: None,
-});
+    fn observe(&mut self, result: &mut HealthNodeResult, id: &str, rule: &ObservationRule) {
+        let count = self.statuses.get(id).map_or(0, Vec::len);
+        if count > 1 {
+            self.diagnose(
+                Severity::Warning,
+                RecordKind::HealthStatus,
+                format!("several status records for {id:?}"),
+            );
+            result.reason = Some(Reason::Conflict);
+            return;
+        }
+        let Some(status) = self.statuses.get(id).and_then(|statuses| statuses.first()) else {
+            result.reason = Some(Reason::Missing);
+            return;
+        };
+        let owner = self.nodes[id].value.owner.as_deref();
+        let record = &status.value;
+        let evidence = Evidence {
+            boot_id: &record.boot_id,
+            observed_at_ms: record.observed_at_ms,
+            max_age_ms: record.max_age_ms,
+            owner: record.owner.as_deref(),
+            tag: record.tag.as_deref(),
+        };
+        if let Some(reason) = self.freshness_reason(
+            &evidence,
+            owner,
+            rule.expected_tag.as_deref(),
+            &[rule.max_age_ms],
+        ) {
+            result.reason = Some(reason);
+            return;
+        }
+        if status.unsupported {
+            result.reason = Some(Reason::Unsupported);
+        } else {
+            (result.usable, result.healthy) = state_answers(record.state);
+        }
+        result.message = record.message.clone();
+        result.details = record.details.clone();
+    }
 
-/// Resolve a node's rule, treating an omitted rule as observed.
-fn node_rule(node: &HealthNode) -> &HealthRule {
-    node.rule.as_ref().unwrap_or(&OBSERVED)
-}
+    fn threshold(&mut self, result: &mut HealthNodeResult, id: &str, rule: &ThresholdRule) {
+        let metric = rule.metric.0.clone();
+        let definitions = self.metrics.get(&metric).map_or(0, Vec::len);
+        let samples = self.samples.get(&metric).map_or(0, Vec::len);
+        if definitions == 0 {
+            result.reason = Some(Reason::Missing);
+            return;
+        }
+        let definition = self.metrics[&metric][0].value.clone();
+        let mut conflicts = Vec::new();
+        if definitions > 1 {
+            conflicts.push((
+                RecordKind::MetricDefinition,
+                format!("several definitions of {metric:?}"),
+            ));
+        }
+        if samples > 1 {
+            conflicts.push((
+                RecordKind::MetricSample,
+                format!("several samples of {metric:?}"),
+            ));
+        }
+        if rule
+            .unit
+            .as_ref()
+            .is_some_and(|unit| *unit != definition.unit)
+        {
+            conflicts.push((
+                RecordKind::HealthNode,
+                format!("unit of {id:?} differs from {metric:?}"),
+            ));
+        }
+        if !conflicts.is_empty() {
+            for (kind, message) in conflicts {
+                self.diagnose(Severity::Warning, kind, message);
+            }
+            result.reason = Some(Reason::Conflict);
+            return;
+        }
+        let Some(sample) = self
+            .samples
+            .get(&metric)
+            .and_then(|samples| samples.first())
+        else {
+            result.reason = Some(Reason::Missing);
+            return;
+        };
+        let record = &sample.value;
+        let evidence = Evidence {
+            boot_id: &record.boot_id,
+            observed_at_ms: record.observed_at_ms,
+            max_age_ms: record.max_age_ms,
+            owner: record.owner.as_deref(),
+            tag: record.tag.as_deref(),
+        };
+        if let Some(reason) = self.freshness_reason(
+            &evidence,
+            definition.owner.as_deref(),
+            definition.expected_tag.as_deref(),
+            &[definition.max_age_ms, rule.max_age_ms],
+        ) {
+            result.reason = Some(reason);
+            return;
+        }
+        (result.usable, result.healthy) = if contains(&rule.healthy, record.value) {
+            (Answer::Yes, Answer::Yes)
+        } else if contains(&rule.usable, record.value) {
+            (Answer::Yes, Answer::No)
+        } else {
+            (Answer::No, Answer::No)
+        };
+        result.message = record.message.clone();
+        result.details = record.details.clone();
+    }
 
-/// Check whether an input only affects the desired criteria.
-fn is_optional(input: &AggregationInput) -> bool {
-    input.optional == Some(true)
-}
-
-/// Resolve the minimum and desired counts, defaulting to all non-optional inputs healthy.
-fn counts(rule: &AggregationRule) -> (usize, usize) {
-    let counted = rule
-        .inputs
-        .iter()
-        .filter(|input| !is_optional(input))
-        .count();
-    let healthy = rule.healthy.map_or(counted, |healthy| healthy as usize);
-    let required = rule.required.map_or(healthy, |required| required as usize);
-    (required, healthy)
-}
-
-/// Apply mandatory dependency gates and desired and minimum input counts.
-fn aggregate(
-    node: &HealthNode,
-    rule: &AggregationRule,
-    inputs: &[&HealthNodeResult],
-) -> HealthNodeResult {
-    let (required, desired) = counts(rule);
-    let (optional, counted): (Vec<_>, Vec<_>) = rule
-        .inputs
-        .iter()
-        .zip(inputs)
-        .partition(|(input, _)| is_optional(input));
-    let healthy = counted
-        .iter()
-        .filter(|(_, i)| i.state == HealthState::Healthy)
-        .count();
-    let minimum_met = counted
-        .iter()
-        .filter(|(_, i)| matches!(i.state, HealthState::Healthy | HealthState::Degraded))
-        .count();
-    let possible_minimum = counted
-        .iter()
-        .filter(|(_, i)| i.state != HealthState::Unhealthy)
-        .count();
-    let mandatory: Vec<_> = rule
-        .inputs
-        .iter()
-        .zip(inputs)
-        .filter(|(input, _)| input.required == Some(true))
-        .map(|(_, result)| *result)
-        .collect();
-    let state = if possible_minimum < required
-        || mandatory
+    fn aggregate(&mut self, result: &mut HealthNodeResult, id: &str, rule: &AggregationRule) {
+        let inputs = self.inputs[id].clone();
+        let answers: Vec<(InputMode, Answers)> = inputs
             .iter()
-            .any(|input| input.state == HealthState::Unhealthy)
-    {
-        HealthState::Unhealthy
-    } else if minimum_met < required
-        || mandatory
+            .map(|(child, mode)| (*mode, self.answers(child)))
+            .collect();
+        let counted: Vec<Answers> = answers
             .iter()
-            .any(|input| input.state == HealthState::Unknown)
-    {
-        HealthState::Unknown
-    } else if healthy >= desired
-        && mandatory
-            .iter()
-            .all(|input| input.state == HealthState::Healthy)
-        && optional
-            .iter()
-            .all(|(_, input)| input.state == HealthState::Healthy)
-    {
-        HealthState::Healthy
-    } else {
-        HealthState::Degraded
-    };
-    HealthNodeResult {
-        id: node.id.clone(),
-        owner: node.owner.clone(),
-        state,
-        inputs: rule.inputs.iter().map(|input| input.node.clone()).collect(),
-        message: None,
+            .filter(|(mode, _)| *mode != InputMode::Optional)
+            .map(|(_, answers)| *answers)
+            .collect();
+        let with_mode = |wanted: InputMode| {
+            answers
+                .iter()
+                .filter(move |(mode, _)| *mode == wanted)
+                .map(|(_, answers)| *answers)
+        };
+        let min_healthy = rule.min_healthy.unwrap_or(counted.len() as u64);
+        let min_usable = rule.min_usable.unwrap_or(min_healthy);
+        let usable_answers: Vec<_> = counted.iter().map(|(usable, _)| *usable).collect();
+        let healthy_answers: Vec<_> = counted.iter().map(|(_, healthy)| *healthy).collect();
+        let usable = conjunction(
+            std::iter::once(count_answer(min_usable, &usable_answers))
+                .chain(with_mode(InputMode::Mandatory).map(|(usable, _)| usable)),
+        );
+        let healthy = conjunction(
+            [usable, count_answer(min_healthy, &healthy_answers)]
+                .into_iter()
+                .chain(with_mode(InputMode::Mandatory).map(|(_, healthy)| healthy))
+                .chain(with_mode(InputMode::Optional).map(|(_, healthy)| healthy)),
+        );
+        (result.usable, result.healthy) = (usable, healthy);
     }
 }

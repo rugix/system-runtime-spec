@@ -1,70 +1,139 @@
-//! Evaluate a complete component composition using Rugix's capability model.
-
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use anyver::{Version, VersionReq};
 
-use crate::Error;
+use crate::Records;
+use crate::types::common::{Diagnostic, RecordKind, Severity};
 use crate::types::component::*;
 
-/// Validate declarations and report every violated composition constraint.
-///
-/// Invalid versions or simultaneous version and value fields return an error.
-#[tracing::instrument(level = "debug", skip_all, fields(components = components.len()))]
-pub fn check_components(components: &[ComponentDeclaration]) -> Result<CompatibilityReport, Error> {
+impl Records {
+    /// Check the composition of the component declarations.
+    ///
+    /// The report contains the diagnostics about component declarations and directory
+    /// configurations. The composition is consistent if there are no problems and none of
+    /// these diagnostics has the severity `Error`.
+    #[tracing::instrument(level = "debug", skip_all, fields(components = self.components.len()))]
+    pub fn check_compatibility(&self) -> CompatibilityReport {
+        let diagnostics = self.diagnostics_about(&[
+            RecordKind::ComponentDeclaration,
+            RecordKind::DirectoryConfig,
+        ]);
+        let declarations: Vec<&ComponentDeclaration> = self.components().collect();
+        check(&declarations, diagnostics)
+    }
+
+    /// Build the candidate composition of an update.
+    ///
+    /// The update replaces all component declarations of `owners` with the component
+    /// declarations of `update`. A new declaration without a replaced owner is skipped with an
+    /// error diagnostic. The candidate has the current records and diagnostics, and the
+    /// diagnostics of `update` about component declarations.
+    ///
+    /// ```
+    /// use system_runtime_spec::Records;
+    /// use system_runtime_spec::types::component::ComponentDeclaration;
+    ///
+    /// let os = |version: &str| {
+    ///     ComponentDeclaration::new("os")
+    ///         .with_owner(Some("rugix.system".into()))
+    ///         .with_version(Some(version.into()))
+    /// };
+    /// let mut records = Records::new();
+    /// records.push(os("1.0"));
+    /// let mut update = Records::new();
+    /// update.push(os("2.0"));
+    /// let candidate = records.with_update(&["rugix.system"], &update);
+    /// assert_eq!(candidate.components().next().unwrap().version.as_deref(), Some("2.0"));
+    /// ```
+    pub fn with_update(&self, owners: &[&str], update: &Records) -> Records {
+        let replaced = |declaration: &ComponentDeclaration| {
+            declaration
+                .owner
+                .as_deref()
+                .is_some_and(|owner| owners.contains(&owner))
+        };
+        let mut candidate = self.clone();
+        candidate
+            .components
+            .retain(|record| !replaced(&record.value));
+        candidate
+            .diagnostics
+            .extend(update.diagnostics_about(&[RecordKind::ComponentDeclaration]));
+        for record in &update.components {
+            if replaced(&record.value) {
+                candidate.components.push(record.clone());
+            } else {
+                candidate.diagnostics.push(Diagnostic::new(
+                    Severity::Error,
+                    RecordKind::ComponentDeclaration,
+                    format!(
+                        "new declaration {:?} does not have a replaced owner",
+                        record.value.id
+                    ),
+                ));
+            }
+        }
+        candidate
+    }
+}
+
+fn check(
+    declarations: &[&ComponentDeclaration],
+    diagnostics: Vec<Diagnostic>,
+) -> CompatibilityReport {
     let mut capabilities = Vec::new();
     let mut selectors = Vec::new();
-    let mut ids = BTreeMap::<&str, usize>::new();
-    let mut claims = BTreeMap::<&str, Vec<String>>::new();
-    for component in components {
-        *ids.entry(&component.id).or_default() += 1;
+    let mut ids = BTreeMap::<&[u8], (&str, usize)>::new();
+    let mut claims = BTreeMap::<&[u8], (&str, Vec<String>)>::new();
+    for component in declarations {
+        ids.entry(component.id.as_bytes())
+            .or_insert((&component.id, 0))
+            .1 += 1;
         let implicit = CapabilityDeclaration {
             id: component.id.clone(),
             version: component.version.clone(),
             value: None,
         };
         for capability in std::iter::once(&implicit).chain(component.provides.iter().flatten()) {
-            validate(&capability.id, &capability.version, &capability.value)?;
             let version = capability
                 .version
                 .as_deref()
-                .map(Version::parse)
-                .transpose()
-                .map_err(|error| Error::Invalid(error.to_string()))?;
+                .map(|version| Version::parse(version).expect("validated"));
             capabilities.push((component.id.clone(), capability.clone(), version));
         }
-        let own_claims: BTreeSet<_> = component
-            .claims
-            .iter()
-            .flatten()
-            .map(|claim| claim.id.as_str())
-            .collect();
+        let mut own_claims = Vec::new();
+        for claim in component.claims.iter().flatten() {
+            if !own_claims.contains(&claim.id.as_str()) {
+                own_claims.push(claim.id.as_str());
+            }
+        }
         for id in own_claims {
-            claims.entry(id).or_default().push(component.id.clone());
+            claims
+                .entry(id.as_bytes())
+                .or_insert((id, Vec::new()))
+                .1
+                .push(component.id.clone());
         }
         for (conflict, declarations) in [(false, &component.requires), (true, &component.conflicts)]
         {
             for selector in declarations.iter().flatten() {
-                validate(&selector.id, &selector.version, &selector.value)?;
                 let requirement = selector
                     .version
                     .as_deref()
-                    .map(VersionReq::parse)
-                    .transpose()
-                    .map_err(|error| Error::Invalid(error.to_string()))?;
+                    .map(|version| VersionReq::parse(version).expect("validated"));
                 selectors.push((&component.id, conflict, selector, requirement));
             }
         }
     }
     let mut problems = Vec::new();
-    for (id, count) in ids {
+    for (id, count) in ids.into_values() {
         if count > 1 {
             problems.push(CompatibilityProblem::DuplicateComponent(
                 ComponentIdProblem { id: id.into() },
             ));
         }
     }
-    for (id, owners) in claims {
+    for (id, owners) in claims.into_values() {
         if owners.len() > 1 {
             problems.push(CompatibilityProblem::DuplicateClaim(ClaimProblem {
                 id: id.into(),
@@ -106,18 +175,13 @@ pub fn check_components(components: &[ComponentDeclaration]) -> Result<Compatibi
             ));
         }
     }
-    Ok(CompatibilityReport {
-        consistent: problems.is_empty(),
+    let consistent = problems.is_empty()
+        && diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.severity != Severity::Error);
+    CompatibilityReport {
+        consistent,
         problems,
-    })
-}
-
-/// Reject ambiguous declarations before parsing version predicates.
-fn validate(id: &str, version: &Option<String>, value: &Option<String>) -> Result<(), Error> {
-    if version.is_some() && value.is_some() {
-        return Err(Error::Invalid(format!(
-            "capability {id:?} has both version and value"
-        )));
+        diagnostics,
     }
-    Ok(())
 }

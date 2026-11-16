@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthClockSample",
   "type": "object",
-  "description": "Paired wall-clock and boot-time sample from the system being observed.",
+  "description": "Correlation of the boot-time clock with wall-clock time.",
   "properties": {
     "context": {
       "$ref": "#/$defs/system_runtime.health.HealthContext"
@@ -20,7 +20,7 @@
   "$defs": {
     "system_runtime.health.HealthContext": {
       "type": "object",
-      "description": "Clock context supplied by a consumer.",
+      "description": "Boot and time in which evidence is evaluated.",
       "properties": {
         "bootId": {
           "type": "string"

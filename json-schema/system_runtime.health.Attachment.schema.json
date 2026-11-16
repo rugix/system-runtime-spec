@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.Attachment",
+  "type": "object",
+  "description": "Attachment of a node to an aggregate node as an input.",
+  "properties": {
+    "node": {
+      "$ref": "#/$defs/system_runtime.health.HealthNodeId"
+    },
+    "mode": {
+      "$ref": "#/$defs/system_runtime.health.InputMode"
+    }
+  },
+  "required": [
+    "node"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.health.HealthNodeId": {
+      "type": "string",
+      "description": "ID of a health node."
+    },
+    "system_runtime.health.InputMode": {
+      "enum": [
+        "Counted",
+        "Mandatory",
+        "Optional"
+      ],
+      "description": "How an input affects the answers of an aggregate node."
+    }
+  }
+}

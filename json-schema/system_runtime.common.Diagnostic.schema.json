@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.common.Diagnostic",
+  "type": "object",
+  "description": "A record that was skipped or used despite a problem.",
+  "properties": {
+    "severity": {
+      "$ref": "#/$defs/system_runtime.common.Severity"
+    },
+    "kind": {
+      "$ref": "#/$defs/system_runtime.common.RecordKind"
+    },
+    "message": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "severity",
+    "kind",
+    "message"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "system_runtime.common.RecordKind": {
+      "enum": [
+        "ComponentDeclaration",
+        "HealthNode",
+        "HealthStatus",
+        "MetricDefinition",
+        "MetricSample",
+        "DirectoryConfig"
+      ],
+      "description": "Kind of records, named after the record types."
+    },
+    "system_runtime.common.Severity": {
+      "enum": [
+        "Error",
+        "Warning"
+      ],
+      "description": "Effect of a diagnostic on the results."
+    }
+  }
+}

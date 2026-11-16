@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system_runtime.health.Answer",
+  "enum": [
+    "Yes",
+    "No",
+    "Unknown"
+  ],
+  "description": "Answer to whether criteria are met."
+}

@@ -1,142 +1,73 @@
-# System Runtime for TypeScript
+# System Runtime Specification for TypeScript
 
-Use `system-runtime-spec` to check component compatibility and evaluate health
-graphs in update tools, services, or user interfaces. Its models and runtime
-validators implement the
-[System Runtime Specification](https://github.com/rugix/system-runtime-spec).
-
-Callers supply records and a clock context from the observed system. File
-discovery and local clock sampling are provided by the Rust and Python packages.
+`system-runtime-spec` implements the
+[System Runtime Specification](https://github.com/rugix/system-runtime-spec/blob/main/SPEC.md)
+in TypeScript: it checks the compatibility of compositions and updates, evaluates health, and
+reads snapshots, for example, in a fleet-management service or a user interface. Discovering
+records on a device is the job of the Rust and Python packages.
 
 ## Installation
 
-The package uses ES modules and includes TypeScript declarations. Install it
-from npm:
+The package uses ES modules and includes TypeScript declarations:
 
 ```sh
 npm install system-runtime-spec
 ```
 
-## Check Component Compatibility
+`Records` holds the records of a system and the diagnostics about them. The models, such as
+`component.ComponentDeclaration`, are generated from the specification's schemas and come with
+runtime checkers.
 
-Validate incoming declarations with the generated model checkers, then evaluate
-their requirements, conflicts, and claims:
-
-```typescript
-import { component, checkComponents } from "system-runtime-spec";
-
-const app = {
-  id: "example.app",
-  requires: [{ id: "example.runtime", version: ">=3" }],
-};
-if (!component.ComponentDeclaration.is(app)) {
-  throw new Error("Invalid declaration");
-}
-const report = checkComponents([
-  app,
-  { id: "example.runtime", version: "3.2" },
-]);
-console.log(report.consistent);
-```
-
-Invalid declarations throw errors. A valid but incompatible composition returns
-a report with `consistent: false`.
-
-## Check an Update Candidate
-
-An owner groups records owned by a system image, app, or other contributor.
-`withoutOwner` returns a snapshot with new arrays that exclude records owned by
-that exact owner. Other records keep their requirements and references. Retained
-record objects are shared with the original snapshot; copy a record before
-modifying its fields:
+## Evaluate a Snapshot
 
 ```typescript
-import { checkComponents, filesystem, withoutOwner } from "system-runtime-spec";
+import { Snapshot } from "system-runtime-spec";
 
-const current: filesystem.RuntimeSnapshot = {
-  components: [
-    { id: "example.runtime", owner: "rugix.system", version: "3.2" },
-    {
-      id: "example.app",
-      owner: "rugix.apps.example",
-      requires: [{ id: "example.runtime", version: ">=3" }],
-    },
-  ],
-  healthNodes: [],
-  healthStatuses: [],
-};
-const candidate = withoutOwner(current, "rugix.system");
-candidate.components.push({
-  id: "example.runtime", owner: "rugix.system", version: "3.3",
+const snapshot = Snapshot.fromJSON({
+  specVersion: "1.0",
+  clock: { context: { bootId: "boot", nowMs: 45000 }, timestamp: "2026-10-14T12:00:00Z" },
+  healthNodes: [{ id: "app" }],
+  healthStatuses: [{ id: "app", state: "Healthy", bootId: "boot", observedAtMs: 42000, maxAgeMs: 5000 }],
+  metrics: [],
+  metricSamples: [],
 });
-console.log(checkComponents(candidate.components).consistent);
+const report = snapshot.records.evaluateHealth(snapshot.clock.context);
+console.log(report.nodes);
 ```
 
-The current records must already carry owners. This operation changes only the
-in-memory candidate. After activation, evaluate health using fresh records from
-the running system.
+`Snapshot.fromJSON` throws a `SnapshotError` for snapshots of an unsupported version or with an
+invalid structure, and skips invalid records with an error diagnostic. `JSON.stringify` encodes a
+snapshot. Evaluating a snapshot gives health at the time of its clock sample, and
+`estimateTimestamp` places evidence in wall-clock time for display.
 
-## Evaluate a Health Snapshot
+## Check an Update
 
-A `HealthSnapshot` carries node definitions, original status records, and a clock
-sample from the observed system. Validate a received snapshot before evaluation:
+`withUpdate` builds the composition that an update would produce: it replaces all component
+declarations of the given owners with those of the update. In this example, the new system image
+no longer provides `runtime`, so the check reports the app's requirement as unsatisfied:
 
 ```typescript
-import { evaluateHealth, health, statusTimestamp } from "system-runtime-spec";
+import { Records } from "system-runtime-spec";
 
-const received: unknown = {
-  clock: {
-    context: { bootId: "example-boot", nowMs: 45000 },
-    timestamp: "2026-10-14T12:00:00Z",
-  },
-  nodes: [{ id: "application", rule: { type: "observed" } }],
-  statuses: [{
-    id: "application",
-    state: "healthy",
-    bootId: "example-boot",
-    observedAtMs: 42000,
-    maxAgeMs: 5000,
-  }],
-};
-if (!health.HealthSnapshot.is(received)) {
-  throw new Error("Invalid health snapshot");
-}
-const report = evaluateHealth(
-  received.nodes, received.statuses, received.clock.context,
-  received.metrics, received.metricSamples,
-);
-console.log(report);
-for (const status of received.statuses) {
-  console.log(status.id, statusTimestamp(status, received.clock));
-}
+const records = new Records();
+records.pushJson("ComponentDeclaration", {
+  id: "os", owner: "rugix.system", version: "1", provides: [{ id: "runtime", version: "3.2" }],
+});
+records.pushJson("ComponentDeclaration", {
+  id: "app", owner: "rugix.apps.example", requires: [{ id: "runtime", version: ">=3" }],
+});
+const update = new Records();
+update.pushJson("ComponentDeclaration", { id: "os", owner: "rugix.system", version: "2" });
+const report = records.withUpdate(["rugix.system"], update).checkCompatibility();
+console.log(report.consistent, report.problems);
 ```
 
-This evaluates health at capture time. Obtain current evidence from the observed
-system before making an update decision; a receiver's local clock cannot supply
-its boot-time context.
+`pushJson` adds a record given as JSON, and `push` one given as a model. Both validate the record
+and skip it with an error diagnostic if it is invalid.
 
-`statusTimestamp` returns an estimated UTC timestamp string for display, or
-`undefined` for a wrong boot, future observation, or unsupported timestamp range.
-Sampling uncertainty and wall-clock corrections limit the estimate.
-
-Pass optional metric definitions and samples as the fourth and fifth
-arguments to evaluate numeric threshold nodes. The
-[metric and threshold reference](https://github.com/rugix/system-runtime-spec#metrics-and-thresholds)
-describes units, ranges, and evidence freshness.
-
-## Models
-
-Sidex generates models and runtime checkers in the `component`, `health`, `value`, and
-`filesystem` namespaces. Fields use the serialized names, such as `bootId`.
-A model's `is(value)` method narrows its type; `check(value)` returns validation
-details. Health node IDs are nominal strings, validated by
-`health.HealthNodeId.is(value)`.
-
-Unsigned 64-bit fields accept numbers within JavaScript's safe integer range and
-decimal strings for larger values. Evaluation handles both representations.
-
-See the [specification](https://github.com/rugix/system-runtime-spec) for wire
-formats, version matching, and health semantics.
+Fields defined as integers, such as `observedAtMs` and `maxAgeMs`, hold values beyond
+`Number.MAX_SAFE_INTEGER` as decimal strings, so that they keep their precision. The `U64` helpers
+of `@sidex/types` convert them to `bigint`.
 
 ## License
 

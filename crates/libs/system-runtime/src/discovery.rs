@@ -1,302 +1,365 @@
-//! Read standard and additional directories without a central service.
+use std::collections::BTreeMap;
+use std::io::Read;
+use std::os::unix::fs::OpenOptionsExt;
+use std::path::{Path, PathBuf};
 
-use std::collections::BTreeSet;
-use std::path::{Component, Path, PathBuf};
+use sidex::types::JsonValue;
 
-use crate::Error;
-use crate::types::filesystem::{DirectoryConfig, RuntimeSnapshot};
+use crate::Records;
+use crate::records::{Record, RecordModel, decode};
+use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::component::ComponentDeclaration;
+use crate::types::filesystem::DirectoryConfig;
+use crate::types::health::{HealthNode, HealthStatus};
+use crate::types::metric::{MetricDefinition, MetricSample};
 
-const PREFIXES: [&str; 3] = [
-    "/usr/lib/system-runtime",
-    "/etc/system-runtime",
-    "/run/system-runtime",
+/// Levels of directories; records of higher levels override those of lower levels.
+const LIB: u8 = 0;
+const RUN: u8 = 1;
+const ETC: u8 = 2;
+
+const PREFIXES: [(&str, u8); 3] = [
+    ("/usr/lib/system-runtime", LIB),
+    ("/etc/system-runtime", ETC),
+    ("/run/system-runtime", RUN),
 ];
 
-/// Directory sources, resolved beneath root, with explicit extension support.
-#[derive(Clone, Debug)]
-pub struct RuntimeDirectories {
-    /// Filesystem root, normally "/".
-    pub root: PathBuf,
-    /// Component declaration directories.
-    pub components: Vec<PathBuf>,
-    /// Health definition directories.
-    pub health_nodes: Vec<PathBuf>,
-    /// Runtime health status directories.
-    pub health_statuses: Vec<PathBuf>,
-    /// Metric definition directories.
-    pub metrics: Vec<PathBuf>,
-    /// Runtime metric sample directories.
-    pub metric_samples: Vec<PathBuf>,
-    /// Directories containing extension configuration files.
-    pub configuration: Vec<PathBuf>,
+fn standard(kind: RecordKind) -> Vec<(String, u8)> {
+    let below = |suffix: &str| {
+        PREFIXES
+            .iter()
+            .map(|(prefix, level)| (format!("{prefix}/{suffix}"), *level))
+            .collect()
+    };
+    match kind {
+        RecordKind::ComponentDeclaration => below("components"),
+        RecordKind::HealthNode => below("health/nodes"),
+        RecordKind::HealthStatus => vec![("/run/system-runtime/health/status".into(), RUN)],
+        RecordKind::MetricDefinition => below("metrics/definitions"),
+        RecordKind::MetricSample => vec![("/run/system-runtime/metrics/samples".into(), RUN)],
+        RecordKind::DirectoryConfig => below("directories"),
+    }
 }
 
-impl RuntimeDirectories {
-    /// Create an empty source configuration beneath a filesystem root.
-    pub fn new(root: impl Into<PathBuf>) -> Self {
-        Self {
-            root: root.into(),
-            components: Vec::new(),
-            health_nodes: Vec::new(),
-            health_statuses: Vec::new(),
-            metrics: Vec::new(),
-            metric_samples: Vec::new(),
-            configuration: Vec::new(),
-        }
-    }
-
-    /// Use the standard Linux directories beneath a filesystem root.
-    pub fn standard(root: impl Into<PathBuf>) -> Self {
-        Self {
-            root: root.into(),
-            components: PREFIXES
-                .map(|prefix| PathBuf::from(format!("{prefix}/components")))
-                .into(),
-            health_nodes: PREFIXES
-                .map(|prefix| PathBuf::from(format!("{prefix}/health/nodes")))
-                .into(),
-            health_statuses: vec!["/run/system-runtime/health/status".into()],
-            metrics: PREFIXES
-                .map(|prefix| PathBuf::from(format!("{prefix}/metrics/definitions")))
-                .into(),
-            metric_samples: vec!["/run/system-runtime/metrics/samples".into()],
-            configuration: PREFIXES
-                .map(|prefix| PathBuf::from(format!("{prefix}/directories")))
-                .into(),
-        }
-    }
-
-    /// Append directory sources without replacing existing contributions.
-    pub fn extend(&mut self, config: &DirectoryConfig) {
-        self.components
-            .extend(config.components.iter().flatten().map(PathBuf::from));
-        self.health_nodes
-            .extend(config.health_nodes.iter().flatten().map(PathBuf::from));
-        self.health_statuses
-            .extend(config.health_statuses.iter().flatten().map(PathBuf::from));
-        self.metrics
-            .extend(config.metrics.iter().flatten().map(PathBuf::from));
-        self.metric_samples
-            .extend(config.metric_samples.iter().flatten().map(PathBuf::from));
-    }
-
-    /// Reload extension configurations and collect regular JSON files.
+impl Records {
+    /// Read the records of a Linux system whose root directory is `root`.
     ///
-    /// Whole '*' segments select real directories. Missing roots are ignored.
-    /// An explicit root may be a symlink; nested symlinks are skipped.
-    /// Overlapping sources read each canonical file path once.
+    /// Reads the standard directories and the directories that directory configurations add,
+    /// and applies overrides. Files that cannot be read or do not contain a valid record are
+    /// skipped with an error diagnostic.
     #[tracing::instrument(level = "debug", skip_all)]
-    pub fn load(&self) -> Result<RuntimeSnapshot, Error> {
-        let mut effective = self.clone();
-        for path in self.files(&self.configuration)? {
-            effective.extend(&read::<DirectoryConfig>(&path)?);
+    pub fn discover(root: impl AsRef<Path>) -> Self {
+        let mut reader = Reader {
+            root: root.as_ref().to_owned(),
+            records: Records::new(),
+        };
+        let mut configs = Vec::new();
+        for file in reader.read(
+            RecordKind::DirectoryConfig,
+            &standard(RecordKind::DirectoryConfig),
+        ) {
+            if let Some(config) =
+                reader.decode::<DirectoryConfig>(RecordKind::DirectoryConfig, &file)
+            {
+                configs.push(config.value);
+            }
         }
-        let metrics = effective
-            .files(&effective.metrics)?
-            .iter()
-            .map(|p| read(p))
-            .collect::<Result<Vec<_>, _>>()?;
-        let observations = effective
-            .files(&effective.metric_samples)?
-            .iter()
-            .map(|p| read(p))
-            .collect::<Result<Vec<_>, _>>()?;
-        Ok(RuntimeSnapshot {
-            metrics: (!metrics.is_empty()).then_some(metrics),
-            metric_samples: (!observations.is_empty()).then_some(observations),
-            components: effective
-                .files(&effective.components)?
+        let added = |select: fn(&DirectoryConfig) -> &Option<Vec<String>>| {
+            configs
                 .iter()
-                .map(|p| read(p))
-                .collect::<Result<_, _>>()?,
-            health_nodes: effective
-                .files(&effective.health_nodes)?
-                .iter()
-                .map(|p| read(p))
-                .collect::<Result<_, _>>()?,
-            health_statuses: effective
-                .files(&effective.health_statuses)?
-                .iter()
-                .map(|p| read(p))
-                .collect::<Result<_, _>>()?,
-        })
+                .flat_map(|config| select(config).iter().flatten().cloned())
+                .collect::<Vec<_>>()
+        };
+        reader.collect::<ComponentDeclaration>(added(|c| &c.components));
+        reader.collect::<HealthNode>(added(|c| &c.health_nodes));
+        reader.collect::<HealthStatus>(added(|c| &c.health_statuses));
+        reader.collect::<MetricDefinition>(added(|c| &c.metrics));
+        reader.collect::<MetricSample>(added(|c| &c.metric_samples));
+        reader.records
+    }
+}
+
+struct File {
+    path: PathBuf,
+    level: u8,
+    json: JsonValue,
+}
+
+/// Directory or regular file in a directory whose name does not start with `.`.
+struct Entry {
+    path: PathBuf,
+    directory: bool,
+}
+
+fn not_found(error: &std::io::Error) -> bool {
+    error.kind() == std::io::ErrorKind::NotFound
+}
+
+struct Reader {
+    root: PathBuf,
+    records: Records,
+}
+
+impl Reader {
+    fn report(&mut self, severity: Severity, kind: RecordKind, message: String, path: &Path) {
+        self.records.push_diagnostic(
+            Diagnostic::new(severity, kind, message).with_path(Some(path.display().to_string())),
+        );
     }
 
-    /// List contributions in source order, deduplicating canonical paths.
-    fn files(&self, directories: &[PathBuf]) -> Result<Vec<PathBuf>, Error> {
-        let mut files = Vec::new();
-        let mut seen = BTreeSet::new();
-        for source in self.sources(directories)? {
-            if !is_directory(&source)? {
+    /// Decode the record of a file, reporting an error if it is invalid and a warning if it
+    /// is of a newer minor version.
+    fn decode<T: sidex::Decode>(&mut self, kind: RecordKind, file: &File) -> Option<Record<T>> {
+        match decode::<T>(kind, file.json.clone()) {
+            Ok(record) => {
+                if record.newer {
+                    let message = "record of a newer minor version".into();
+                    self.report(Severity::Warning, kind, message, &file.path);
+                }
+                Some(record)
+            }
+            Err(message) => {
+                self.report(Severity::Error, kind, message, &file.path);
+                None
+            }
+        }
+    }
+
+    fn collect<T: RecordModel>(&mut self, added: Vec<String>) {
+        let mut directories = standard(T::KIND);
+        directories.extend(added.into_iter().map(|path| (path, LIB)));
+        let mut records = Vec::new();
+        for file in self.read(T::KIND, &directories) {
+            if let Some(record) = self.decode::<T>(T::KIND, &file) {
+                records.push((file.level, record));
+            }
+        }
+        let mut highest = BTreeMap::new();
+        for (level, record) in &records {
+            if let Some(key) = record.value.override_key() {
+                let entry = highest.entry(key).or_insert(*level);
+                *entry = (*entry).max(*level);
+            }
+        }
+        let keep: Vec<bool> = records
+            .iter()
+            .map(|(level, record)| {
+                record
+                    .value
+                    .override_key()
+                    .is_none_or(|key| highest[&key] == *level)
+            })
+            .collect();
+        let entries = T::entries_mut(&mut self.records);
+        for ((_, record), keep) in records.into_iter().zip(keep) {
+            if keep {
+                entries.push(record);
+            }
+        }
+    }
+
+    fn read(&mut self, kind: RecordKind, directories: &[(String, u8)]) -> Vec<File> {
+        let mut files: Vec<(PathBuf, PathBuf, u8)> = Vec::new();
+        for (directory, level) in directories {
+            for source in self.expand(kind, directory) {
+                for path in self.walk(kind, &source) {
+                    let Some(canonical) = self.resolve(kind, &path) else {
+                        continue;
+                    };
+                    match files
+                        .iter_mut()
+                        .find(|(_, existing, _)| *existing == canonical)
+                    {
+                        Some(entry) => entry.2 = entry.2.max(*level),
+                        None => files.push((path, canonical, *level)),
+                    }
+                }
+            }
+        }
+        files
+            .into_iter()
+            .filter_map(|(path, _, level)| {
+                let json = self.load(kind, &path)?;
+                Some(File { path, level, json })
+            })
+            .collect()
+    }
+
+    /// Resolve a path; paths that disappeared resolve to None.
+    fn resolve(&mut self, kind: RecordKind, path: &Path) -> Option<PathBuf> {
+        match std::fs::canonicalize(path) {
+            Ok(resolved) => Some(resolved),
+            Err(error) if not_found(&error) => None,
+            Err(error) => {
+                self.report(
+                    Severity::Error,
+                    kind,
+                    format!("cannot resolve path: {error}"),
+                    path,
+                );
+                None
+            }
+        }
+    }
+
+    /// Check that a path is a directory; diagnose everything but its absence.
+    fn check_directory(&mut self, kind: RecordKind, path: &Path) -> bool {
+        let message = match std::fs::metadata(path) {
+            Ok(metadata) if metadata.is_dir() => return true,
+            Ok(_) => "path is not a directory".to_owned(),
+            Err(error) if not_found(&error) => match std::fs::symlink_metadata(path) {
+                Ok(metadata) if metadata.is_dir() => return true,
+                Ok(metadata) if metadata.is_symlink() => "directory is a broken symlink".to_owned(),
+                Ok(_) => "path is not a directory".to_owned(),
+                Err(error) if not_found(&error) => return false,
+                Err(error) => format!("cannot inspect path: {error}"),
+            },
+            Err(error) => format!("cannot inspect path: {error}"),
+        };
+        self.report(Severity::Error, kind, message, path);
+        false
+    }
+
+    /// List a directory in byte order, skipping hidden entries and symlinks.
+    fn list(&mut self, kind: RecordKind, directory: &Path) -> Vec<Entry> {
+        let entries = match std::fs::read_dir(directory) {
+            Ok(entries) => entries,
+            Err(error) if not_found(&error) => return Vec::new(),
+            Err(error) => {
+                self.report(
+                    Severity::Error,
+                    kind,
+                    format!("cannot list directory: {error}"),
+                    directory,
+                );
+                return Vec::new();
+            }
+        };
+        let mut result = Vec::new();
+        for entry in entries {
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(error) if not_found(&error) => continue,
+                Err(error) => {
+                    self.report(
+                        Severity::Error,
+                        kind,
+                        format!("cannot list directory: {error}"),
+                        directory,
+                    );
+                    continue;
+                }
+            };
+            if entry.file_name().as_encoded_bytes().starts_with(b".") {
                 continue;
             }
-            let source = source.canonicalize().map_err(|error| Error::Io {
-                path: source,
-                source: error,
-            })?;
-            let mut candidates = Vec::new();
-            walk(&source, &mut candidates)?;
-            for path in candidates {
-                let canonical = path.canonicalize().map_err(|source| Error::Io {
-                    path: path.clone(),
-                    source,
-                })?;
-                if seen.insert(canonical.clone()) {
-                    files.push(canonical);
+            match entry.file_type() {
+                Ok(file_type) if file_type.is_dir() || file_type.is_file() => result.push(Entry {
+                    path: entry.path(),
+                    directory: file_type.is_dir(),
+                }),
+                Ok(_) => {}
+                Err(error) if not_found(&error) => {}
+                Err(error) => self.report(
+                    Severity::Error,
+                    kind,
+                    format!("cannot inspect entry: {error}"),
+                    &entry.path(),
+                ),
+            }
+        }
+        result.sort_by(|a, b| {
+            a.path
+                .file_name()
+                .map(|name| name.as_encoded_bytes())
+                .cmp(&b.path.file_name().map(|name| name.as_encoded_bytes()))
+        });
+        result
+    }
+
+    /// Expand whole `*` segments over directories that are no symlinks.
+    fn expand(&mut self, kind: RecordKind, directory: &str) -> Vec<PathBuf> {
+        let mut matches = vec![self.root.clone()];
+        for segment in directory.split('/').filter(|segment| !segment.is_empty()) {
+            if segment != "*" {
+                for path in &mut matches {
+                    path.push(segment);
+                }
+                continue;
+            }
+            let mut expanded = Vec::new();
+            for path in matches {
+                if self.check_directory(kind, &path) {
+                    expanded.extend(
+                        self.list(kind, &path)
+                            .into_iter()
+                            .filter(|entry| entry.directory)
+                            .map(|entry| entry.path),
+                    );
                 }
             }
+            matches = expanded;
         }
-        Ok(files)
+        matches
     }
 
-    /// Expand whole-segment wildcards over real directories in lexical order.
-    fn sources(&self, directories: &[PathBuf]) -> Result<Vec<PathBuf>, Error> {
-        let mut sources = Vec::new();
-        for directory in directories {
-            if !directory.is_absolute()
-                || directory.components().any(|part| match part {
-                    Component::ParentDir => true,
-                    Component::Normal(name) => {
-                        name.as_encoded_bytes().contains(&b'*') && name != "*"
-                    }
-                    _ => false,
-                })
-            {
-                return Err(Error::Invalid(format!(
-                    "directory must be absolute without '..' and use only whole '*' segments: {}",
-                    directory.display()
-                )));
-            }
-            let mut matches = vec![self.root.clone()];
-            for part in directory.components() {
-                let Component::Normal(name) = part else {
-                    continue;
-                };
-                if name == "*" {
-                    let mut expanded = Vec::new();
-                    for source in matches {
-                        if !is_directory(&source)? {
-                            continue;
-                        }
-                        for entry in entries(&source)? {
-                            if entry
-                                .file_type()
-                                .map_err(|error| Error::Io {
-                                    path: entry.path(),
-                                    source: error,
-                                })?
-                                .is_dir()
-                            {
-                                expanded.push(entry.path());
-                            }
-                        }
-                    }
-                    matches = expanded;
-                } else {
-                    for source in &mut matches {
-                        source.push(name);
-                    }
-                }
-            }
-            sources.extend(matches);
+    fn walk(&mut self, kind: RecordKind, source: &Path) -> Vec<PathBuf> {
+        if !self.check_directory(kind, source) {
+            return Vec::new();
         }
-        Ok(sources)
+        let Some(resolved) = self.resolve(kind, source) else {
+            return Vec::new();
+        };
+        let mut files = Vec::new();
+        self.traverse(kind, &resolved, &mut files);
+        files
     }
-}
 
-/// Accept directories and missing optional sources, reporting other failures.
-fn is_directory(path: &Path) -> Result<bool, Error> {
-    match std::fs::metadata(path) {
-        Ok(metadata) if metadata.is_dir() => Ok(true),
-        Ok(_) => Err(Error::Invalid(format!(
-            "not a directory: {}",
-            path.display()
-        ))),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound && !path.is_symlink() => {
-            Ok(false)
-        }
-        Err(source) => Err(Error::Io {
-            path: path.into(),
-            source,
-        }),
-    }
-}
-
-/// List entries in lexical order, preserving filesystem errors.
-fn entries(directory: &Path) -> Result<Vec<std::fs::DirEntry>, Error> {
-    let mut entries = std::fs::read_dir(directory)
-        .map_err(|source| Error::Io {
-            path: directory.into(),
-            source,
-        })?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|source| Error::Io {
-            path: directory.into(),
-            source,
-        })?;
-    entries.sort_by_key(|entry| entry.file_name());
-    Ok(entries)
-}
-
-/// Traverse regular files in lexical order without following nested symlinks.
-fn walk(directory: &Path, files: &mut Vec<PathBuf>) -> Result<(), Error> {
-    for entry in entries(directory)? {
-        let path = entry.path();
-        let kind = entry.file_type().map_err(|source| Error::Io {
-            path: path.clone(),
-            source,
-        })?;
-        if kind.is_dir() {
-            walk(&path, files)?;
-        } else if kind.is_file()
-            && path
+    fn traverse(&mut self, kind: RecordKind, directory: &Path, files: &mut Vec<PathBuf>) {
+        for entry in self.list(kind, directory) {
+            if entry.directory {
+                self.traverse(kind, &entry.path, files);
+            } else if entry
+                .path
                 .extension()
                 .is_some_and(|extension| extension == "json")
-        {
-            files.push(path);
+            {
+                files.push(entry.path);
+            }
         }
     }
-    Ok(())
-}
 
-/// Parse one typed contribution with its path attached to errors.
-fn read<T: sidex::Decode>(path: &Path) -> Result<T, Error> {
-    let text = std::fs::read_to_string(path).map_err(|source| Error::Io {
-        path: path.into(),
-        source,
-    })?;
-    sidex::formats::json::from_str(&text).map_err(|source| Error::Decode {
-        path: path.into(),
-        source,
-    })
-}
-
-#[cfg(all(test, unix))]
-mod tests {
-    use super::*;
-    use crate::types::component::ComponentDeclaration;
-
-    /// Switching current after discovery preserves the collected generation's files.
-    #[test]
-    fn discovery_pins_generation_before_reading() {
-        let root = tempfile::tempdir().unwrap();
-        for generation in 1..=2 {
-            let dir = root.path().join(generation.to_string());
-            std::fs::create_dir(&dir).unwrap();
-            std::fs::write(
-                dir.join("app.json"),
-                format!(r#"{{"id":"app.{generation}"}}"#),
-            )
-            .unwrap();
+    fn load(&mut self, kind: RecordKind, path: &Path) -> Option<JsonValue> {
+        let mut text = Vec::new();
+        let result = std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(rustix::fs::OFlags::NOFOLLOW.bits() as i32)
+            .open(path)
+            .and_then(|mut file| file.read_to_end(&mut text));
+        match result {
+            Ok(_) => {}
+            Err(error) if not_found(&error) => return None,
+            Err(error) => {
+                self.report(
+                    Severity::Error,
+                    kind,
+                    format!("cannot read file: {error}"),
+                    path,
+                );
+                return None;
+            }
         }
-        let current = root.path().join("current");
-        std::os::unix::fs::symlink("1", &current).unwrap();
-        let mut directories = RuntimeDirectories::new(root.path());
-        directories.components = vec!["/current".into()];
-        let files = directories.files(&directories.components).unwrap();
-        std::fs::remove_file(&current).unwrap();
-        std::os::unix::fs::symlink("2", &current).unwrap();
-        assert_eq!(read::<ComponentDeclaration>(&files[0]).unwrap().id, "app.1");
-        assert_eq!(directories.load().unwrap().components[0].id, "app.2");
+        match sidex::formats::json::from_slice(&text) {
+            Ok(value) => Some(value),
+            Err(error) => {
+                self.report(
+                    Severity::Error,
+                    kind,
+                    format!("invalid JSON: {error}"),
+                    path,
+                );
+                None
+            }
+        }
     }
 }

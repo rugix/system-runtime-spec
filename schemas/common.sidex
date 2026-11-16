@@ -1,0 +1,41 @@
+//! Diagnostics shared by compatibility checking and health evaluation.
+
+/// A record that was skipped or used despite a problem.
+record Diagnostic {
+    /// Whether the results may not reflect the records concerned.
+    severity: Severity,
+    /// Kind of records concerned.
+    kind: RecordKind,
+    /// Description of the problem; not specified and differs between implementations.
+    message: string,
+    /// Path of the file or directory concerned.
+    path?: string,
+}
+
+/// Effect of a diagnostic on the results.
+#[json(tagged = externally)]
+#[rust(derive(Copy, Eq))]
+variant Severity {
+    /// The results may not reflect the records concerned, for example, because they were skipped.
+    Error,
+    /// The results account for the problem.
+    Warning,
+}
+
+/// Kind of records, named after the record types.
+#[json(tagged = externally)]
+#[rust(derive(Copy, Eq))]
+variant RecordKind {
+    /// Component declarations.
+    ComponentDeclaration,
+    /// Health nodes.
+    HealthNode,
+    /// Status records.
+    HealthStatus,
+    /// Metric definitions.
+    MetricDefinition,
+    /// Metric samples.
+    MetricSample,
+    /// Directory configurations.
+    DirectoryConfig,
+}

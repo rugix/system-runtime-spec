@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.metric.MetricBound",
   "type": "object",
-  "description": "One endpoint of a numeric range, in the referenced metric's unit.",
+  "description": "One bound of a range, in the metric's unit.",
   "properties": {
     "value": {
       "type": [

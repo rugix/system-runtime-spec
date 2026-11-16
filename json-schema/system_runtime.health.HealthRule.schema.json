@@ -1,19 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthRule",
-  "description": "Definition of an observed, threshold, or aggregate node.",
+  "description": "How a node's answers are determined.",
   "oneOf": [
     {
       "type": "object",
       "properties": {
         "type": {
-          "const": "observed"
+          "const": "Observed"
         },
         "maxAgeMs": {
-          "type": "integer",
-          "format": "uint32",
-          "maximum": 4294967295,
-          "minimum": 0
+          "type": [
+            "integer",
+            "string"
+          ],
+          "format": "uint64",
+          "minimum": 0,
+          "pattern": "^[0-9]+$"
         },
         "expectedTag": {
           "type": "string"
@@ -27,10 +30,13 @@
       "type": "object",
       "properties": {
         "type": {
-          "const": "threshold"
+          "const": "Threshold"
         },
         "metric": {
           "$ref": "#/$defs/system_runtime.metric.MetricId"
+        },
+        "unit": {
+          "type": "string"
         },
         "healthy": {
           "$ref": "#/$defs/system_runtime.metric.MetricRange"
@@ -39,10 +45,13 @@
           "$ref": "#/$defs/system_runtime.metric.MetricRange"
         },
         "maxAgeMs": {
-          "type": "integer",
-          "format": "uint32",
-          "maximum": 4294967295,
-          "minimum": 0
+          "type": [
+            "integer",
+            "string"
+          ],
+          "format": "uint64",
+          "minimum": 0,
+          "pattern": "^[0-9]+$"
         }
       },
       "required": [
@@ -56,7 +65,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "const": "aggregate"
+          "const": "Aggregate"
         },
         "inputs": {
           "type": "array",
@@ -64,38 +73,40 @@
             "$ref": "#/$defs/system_runtime.health.AggregationInput"
           }
         },
-        "required": {
-          "type": "integer",
-          "format": "uint32",
-          "maximum": 4294967295,
-          "minimum": 0
+        "minUsable": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "format": "uint64",
+          "minimum": 0,
+          "pattern": "^[0-9]+$"
         },
-        "healthy": {
-          "type": "integer",
-          "format": "uint32",
-          "maximum": 4294967295,
-          "minimum": 0
+        "minHealthy": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "format": "uint64",
+          "minimum": 0,
+          "pattern": "^[0-9]+$"
         }
       },
       "required": [
-        "type",
-        "inputs"
+        "type"
       ]
     }
   ],
   "$defs": {
     "system_runtime.health.AggregationInput": {
       "type": "object",
-      "description": "One dependency of an aggregate health node.",
+      "description": "One input of an aggregate node.",
       "properties": {
         "node": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "required": {
-          "type": "boolean"
-        },
-        "optional": {
-          "type": "boolean"
+        "mode": {
+          "$ref": "#/$defs/system_runtime.health.InputMode"
         }
       },
       "required": [
@@ -105,11 +116,19 @@
     },
     "system_runtime.health.HealthNodeId": {
       "type": "string",
-      "description": "Identifier of a health graph node, serialized as a string."
+      "description": "ID of a health node."
+    },
+    "system_runtime.health.InputMode": {
+      "enum": [
+        "Counted",
+        "Mandatory",
+        "Optional"
+      ],
+      "description": "How an input affects the answers of an aggregate node."
     },
     "system_runtime.metric.MetricBound": {
       "type": "object",
-      "description": "One endpoint of a numeric range, in the referenced metric's unit.",
+      "description": "One bound of a range, in the metric's unit.",
       "properties": {
         "value": {
           "type": [
@@ -130,11 +149,11 @@
     },
     "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a metric, unique independently of health node IDs."
+      "description": "ID of a metric."
     },
     "system_runtime.metric.MetricRange": {
       "type": "object",
-      "description": "A nonempty interval; omitted endpoints are unbounded.",
+      "description": "A non-empty range; a missing bound leaves the range unbounded on that side.",
       "properties": {
         "lower": {
           "$ref": "#/$defs/system_runtime.metric.MetricBound"

@@ -2,10 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.ThresholdRule",
   "type": "object",
-  "description": "Desired and minimum ranges for one metric.",
+  "description": "Ranges that a metric sample is compared with.",
   "properties": {
     "metric": {
       "$ref": "#/$defs/system_runtime.metric.MetricId"
+    },
+    "unit": {
+      "type": "string"
     },
     "healthy": {
       "$ref": "#/$defs/system_runtime.metric.MetricRange"
@@ -14,10 +17,13 @@
       "$ref": "#/$defs/system_runtime.metric.MetricRange"
     },
     "maxAgeMs": {
-      "type": "integer",
-      "format": "uint32",
-      "maximum": 4294967295,
-      "minimum": 0
+      "type": [
+        "integer",
+        "string"
+      ],
+      "format": "uint64",
+      "minimum": 0,
+      "pattern": "^[0-9]+$"
     }
   },
   "required": [
@@ -29,7 +35,7 @@
   "$defs": {
     "system_runtime.metric.MetricBound": {
       "type": "object",
-      "description": "One endpoint of a numeric range, in the referenced metric's unit.",
+      "description": "One bound of a range, in the metric's unit.",
       "properties": {
         "value": {
           "type": [
@@ -50,11 +56,11 @@
     },
     "system_runtime.metric.MetricId": {
       "type": "string",
-      "description": "Identifier of a metric, unique independently of health node IDs."
+      "description": "ID of a metric."
     },
     "system_runtime.metric.MetricRange": {
       "type": "object",
-      "description": "A nonempty interval; omitted endpoints are unbounded.",
+      "description": "A non-empty range; a missing bound leaves the range unbounded on that side.",
       "properties": {
         "lower": {
           "$ref": "#/$defs/system_runtime.metric.MetricBound"

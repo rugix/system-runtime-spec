@@ -1,44 +1,72 @@
-//! Correlate health observation times with a system's wall clock for display.
-
 use sidex::types::Timestamp;
 
 use crate::types::health::{HealthClockSample, HealthStatus};
+use crate::types::metric::MetricSample;
 
-// Use Python datetime's representable years for consistent SDK display.
+// Unix milliseconds of the first and the last instant of the years 0001 to 9999.
 const MIN_TIMESTAMP_MS: i128 = -62_135_596_800_000;
 const MAX_TIMESTAMP_MS: i128 = 253_402_300_799_999;
 
-/// Sample UTC wall time between two Linux boot-time reads.
-///
-/// The midpoint approximates the instant of the wall-clock sample.
-#[cfg(target_os = "linux")]
-pub fn current_clock_sample() -> Result<HealthClockSample, crate::Error> {
-    let mut context = crate::evaluation::current_context()?;
-    let timestamp = Timestamp::now();
-    let after = crate::evaluation::current_context()?.now_ms;
-    context.now_ms += (after - context.now_ms) / 2;
-    Ok(HealthClockSample { context, timestamp })
+/// Evidence: a status record or a metric sample.
+pub trait Evidence {
+    /// ID of the boot during which the evidence was taken.
+    fn boot_id(&self) -> &str;
+    /// Boot-time clock value, in milliseconds, when the evidence was taken.
+    fn observed_at_ms(&self) -> u64;
 }
 
-/// Estimate a status's wall time at millisecond precision.
-///
-/// Returns None for another boot, a future observation, or an unrepresentable time.
-/// This conversion is for display; freshness is evaluated on the boot-time clock.
-pub fn status_timestamp(status: &HealthStatus, clock: &HealthClockSample) -> Option<Timestamp> {
-    if status.boot_id != clock.context.boot_id {
-        return None;
+impl Evidence for HealthStatus {
+    fn boot_id(&self) -> &str {
+        &self.boot_id
     }
-    let age = clock.context.now_ms.checked_sub(status.observed_at_ms)?;
-    let millis = i128::from(clock.timestamp.unix_seconds()) * 1_000
-        + i128::from(clock.timestamp.subsec_nanos() / 1_000_000)
-        - i128::from(age);
-    if !(MIN_TIMESTAMP_MS..=MAX_TIMESTAMP_MS).contains(&millis) {
-        return None;
+
+    fn observed_at_ms(&self) -> u64 {
+        self.observed_at_ms
     }
-    let seconds =
-        i64::try_from(millis.div_euclid(1_000)).expect("supported timestamps fit into i64 seconds");
-    let nanos = u32::try_from(millis.rem_euclid(1_000))
-        .expect("a millisecond remainder fits into u32")
-        * 1_000_000;
-    Timestamp::from_unix(seconds, nanos)
+}
+
+impl Evidence for MetricSample {
+    fn boot_id(&self) -> &str {
+        &self.boot_id
+    }
+
+    fn observed_at_ms(&self) -> u64 {
+        self.observed_at_ms
+    }
+}
+
+impl HealthClockSample {
+    /// Sample the wall clock between two reads of the boot-time clock, at their midpoint.
+    #[cfg(target_os = "linux")]
+    pub fn now() -> std::io::Result<Self> {
+        use crate::types::health::HealthContext;
+
+        let mut context = HealthContext::current()?;
+        let timestamp = Timestamp::now();
+        let after = HealthContext::current()?.now_ms;
+        context.now_ms += (after - context.now_ms) / 2;
+        Ok(Self { context, timestamp })
+    }
+
+    /// Estimate the wall-clock time at which evidence was observed, with millisecond precision.
+    ///
+    /// Return `None` for evidence from another boot, evidence observed after the clock sample,
+    /// and estimates outside the years 0001 to 9999.
+    pub fn estimate_timestamp(&self, evidence: &impl Evidence) -> Option<Timestamp> {
+        if evidence.boot_id() != self.context.boot_id {
+            return None;
+        }
+        let age = self.context.now_ms.checked_sub(evidence.observed_at_ms())?;
+        let millis = i128::from(self.timestamp.unix_seconds()) * 1_000
+            + i128::from(self.timestamp.subsec_nanos() / 1_000_000)
+            - i128::from(age);
+        if !(MIN_TIMESTAMP_MS..=MAX_TIMESTAMP_MS).contains(&millis) {
+            return None;
+        }
+        // The bounds above keep the seconds within `i64`; the remainder lies within `0..1000`.
+        Timestamp::from_unix(
+            millis.div_euclid(1_000) as i64,
+            millis.rem_euclid(1_000) as u32 * 1_000_000,
+        )
+    }
 }

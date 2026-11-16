@@ -1,12 +1,12 @@
 [bundle]
 name = "system_runtime"
-version = "0.1.0"
+version = "0.2.0"
 description = "System composition, compatibility, and operational health."
 authors = ["Silitics GmbH <info@silitics.com>"]
 
 [backend.rust]
 derive = ["Clone", "Debug", "PartialEq"]
-plugins = ["serde"]
+plugins = ["serde", "builder"]
 [backend.rust.types.table]
 "::core::builtins::string" = "::std::string::String"
 "::core::builtins::Sequence" = "::std::vec::Vec"

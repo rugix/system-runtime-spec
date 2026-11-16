@@ -1,37 +1,45 @@
-//! System component compatibility, health graphs, and file discovery.
+//! Compatibility checking, health evaluation, and discovery for the
+//! [System Runtime Specification](https://github.com/rugix/system-runtime-spec/blob/main/SPEC.md).
 //!
-//! Specification models live in [`types`]. Use [`compatibility::check_components`]
-//! and [`evaluation::evaluate_health`] with in-memory declarations, or load file
-//! contributions with [`discovery::RuntimeDirectories`].
+//! [`Records`] holds the records of a system: component declarations, health nodes, status
+//! records, metric definitions, and metric samples, together with the diagnostics about them.
+//! The models in [`types`] are generated from the specification's schemas.
+//!
+//! - [`Records::discover`] reads the records of a Linux system.
+//! - [`Records::check_compatibility`] checks the composition, and [`Records::with_update`]
+//!   builds the composition after an update.
+//! - [`Records::evaluate_health`] evaluates health in a
+//!   [`HealthContext`](types::health::HealthContext).
+//! - [`Snapshot`] sends records to another system.
+//!
+//! ```no_run
+//! use system_runtime_spec::Records;
+//! use system_runtime_spec::types::health::HealthContext;
+//!
+//! let records = Records::discover("/");
+//! let compatibility = records.check_compatibility();
+//! let health = records.evaluate_health(&HealthContext::current()?);
+//! println!("consistent: {}", compatibility.consistent);
+//! for node in &health.nodes {
+//!     println!("{}: usable {:?}, healthy {:?}", node.id, node.usable, node.healthy);
+//! }
+//! # Ok::<(), std::io::Error>(())
+//! ```
 
-pub mod clock;
-pub mod compatibility;
-pub mod discovery;
-pub mod evaluation;
-mod node_id;
-pub mod snapshot;
-mod threshold;
-/// Specification models generated from the shared Sidex schemas.
+mod clock;
+mod compatibility;
+#[cfg(target_os = "linux")]
+mod discovery;
+mod evaluation;
+mod records;
+mod snapshot;
+/// Models generated from the specification's schemas.
 pub mod types;
 
-/// Failure to validate a specification or read a file contribution.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// A declaration cannot be evaluated.
-    #[error("invalid specification: {0}")]
-    Invalid(String),
-    /// A directory or contribution could not be read.
-    #[error("failed to read {path}: {source}")]
-    Io {
-        path: std::path::PathBuf,
-        #[source]
-        source: std::io::Error,
-    },
-    /// A contribution has invalid syntax or fields.
-    #[error("failed to parse {path}: {source}")]
-    Decode {
-        path: std::path::PathBuf,
-        #[source]
-        source: sidex::DecodeError,
-    },
-}
+pub use clock::Evidence;
+pub use records::{RecordModel, Records, SPEC_VERSION};
+pub use snapshot::{Parts, Snapshot, SnapshotError};
+
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

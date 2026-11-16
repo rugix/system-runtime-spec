@@ -1,37 +1,52 @@
-//! Directory extensions and the collected runtime view.
+//! Directory configurations and snapshots.
 
+import common::Diagnostic
 import component::ComponentDeclaration
+import health::HealthClockSample
 import health::HealthNode
 import health::HealthStatus
 import metric::MetricDefinition
 import metric::MetricSample
 
-/// Additional absolute directory paths supplied by packages or administrators.
-/// Whole `*` path segments match real directories in lexical order on each load.
-/// Explicit path segments may follow symlinks; `..` and partial wildcards are invalid.
+/// Directories that a contributor adds, as absolute paths without `..` segments.
+///
+/// A segment consisting only of `*` matches every directory at that level whose name does not
+/// start with `.`, in byte order, but no symlink.
 record DirectoryConfig {
-    /// Additional component declaration directories.
+    /// Version of the specification that the record follows; omitted means `1.0`.
+    spec_version?: string,
+    /// Directories of component declarations.
     components?: [string],
-    /// Additional health definition directories.
+    /// Directories of health nodes.
     health_nodes?: [string],
-    /// Additional health status directories.
+    /// Directories of status records.
     health_statuses?: [string],
-    /// Additional metric definition directories.
+    /// Directories of metric definitions.
     metrics?: [string],
-    /// Additional metric sample directories.
+    /// Directories of metric samples.
     metric_samples?: [string],
 }
 
-/// Complete collection loaded from a filesystem or supplied directly.
+/// Records read from a system, for sending them to another system.
+///
+/// An omitted list means that the snapshot does not include records of its kind. The lists of the
+/// health part are either all present or all omitted.
 record RuntimeSnapshot {
+    /// Version of the specification that the snapshot's own fields follow.
+    spec_version: string,
+    /// Correlation of the boot-time clock with wall-clock time, sampled after collecting the
+    /// records.
+    clock: HealthClockSample,
     /// Component declarations.
-    components: [ComponentDeclaration],
-    /// Health definitions.
-    health_nodes: [HealthNode],
-    /// Published health status records.
-    health_statuses: [HealthStatus],
-    /// Numeric metric definitions.
+    components?: [ComponentDeclaration],
+    /// Health nodes.
+    health_nodes?: [HealthNode],
+    /// Status records.
+    health_statuses?: [HealthStatus],
+    /// Metric definitions.
     metrics?: [MetricDefinition],
-    /// Published metric samples.
+    /// Metric samples.
     metric_samples?: [MetricSample],
+    /// Diagnostics about the included records and about directory configurations.
+    diagnostics?: [Diagnostic],
 }

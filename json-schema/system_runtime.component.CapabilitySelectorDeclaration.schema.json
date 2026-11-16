@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.CapabilitySelectorDeclaration",
   "type": "object",
-  "description": "A selector over provided capabilities.",
+  "description": "A selector over capabilities.",
   "properties": {
     "id": {
       "type": "string"

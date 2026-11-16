@@ -1,7 +1,49 @@
 {
+  "system_runtime.common.Diagnostic": {
+    "type": "object",
+    "description": "A record that was skipped or used despite a problem.",
+    "properties": {
+      "severity": {
+        "$ref": "#/components/schemas/system_runtime.common.Severity"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/system_runtime.common.RecordKind"
+      },
+      "message": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "severity",
+      "kind",
+      "message"
+    ],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.common.RecordKind": {
+    "enum": [
+      "ComponentDeclaration",
+      "HealthNode",
+      "HealthStatus",
+      "MetricDefinition",
+      "MetricSample",
+      "DirectoryConfig"
+    ],
+    "description": "Kind of records, named after the record types."
+  },
+  "system_runtime.common.Severity": {
+    "enum": [
+      "Error",
+      "Warning"
+    ],
+    "description": "Effect of a diagnostic on the results."
+  },
   "system_runtime.component.CapabilityDeclaration": {
     "type": "object",
-    "description": "A fact supplied by a component.",
+    "description": "A fact that a component provides.",
     "properties": {
       "id": {
         "type": "string"
@@ -20,7 +62,7 @@
   },
   "system_runtime.component.CapabilitySelectorDeclaration": {
     "type": "object",
-    "description": "A selector over provided capabilities.",
+    "description": "A selector over capabilities.",
     "properties": {
       "id": {
         "type": "string"
@@ -39,7 +81,7 @@
   },
   "system_runtime.component.ClaimDeclaration": {
     "type": "object",
-    "description": "An exclusive resource key.",
+    "description": "A resource that at most one component may claim.",
     "properties": {
       "id": {
         "type": "string"
@@ -52,7 +94,7 @@
   },
   "system_runtime.component.ClaimProblem": {
     "type": "object",
-    "description": "Duplicate exclusive ownership.",
+    "description": "A resource that more than one component claims.",
     "properties": {
       "id": {
         "type": "string"
@@ -71,13 +113,13 @@
     "unevaluatedProperties": false
   },
   "system_runtime.component.CompatibilityProblem": {
-    "description": "A violated composition constraint.",
+    "description": "A violated constraint.",
     "oneOf": [
       {
         "type": "object",
         "properties": {
           "problem": {
-            "const": "duplicateComponent"
+            "const": "DuplicateComponent"
           },
           "id": {
             "type": "string"
@@ -92,7 +134,7 @@
         "type": "object",
         "properties": {
           "problem": {
-            "const": "duplicateClaim"
+            "const": "DuplicateClaim"
           },
           "id": {
             "type": "string"
@@ -114,7 +156,7 @@
         "type": "object",
         "properties": {
           "problem": {
-            "const": "unsatisfiedRequirement"
+            "const": "UnsatisfiedRequirement"
           },
           "component": {
             "type": "string"
@@ -133,7 +175,7 @@
         "type": "object",
         "properties": {
           "problem": {
-            "const": "conflict"
+            "const": "Conflict"
           },
           "component": {
             "type": "string"
@@ -160,7 +202,7 @@
   },
   "system_runtime.component.CompatibilityReport": {
     "type": "object",
-    "description": "Result of evaluating the complete component set.",
+    "description": "Result of checking a composition.",
     "properties": {
       "consistent": {
         "type": "boolean"
@@ -170,18 +212,28 @@
         "items": {
           "$ref": "#/components/schemas/system_runtime.component.CompatibilityProblem"
         }
+      },
+      "diagnostics": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.common.Diagnostic"
+        }
       }
     },
     "required": [
       "consistent",
-      "problems"
+      "problems",
+      "diagnostics"
     ],
     "unevaluatedProperties": false
   },
   "system_runtime.component.ComponentDeclaration": {
     "type": "object",
-    "description": "A participant in a system composition.",
+    "description": "One part of a system, such as the system image, an app, a runtime, or a hardware module.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },
@@ -214,6 +266,10 @@
         "items": {
           "$ref": "#/components/schemas/system_runtime.component.CapabilitySelectorDeclaration"
         }
+      },
+      "annotations": {
+        "type": "object",
+        "additionalProperties": {}
       }
     },
     "required": [
@@ -223,7 +279,7 @@
   },
   "system_runtime.component.ComponentIdProblem": {
     "type": "object",
-    "description": "Duplicate component ID.",
+    "description": "A component ID that more than one component uses.",
     "properties": {
       "id": {
         "type": "string"
@@ -236,7 +292,7 @@
   },
   "system_runtime.component.ConflictProblem": {
     "type": "object",
-    "description": "A matching conflict.",
+    "description": "A conflict that matches a capability.",
     "properties": {
       "component": {
         "type": "string"
@@ -261,7 +317,7 @@
   },
   "system_runtime.component.SelectorProblem": {
     "type": "object",
-    "description": "Unsatisfied selector.",
+    "description": "A requirement that matches no capability.",
     "properties": {
       "component": {
         "type": "string"
@@ -278,8 +334,11 @@
   },
   "system_runtime.filesystem.DirectoryConfig": {
     "type": "object",
-    "description": "Additional absolute directory paths supplied by packages or administrators.\nWhole `*` path segments match real directories in lexical order on each load.\nExplicit path segments may follow symlinks; `..` and partial wildcards are invalid.",
+    "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, but no symlink.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
       "components": {
         "type": "array",
         "items": {
@@ -316,8 +375,14 @@
   },
   "system_runtime.filesystem.RuntimeSnapshot": {
     "type": "object",
-    "description": "Complete collection loaded from a filesystem or supplied directly.",
+    "description": "Records read from a system, for sending them to another system.\n\nAn omitted list means that the snapshot does not include records of its kind. The lists of the\nhealth part are either all present or all omitted.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
+      "clock": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthClockSample"
+      },
       "components": {
         "type": "array",
         "items": {
@@ -347,27 +412,29 @@
         "items": {
           "$ref": "#/components/schemas/system_runtime.metric.MetricSample"
         }
+      },
+      "diagnostics": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.common.Diagnostic"
+        }
       }
     },
     "required": [
-      "components",
-      "healthNodes",
-      "healthStatuses"
+      "specVersion",
+      "clock"
     ],
     "unevaluatedProperties": false
   },
   "system_runtime.health.AggregationInput": {
     "type": "object",
-    "description": "One dependency of an aggregate health node.",
+    "description": "One input of an aggregate node.",
     "properties": {
       "node": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
-      "required": {
-        "type": "boolean"
-      },
-      "optional": {
-        "type": "boolean"
+      "mode": {
+        "$ref": "#/components/schemas/system_runtime.health.InputMode"
       }
     },
     "required": [
@@ -377,7 +444,7 @@
   },
   "system_runtime.health.AggregationRule": {
     "type": "object",
-    "description": "Minimum and desired health targets.",
+    "description": "Inputs of an aggregate node and the counts they need to meet.",
     "properties": {
       "inputs": {
         "type": "array",
@@ -385,27 +452,55 @@
           "$ref": "#/components/schemas/system_runtime.health.AggregationInput"
         }
       },
-      "required": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+      "minUsable": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
       },
-      "healthy": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+      "minHealthy": {
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
+      }
+    },
+    "required": [],
+    "unevaluatedProperties": false
+  },
+  "system_runtime.health.Answer": {
+    "enum": [
+      "Yes",
+      "No",
+      "Unknown"
+    ],
+    "description": "Answer to whether criteria are met."
+  },
+  "system_runtime.health.Attachment": {
+    "type": "object",
+    "description": "Attachment of a node to an aggregate node as an input.",
+    "properties": {
+      "node": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/system_runtime.health.InputMode"
       }
     },
     "required": [
-      "inputs"
+      "node"
     ],
     "unevaluatedProperties": false
   },
   "system_runtime.health.HealthClockSample": {
     "type": "object",
-    "description": "Paired wall-clock and boot-time sample from the system being observed.",
+    "description": "Correlation of the boot-time clock with wall-clock time.",
     "properties": {
       "context": {
         "$ref": "#/components/schemas/system_runtime.health.HealthContext"
@@ -423,7 +518,7 @@
   },
   "system_runtime.health.HealthContext": {
     "type": "object",
-    "description": "Clock context supplied by a consumer.",
+    "description": "Boot and time in which evidence is evaluated.",
     "properties": {
       "bootId": {
         "type": "string"
@@ -446,8 +541,11 @@
   },
   "system_runtime.health.HealthNode": {
     "type": "object",
-    "description": "A health check or function in a directed acyclic graph.",
+    "description": "A check or function whose health is evaluated.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
@@ -465,6 +563,16 @@
       },
       "rule": {
         "$ref": "#/components/schemas/system_runtime.health.HealthRule"
+      },
+      "partOf": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.health.Attachment"
+        }
+      },
+      "annotations": {
+        "type": "object",
+        "additionalProperties": {}
       }
     },
     "required": [
@@ -474,11 +582,11 @@
   },
   "system_runtime.health.HealthNodeId": {
     "type": "string",
-    "description": "Identifier of a health graph node, serialized as a string."
+    "description": "ID of a health node."
   },
   "system_runtime.health.HealthNodeResult": {
     "type": "object",
-    "description": "Evaluated state and evidence for a node.",
+    "description": "Answers of one node.",
     "properties": {
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
@@ -486,8 +594,11 @@
       "owner": {
         "type": "string"
       },
-      "state": {
-        "$ref": "#/components/schemas/system_runtime.health.HealthState"
+      "usable": {
+        "$ref": "#/components/schemas/system_runtime.health.Answer"
+      },
+      "healthy": {
+        "$ref": "#/components/schemas/system_runtime.health.Answer"
       },
       "inputs": {
         "type": "array",
@@ -495,47 +606,65 @@
           "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
         }
       },
+      "reason": {
+        "$ref": "#/components/schemas/system_runtime.health.Reason"
+      },
       "message": {
         "type": "string"
+      },
+      "details": {
+        "type": "object",
+        "additionalProperties": {}
       }
     },
     "required": [
       "id",
-      "state",
+      "usable",
+      "healthy",
       "inputs"
     ],
     "unevaluatedProperties": false
   },
   "system_runtime.health.HealthReport": {
     "type": "object",
-    "description": "Evaluated graph, in declaration order.",
+    "description": "Result of evaluating health.",
     "properties": {
       "nodes": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/system_runtime.health.HealthNodeResult"
         }
+      },
+      "diagnostics": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/system_runtime.common.Diagnostic"
+        }
       }
     },
     "required": [
-      "nodes"
+      "nodes",
+      "diagnostics"
     ],
     "unevaluatedProperties": false
   },
   "system_runtime.health.HealthRule": {
-    "description": "Definition of an observed, threshold, or aggregate node.",
+    "description": "How a node's answers are determined.",
     "oneOf": [
       {
         "type": "object",
         "properties": {
           "type": {
-            "const": "observed"
+            "const": "Observed"
           },
           "maxAgeMs": {
-            "type": "integer",
-            "format": "uint32",
-            "maximum": 4294967295,
-            "minimum": 0
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "uint64",
+            "minimum": 0,
+            "pattern": "^[0-9]+$"
           },
           "expectedTag": {
             "type": "string"
@@ -549,10 +678,13 @@
         "type": "object",
         "properties": {
           "type": {
-            "const": "threshold"
+            "const": "Threshold"
           },
           "metric": {
             "$ref": "#/components/schemas/system_runtime.metric.MetricId"
+          },
+          "unit": {
+            "type": "string"
           },
           "healthy": {
             "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
@@ -561,10 +693,13 @@
             "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
           },
           "maxAgeMs": {
-            "type": "integer",
-            "format": "uint32",
-            "maximum": 4294967295,
-            "minimum": 0
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "uint64",
+            "minimum": 0,
+            "pattern": "^[0-9]+$"
           }
         },
         "required": [
@@ -578,7 +713,7 @@
         "type": "object",
         "properties": {
           "type": {
-            "const": "aggregate"
+            "const": "Aggregate"
           },
           "inputs": {
             "type": "array",
@@ -586,83 +721,49 @@
               "$ref": "#/components/schemas/system_runtime.health.AggregationInput"
             }
           },
-          "required": {
-            "type": "integer",
-            "format": "uint32",
-            "maximum": 4294967295,
-            "minimum": 0
+          "minUsable": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "uint64",
+            "minimum": 0,
+            "pattern": "^[0-9]+$"
           },
-          "healthy": {
-            "type": "integer",
-            "format": "uint32",
-            "maximum": 4294967295,
-            "minimum": 0
+          "minHealthy": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "uint64",
+            "minimum": 0,
+            "pattern": "^[0-9]+$"
           }
         },
         "required": [
-          "type",
-          "inputs"
+          "type"
         ]
       }
     ]
   },
-  "system_runtime.health.HealthSnapshot": {
-    "type": "object",
-    "description": "Transport view of a health graph and the evidence used to evaluate it.",
-    "properties": {
-      "clock": {
-        "$ref": "#/components/schemas/system_runtime.health.HealthClockSample"
-      },
-      "nodes": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/system_runtime.health.HealthNode"
-        }
-      },
-      "statuses": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/system_runtime.health.HealthStatus"
-        }
-      },
-      "metrics": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/system_runtime.metric.MetricDefinition"
-        }
-      },
-      "metricSamples": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/system_runtime.metric.MetricSample"
-        }
-      }
-    },
-    "required": [
-      "clock",
-      "nodes",
-      "statuses"
-    ],
-    "unevaluatedProperties": false
-  },
   "system_runtime.health.HealthState": {
     "enum": [
-      "healthy",
-      "degraded",
-      "unhealthy",
-      "unknown"
+      "Healthy",
+      "Degraded",
+      "Unhealthy",
+      "Unknown"
     ],
-    "description": "Health relative to a node's declared expectations."
+    "description": "Summary of the answers of a node."
   },
   "system_runtime.health.HealthStatus": {
     "type": "object",
-    "description": "Reported status of one observed node within a boot.",
+    "description": "Result of a check, published while the system runs.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
-      },
-      "owner": {
-        "type": "string"
       },
       "state": {
         "$ref": "#/components/schemas/system_runtime.health.HealthState"
@@ -680,16 +781,30 @@
         "pattern": "^[0-9]+$"
       },
       "maxAgeMs": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
+      },
+      "owner": {
+        "type": "string"
       },
       "tag": {
         "type": "string"
       },
       "message": {
         "type": "string"
+      },
+      "details": {
+        "type": "object",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "type": "object",
+        "additionalProperties": {}
       }
     },
     "required": [
@@ -701,15 +816,26 @@
     ],
     "unevaluatedProperties": false
   },
+  "system_runtime.health.InputMode": {
+    "enum": [
+      "Counted",
+      "Mandatory",
+      "Optional"
+    ],
+    "description": "How an input affects the answers of an aggregate node."
+  },
   "system_runtime.health.ObservationRule": {
     "type": "object",
-    "description": "Constraints on externally supplied observations.",
+    "description": "Constraints on the status records of an observed node.",
     "properties": {
       "maxAgeMs": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
       },
       "expectedTag": {
         "type": "string"
@@ -718,12 +844,29 @@
     "required": [],
     "unevaluatedProperties": false
   },
+  "system_runtime.health.Reason": {
+    "enum": [
+      "Missing",
+      "OtherBoot",
+      "OwnerMismatch",
+      "TagMismatch",
+      "Future",
+      "Expired",
+      "Conflict",
+      "Cycle",
+      "Unsupported"
+    ],
+    "description": "Why a node's evidence was not used or its rule was not applied."
+  },
   "system_runtime.health.ThresholdRule": {
     "type": "object",
-    "description": "Desired and minimum ranges for one metric.",
+    "description": "Ranges that a metric sample is compared with.",
     "properties": {
       "metric": {
         "$ref": "#/components/schemas/system_runtime.metric.MetricId"
+      },
+      "unit": {
+        "type": "string"
       },
       "healthy": {
         "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
@@ -732,10 +875,13 @@
         "$ref": "#/components/schemas/system_runtime.metric.MetricRange"
       },
       "maxAgeMs": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
       }
     },
     "required": [
@@ -747,7 +893,7 @@
   },
   "system_runtime.metric.MetricBound": {
     "type": "object",
-    "description": "One endpoint of a numeric range, in the referenced metric's unit.",
+    "description": "One bound of a range, in the metric's unit.",
     "properties": {
       "value": {
         "type": [
@@ -768,8 +914,11 @@
   },
   "system_runtime.metric.MetricDefinition": {
     "type": "object",
-    "description": "A named numeric measurement, independent of any health policy; samples carry no history.",
+    "description": "A named numeric measurement.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
       "id": {
         "$ref": "#/components/schemas/system_runtime.metric.MetricId"
       },
@@ -786,16 +935,23 @@
         }
       },
       "unit": {
-        "$ref": "#/components/schemas/system_runtime.metric.MetricUnit"
+        "type": "string"
       },
       "maxAgeMs": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
       },
       "expectedTag": {
         "type": "string"
+      },
+      "annotations": {
+        "type": "object",
+        "additionalProperties": {}
       }
     },
     "required": [
@@ -806,11 +962,11 @@
   },
   "system_runtime.metric.MetricId": {
     "type": "string",
-    "description": "Identifier of a metric, unique independently of health node IDs."
+    "description": "ID of a metric."
   },
   "system_runtime.metric.MetricRange": {
     "type": "object",
-    "description": "A nonempty interval; omitted endpoints are unbounded.",
+    "description": "A non-empty range; a missing bound leaves the range unbounded on that side.",
     "properties": {
       "lower": {
         "$ref": "#/components/schemas/system_runtime.metric.MetricBound"
@@ -824,13 +980,13 @@
   },
   "system_runtime.metric.MetricSample": {
     "type": "object",
-    "description": "One measurement within a boot; publishing it does not assert health.",
+    "description": "Current measurement of a metric, published while the system runs.",
     "properties": {
+      "specVersion": {
+        "type": "string"
+      },
       "id": {
         "$ref": "#/components/schemas/system_runtime.metric.MetricId"
-      },
-      "owner": {
-        "type": "string"
       },
       "value": {
         "type": [
@@ -852,16 +1008,30 @@
         "pattern": "^[0-9]+$"
       },
       "maxAgeMs": {
-        "type": "integer",
-        "format": "uint32",
-        "maximum": 4294967295,
-        "minimum": 0
+        "type": [
+          "integer",
+          "string"
+        ],
+        "format": "uint64",
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
+      },
+      "owner": {
+        "type": "string"
       },
       "tag": {
         "type": "string"
       },
       "message": {
         "type": "string"
+      },
+      "details": {
+        "type": "object",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "type": "object",
+        "additionalProperties": {}
       }
     },
     "required": [
@@ -872,21 +1042,5 @@
       "maxAgeMs"
     ],
     "unevaluatedProperties": false
-  },
-  "system_runtime.metric.MetricUnit": {
-    "enum": [
-      "celsius",
-      "bytes",
-      "seconds",
-      "ratio",
-      "count",
-      "bytes-per-second",
-      "hertz",
-      "volts",
-      "amperes",
-      "watts",
-      "revolutions-per-minute"
-    ],
-    "description": "Semantic unit; display prefixes, precision, and conversions are consumer choices."
   }
 }

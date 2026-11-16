@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.health.HealthState",
   "enum": [
-    "healthy",
-    "degraded",
-    "unhealthy",
-    "unknown"
+    "Healthy",
+    "Degraded",
+    "Unhealthy",
+    "Unknown"
   ],
-  "description": "Health relative to a node's declared expectations."
+  "description": "Summary of the answers of a node."
 }

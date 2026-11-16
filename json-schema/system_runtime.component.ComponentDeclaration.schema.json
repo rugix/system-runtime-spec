@@ -2,8 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.component.ComponentDeclaration",
   "type": "object",
-  "description": "A participant in a system composition.",
+  "description": "One part of a system, such as the system image, an app, a runtime, or a hardware module.",
   "properties": {
+    "specVersion": {
+      "type": "string"
+    },
     "id": {
       "type": "string"
     },
@@ -36,6 +39,10 @@
       "items": {
         "$ref": "#/$defs/system_runtime.component.CapabilitySelectorDeclaration"
       }
+    },
+    "annotations": {
+      "type": "object",
+      "additionalProperties": {}
     }
   },
   "required": [
@@ -45,7 +52,7 @@
   "$defs": {
     "system_runtime.component.CapabilityDeclaration": {
       "type": "object",
-      "description": "A fact supplied by a component.",
+      "description": "A fact that a component provides.",
       "properties": {
         "id": {
           "type": "string"
@@ -64,7 +71,7 @@
     },
     "system_runtime.component.CapabilitySelectorDeclaration": {
       "type": "object",
-      "description": "A selector over provided capabilities.",
+      "description": "A selector over capabilities.",
       "properties": {
         "id": {
           "type": "string"
@@ -83,7 +90,7 @@
     },
     "system_runtime.component.ClaimDeclaration": {
       "type": "object",
-      "description": "An exclusive resource key.",
+      "description": "A resource that at most one component may claim.",
       "properties": {
         "id": {
           "type": "string"
