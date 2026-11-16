@@ -88,7 +88,7 @@ class HealthStatus(_sidex.Model):
     observed_at_ms: _sidex.U64 = pydantic.Field(description="Boot-time clock value, in milliseconds, when the check took place.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
     max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the status record is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     owner: str | None = pydantic.Field(default=None, description="Owner of the status record.")
-    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
+    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that produced the evidence.")
     message: str | None = pydantic.Field(default=None, description="Explanation for people, such as the output of a check; can span several lines.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 

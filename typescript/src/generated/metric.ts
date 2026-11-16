@@ -75,10 +75,10 @@ export const MetricDefinition = {
                                             * Owner of the sample.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
-                                            * Opaque label identifying the configuration or instance that took the evidence.
+                                            * Opaque label identifying the configuration or instance that produced the evidence.
                                             */
                                                         "tag"?: __sidex_types.builtins.String, /**
-                                            * Explanation for people, such as the output of a check; can span several lines.
+                                            * Explanation for people; can span several lines.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
                                             * Further data that the specification does not define, with namespaced member names.

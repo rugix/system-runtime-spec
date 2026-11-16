@@ -9,5 +9,5 @@
     "MetricSample",
     "DirectoryConfig"
   ],
-  "description": "Kind of the files that a diagnostic concerns, named after their types."
+  "description": "Kind of the records or directory configurations that a diagnostic concerns."
 }

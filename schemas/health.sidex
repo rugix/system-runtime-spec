@@ -118,7 +118,7 @@ record HealthStatus {
     max_age_ms: u64,
     /// Owner of the status record.
     owner?: string,
-    /// Opaque label identifying the configuration or instance that took the evidence.
+    /// Opaque label identifying the configuration or instance that produced the evidence.
     tag?: string,
     /// Explanation for people, such as the output of a check; can span several lines.
     message?: string,

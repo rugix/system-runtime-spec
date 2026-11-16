@@ -1,7 +1,7 @@
 {
   "system_runtime.common.Diagnostic": {
     "type": "object",
-    "description": "A record that was skipped or used despite a problem.",
+    "description": "A record, directory configuration, or directory that was skipped or used despite a problem.",
     "properties": {
       "severity": {
         "$ref": "#/components/schemas/system_runtime.common.Severity"
@@ -32,7 +32,7 @@
       "MetricSample",
       "DirectoryConfig"
     ],
-    "description": "Kind of the files that a diagnostic concerns, named after their types."
+    "description": "Kind of the records or directory configurations that a diagnostic concerns."
   },
   "system_runtime.common.Severity": {
     "enum": [
@@ -337,7 +337,7 @@
   },
   "system_runtime.filesystem.DirectoryConfig": {
     "type": "object",
-    "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, but no symlink.",
+    "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, except symlinks.",
     "properties": {
       "specVersion": {
         "type": "string"

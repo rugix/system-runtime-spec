@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.common.Diagnostic",
   "type": "object",
-  "description": "A record that was skipped or used despite a problem.",
+  "description": "A record, directory configuration, or directory that was skipped or used despite a problem.",
   "properties": {
     "severity": {
       "$ref": "#/$defs/system_runtime.common.Severity"
@@ -33,7 +33,7 @@
         "MetricSample",
         "DirectoryConfig"
       ],
-      "description": "Kind of the files that a diagnostic concerns, named after their types."
+      "description": "Kind of the records or directory configurations that a diagnostic concerns."
     },
     "system_runtime.common.Severity": {
       "enum": [

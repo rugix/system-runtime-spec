@@ -201,7 +201,7 @@ checkers in their compatibility reports, and health evaluators in their health r
 diagnostic has the following structure:
 
 ```sidex
-/// A record that was skipped or used despite a problem.
+/// A record, directory configuration, or directory that was skipped or used despite a problem.
 record Diagnostic {
     /// Whether the results may not reflect the records concerned.
     severity: Severity,
@@ -222,7 +222,7 @@ variant Severity {
     Warning,
 }
 
-/// Kind of the files that a diagnostic concerns, named after their types.
+/// Kind of the records or directory configurations that a diagnostic concerns.
 #[json(tagged = externally)]
 variant DiagnosticKind {
     /// Component declarations.
@@ -684,8 +684,8 @@ The inputs of aggregate nodes, including attached inputs, form directed edges fr
 node to its inputs. Nodes on a cycle are not evaluated, and the evaluator reports them
 ([Section 8.8](#88-evaluation-and-reports)).
 
-Nodes that are no input of any other node are _roots_. Tools can show the roots of a graph as the
-overall health of a device. Which aggregate nodes contributors attach to is a convention of the
+Nodes that are not an input of any other node are _roots_. Tools can show the roots of a graph as
+the overall health of a device. Which aggregate nodes contributors attach to is a convention of the
 platform that combines them, like the names of owners ([Section 4.3](#43-owners)).
 
 A consumer that makes a decision, such as whether to commit an update, SHOULD base it on a node that
@@ -712,11 +712,10 @@ that does not exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
 
 ### 8.3 Evidence
 
-Status records and metric samples are _evidence_: results of checks and measurements taken on the
-running system. Evidence is only valid for a limited time, so that a check that stops running
-cannot keep reporting an old result. Times are measured on the _boot-time clock_ of the observed
-system, which starts at zero when the system boots and counts suspended time. Unlike a wall clock,
-it does not change when the system adjusts its time.
+Evidence is valid only for a limited time, so that a check that stops running cannot keep reporting
+an old result. Times are measured on the _boot-time clock_ of the observed system, which starts at
+zero when the system boots and counts suspended time. Unlike a wall clock, it does not change when
+the system adjusts its time.
 
 Status records ([Section 8.4](#84-observed-nodes-and-status-records)) and metric samples
 ([Section 8.5](#85-metrics)) share the fields of evidence: `bootId`, `observedAtMs`, `maxAgeMs`,
@@ -756,8 +755,8 @@ Evidence is _fresh_ if all of the following hold, checked in this order:
 
 The first condition that does not hold determines the problem. Evidence that is not fresh is not
 used, and the node's answers are `Unknown`/`Unknown` with that problem. If evidence is fresh, the
-rules of the node's type determine the answers from it, and the node's result carries its
-`message` and `annotations`.
+rules of the node's type determine the answers from it, and the node's result carries the `message`
+and `annotations` of the evidence.
 
 > **Example:** A status record observed at 42000 ms with a `maxAgeMs` of 15000 is fresh until
 > just before 57000 ms. If its node declares a `maxAgeMs` of 10000, it is fresh until just before
@@ -801,7 +800,7 @@ record HealthStatus {
     max_age_ms: u64,
     /// Owner of the status record.
     owner?: string,
-    /// Opaque label identifying the configuration or instance that took the evidence.
+    /// Opaque label identifying the configuration or instance that produced the evidence.
     tag?: string,
     /// Explanation for people, such as the output of a check; can span several lines.
     message?: string,
@@ -812,8 +811,8 @@ record HealthStatus {
 
 Writers MUST NOT publish two status records for the same node. If several status records refer to an
 observed node, its answers are `Unknown`/`Unknown`, with the problem `Conflict`, and the evaluator
-adds a diagnostic with the severity `Warning`. Status records that refer to no observed node are
-ignored.
+adds a diagnostic with the severity `Warning`. Status records that do not refer to an observed node
+are ignored.
 
 Otherwise, the status record of an observed node is checked against the node: its owner against
 the node's `owner`, its tag against the rule's `expectedTag`, and its age against the rule's
@@ -876,9 +875,9 @@ record MetricSample {
     max_age_ms: u64,
     /// Owner of the sample.
     owner?: string,
-    /// Opaque label identifying the configuration or instance that took the evidence.
+    /// Opaque label identifying the configuration or instance that produced the evidence.
     tag?: string,
-    /// Explanation for people, such as the output of a check; can span several lines.
+    /// Explanation for people; can span several lines.
     message?: string,
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
@@ -1036,13 +1035,13 @@ record Attachment {
 
 If the aggregate node exists, the attaching node is one of its inputs, with the mode of the
 attachment. Attached inputs follow the inputs of the rule, in the order of the definitions of the
-attaching nodes. Attachments to nodes that do not exist or are no aggregate nodes are ignored, so
+attaching nodes. Attachments to nodes that do not exist or are not aggregate nodes are ignored, so
 that contributors can attach to nodes that are not always present.
 
 If a node is an input more than once, listed or attached, it counts as one input, at the position of
 its first occurrence. Its mode is the mode of the first input of the rule that refers to it or, if
 the rule does not list it, the mode of its first attachment, so that the aggregate node's own rule
-decides how its inputs count. An input of the rule that refers to no node has the answers
+decides how its inputs count. An input of the rule whose node does not exist has the answers
 `Unknown`/`Unknown`, and the evaluator adds a diagnostic with the severity `Warning` for it; the
 input appears in the node's result, but has no result of its own.
 
@@ -1167,7 +1166,7 @@ An aggregate node whose rule determines its answers has no problem; its inputs e
 answers.
 
 > **Example:** An app's observed node `telemetry` attaches itself to `device.apps`, an aggregate
-> node without own inputs. If the app's status record expires, the report is:
+> node without inputs of its own. If the app's status record expires, the report is:
 >
 > ```json
 > {
@@ -1301,7 +1300,7 @@ in their installation directories. It is encoded, validated, and versioned like 
 /// Directories that a contributor adds, as absolute paths without `..` segments.
 ///
 /// A segment consisting only of `*` matches every directory at that level whose name does not
-/// start with `.`, in byte order, but no symlink.
+/// start with `.`, in byte order, except symlinks.
 record DirectoryConfig {
     /// Version of the specification that the record follows; omitted means `1.0`.
     spec_version?: string,
@@ -1320,7 +1319,7 @@ record DirectoryConfig {
 
 Paths MUST be absolute and MUST NOT contain `..` segments or NUL characters. A path segment
 consisting only of `*` matches every directory at that level whose name does not start with `.`, in
-the order of the bytes of their names, but no symlink. Other wildcards, such as `*.d` or `**`, are
+the order of the bytes of their names, except symlinks. Other wildcards, such as `*.d` or `**`, are
 invalid. Readers MUST expand wildcards whenever they read records. Directory configurations cannot
 add directories for directory configurations.
 
@@ -1422,10 +1421,10 @@ changes that readers of earlier minor versions of the same major version can saf
 - adding values to the enumerations that this section lists, with the fallback defined here.
 
 A component declaration whose `specVersion` ([Section 4.5](#45-specification-versions)) has a higher
-minor version than the reader supports is invalid, because a matching feature that the reader does
-not know could make it match too much. For other records with a higher minor version, the reader
-uses them, applying the fallbacks of this section, and reports a diagnostic with the severity
-`Warning`.
+minor version than the reader supports is invalid, because ignoring a selector feature that the
+reader does not know could make a requirement or conflict match the wrong capabilities. For other
+records with a higher minor version, the reader uses them, applying the fallbacks of this section,
+and reports a diagnostic with the severity `Warning`.
 
 The schemas describe what writers produce. Implementations MUST ignore fields they do not know,
 and MUST treat values they do not know as follows:

@@ -1,6 +1,6 @@
 //! Diagnostics shared by compatibility checking and health evaluation.
 
-/// A record that was skipped or used despite a problem.
+/// A record, directory configuration, or directory that was skipped or used despite a problem.
 record Diagnostic {
     /// Whether the results may not reflect the records concerned.
     severity: Severity,
@@ -22,7 +22,7 @@ variant Severity {
     Warning,
 }
 
-/// Kind of the files that a diagnostic concerns, named after their types.
+/// Kind of the records or directory configurations that a diagnostic concerns.
 #[json(tagged = externally)]
 #[rust(derive(Copy, Eq))]
 variant DiagnosticKind {

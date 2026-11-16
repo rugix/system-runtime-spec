@@ -8,7 +8,7 @@ import * as __schema_filesystem from "./filesystem.js";
 import * as __schema_health from "./health.js";
 import * as __schema_metric from "./metric.js";
 /**
- * A record that was skipped or used despite a problem.
+ * A record, directory configuration, or directory that was skipped or used despite a problem.
  */
  export type Diagnostic = { /**
                                             * Whether the results may not reflect the records concerned.
@@ -36,7 +36,7 @@ export const Severity = {
     ...__sidex_types.checker<Severity>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Error", null, null], ["Warning", null, null]])),
 };
 /**
- * Kind of the files that a diagnostic concerns, named after their types.
+ * Kind of the records or directory configurations that a diagnostic concerns.
  */
  export type DiagnosticKind = ("ComponentDeclaration" | "HealthNode" | "HealthStatus" | "MetricDefinition" | "MetricSample" | "DirectoryConfig");
 

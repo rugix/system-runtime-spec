@@ -174,7 +174,7 @@ export const InputMode = {
                                             * Owner of the status record.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
-                                            * Opaque label identifying the configuration or instance that took the evidence.
+                                            * Opaque label identifying the configuration or instance that produced the evidence.
                                             */
                                                         "tag"?: __sidex_types.builtins.String, /**
                                             * Explanation for people, such as the output of a check; can span several lines.
