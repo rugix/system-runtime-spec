@@ -98,11 +98,11 @@ Records are small JSON documents that the parts of a system publish about themse
 ### 3.1 Encoding
 
 Each record is a JSON object of one of the record types of the schemas, such as
-`ComponentDeclaration` or `HealthStatus`. Field names use camelCase, so the schema field
-`max_age_ms` is the JSON field `maxAgeMs`, which this document uses. Enumeration values use
-PascalCase, and absent optional fields are omitted. Fields of the type `u64`, such as boot-time
-clock values, hold unsigned 64-bit integers; values beyond 2⁵³ − 1 are decimal strings, so that
-JavaScript implementations can process them without losing precision.
+`ComponentDeclaration` or `HealthStatus`. Field names use `camelCase`, so the schema field
+`max_age_ms` is the JSON field `maxAgeMs`. Enumeration values use `PascalCase`, and absent
+optional fields are omitted. Fields of the type `u64`, such as boot-time clock values, hold
+unsigned 64-bit integers; values beyond 2⁵³ − 1 are decimal strings, so that JavaScript
+implementations can process them without losing precision.
 
 A record is _valid_ if it has the structure of its schema and its fields satisfy the conditions
 that this document and the schemas state for them, such as that a version is valid or that a
