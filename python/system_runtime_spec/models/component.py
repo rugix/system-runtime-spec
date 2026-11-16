@@ -20,6 +20,7 @@ class ComponentDeclaration(_sidex.Model):
     spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
     id: str = pydantic.Field(description="Unique ID of the component within the composition.")
     owner: str | None = pydantic.Field(default=None, description="Owner of the declaration, which replaces or removes it as a whole.")
+    label: str | None = pydantic.Field(default=None, description="Human-readable name of the component.")
     version: str | None = pydantic.Field(default=None, description="Version of the component, also provided as its implicit capability.")
     provides: list[CapabilityDeclaration] | None = pydantic.Field(default=None, description="Capabilities the component provides.")
     claims: list[ClaimDeclaration] | None = pydantic.Field(default=None, description="Resources the component claims.")

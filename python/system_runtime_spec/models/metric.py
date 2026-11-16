@@ -40,9 +40,8 @@ class MetricSample(_sidex.Model):
     observed_at_ms: _sidex.U64 = pydantic.Field(description="Boot-time clock value, in milliseconds, when the measurement took place.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
     max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the sample is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     owner: str | None = pydantic.Field(default=None, description="Owner of the sample.")
-    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
-    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display, in any structure.")
+    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that produced the evidence.")
+    message: str | None = pydantic.Field(default=None, description="Explanation for people; can span several lines.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 

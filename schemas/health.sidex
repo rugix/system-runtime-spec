@@ -51,7 +51,7 @@ record ObservationRule {
 record ThresholdRule {
     /// ID of the metric.
     metric: MetricId,
-    /// Unit of the ranges, as a UCUM code; must equal the metric's unit.
+    /// Unit that the ranges assume, as a UCUM code.
     unit?: string,
     /// Range in which the desired criteria are met; a subset of the usable range.
     healthy: MetricRange,
@@ -93,7 +93,7 @@ record Attachment {
 variant InputMode {
     /// The input counts toward `min_usable` and `min_healthy`.
     Counted,
-    /// The input counts, and the node is only usable and healthy if the input is.
+    /// The input does not count; the node is only usable and healthy if the input is.
     Mandatory,
     /// The input does not count; the node is only healthy if the input is healthy.
     Optional,
@@ -105,8 +105,11 @@ record HealthStatus {
     spec_version?: string,
     /// ID of the observed node.
     id: HealthNodeId,
-    /// Result of the check.
-    state: HealthState,
+    /// Whether the minimum criteria are met.
+    usable: Answer,
+    /// Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires
+    /// `No`.
+    healthy: Answer,
     /// ID of the boot during which the check took place.
     boot_id: string,
     /// Boot-time clock value, in milliseconds, when the check took place.
@@ -115,28 +118,12 @@ record HealthStatus {
     max_age_ms: u64,
     /// Owner of the status record.
     owner?: string,
-    /// Opaque label identifying the configuration or instance that took the evidence.
+    /// Opaque label identifying the configuration or instance that produced the evidence.
     tag?: string,
-    /// Explanation supplied by the writer.
+    /// Explanation for people, such as the output of a check; can span several lines.
     message?: string,
-    /// Further information about the observation, for display, in any structure.
-    details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
-}
-
-/// Summary of the answers of a node.
-#[json(tagged = externally)]
-#[rust(derive(Copy, Eq))]
-variant HealthState {
-    /// The desired criteria are met.
-    Healthy,
-    /// The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.
-    Degraded,
-    /// The minimum criteria are not met.
-    Unhealthy,
-    /// Whether the minimum criteria are met is unknown.
-    Unknown,
 }
 
 /// Answer to whether criteria are met.
@@ -151,10 +138,10 @@ variant Answer {
     Unknown,
 }
 
-/// Why a node's evidence was not used or its rule was not applied.
+/// Problem that keeps a node's evidence or rule from determining its answers.
 #[json(tagged = externally)]
 #[rust(derive(Copy, Eq))]
-variant Reason {
+variant HealthProblem {
     /// The evidence or the metric definition does not exist.
     Missing,
     /// The evidence belongs to another boot.
@@ -171,7 +158,7 @@ variant Reason {
     Conflict,
     /// The node is on a cycle.
     Cycle,
-    /// A rule type, state, or input mode is unknown to the evaluator.
+    /// A rule type, answer, or input mode is unknown to the evaluator.
     Unsupported,
 }
 
@@ -194,7 +181,7 @@ record HealthClockSample {
 /// Result of evaluating health.
 record HealthReport {
     /// One result per node ID, in the order of the node definitions.
-    nodes: [HealthNodeResult],
+    results: [HealthNodeResult],
     /// Diagnostics about health records and directory configurations, and those added during
     /// evaluation.
     diagnostics: [Diagnostic],
@@ -212,10 +199,10 @@ record HealthNodeResult {
     healthy: Answer,
     /// IDs of the inputs of an aggregate node; empty for other nodes.
     inputs: [HealthNodeId],
-    /// Why the node's evidence was not used or its rule was not applied.
-    reason?: Reason,
+    /// Problem that kept the node's evidence or rule from determining its answers.
+    problem?: HealthProblem,
     /// Message of the fresh evidence.
     message?: string,
-    /// Details of the fresh evidence.
-    details?: [string: json],
+    /// Annotations of the fresh evidence.
+    annotations?: [string: json],
 }

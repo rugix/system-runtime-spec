@@ -11,7 +11,7 @@ import metric::MetricSample
 /// Directories that a contributor adds, as absolute paths without `..` segments.
 ///
 /// A segment consisting only of `*` matches every directory at that level whose name does not
-/// start with `.`, in byte order, but no symlink.
+/// start with `.`, in byte order, except symlinks.
 record DirectoryConfig {
     /// Version of the specification that the record follows; omitted means `1.0`.
     spec_version?: string,

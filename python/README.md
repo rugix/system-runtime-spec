@@ -26,8 +26,8 @@ records = Records.discover("/")
 compatibility = records.check_compatibility()
 health = records.evaluate_health(current_context())
 print("consistent:", compatibility.consistent)
-for node in health.nodes:
-    print(f"{node.id}: usable {node.usable}, healthy {node.healthy}")
+for result in health.results:
+    print(f"{result.id}: usable {result.usable}, healthy {result.healthy}")
 ```
 
 `Records.discover` reads the standard directories and the directories that directory

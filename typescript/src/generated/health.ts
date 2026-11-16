@@ -76,7 +76,7 @@ export const ObservationRule = {
                                             * ID of the metric.
                                             */
                                                         "metric": __schema_metric.MetricId, /**
-                                            * Unit of the ranges, as a UCUM code; must equal the metric's unit.
+                                            * Unit that the ranges assume, as a UCUM code.
                                             */
                                                         "unit"?: __sidex_types.builtins.String, /**
                                             * Range in which the desired criteria are met; a subset of the usable range.
@@ -155,9 +155,13 @@ export const InputMode = {
                                             * ID of the observed node.
                                             */
                                                         "id": HealthNodeId, /**
-                                            * Result of the check.
+                                            * Whether the minimum criteria are met.
                                             */
-                                                        "state": HealthState, /**
+                                                        "usable": Answer, /**
+                                            * Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires
+                                            * `No`.
+                                            */
+                                                        "healthy": Answer, /**
                                             * ID of the boot during which the check took place.
                                             */
                                                         "bootId": __sidex_types.builtins.String, /**
@@ -170,29 +174,18 @@ export const InputMode = {
                                             * Owner of the status record.
                                             */
                                                         "owner"?: __sidex_types.builtins.String, /**
-                                            * Opaque label identifying the configuration or instance that took the evidence.
+                                            * Opaque label identifying the configuration or instance that produced the evidence.
                                             */
                                                         "tag"?: __sidex_types.builtins.String, /**
-                                            * Explanation supplied by the writer.
+                                            * Explanation for people, such as the output of a check; can span several lines.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
-                                            * Further information about the observation, for display, in any structure.
-                                            */
-                                                        "details"?: { [key: string]: __sidex_types.builtins.Json }, /**
                                             * Further data that the specification does not define, with namespaced member names.
                                             */
                                                         "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const HealthStatus = {
-    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["state", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthState), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
-};
-/**
- * Summary of the answers of a node.
- */
- export type HealthState = ("Healthy" | "Degraded" | "Unhealthy" | "Unknown");
-
-export const HealthState = {
-    ...__sidex_types.checker<HealthState>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Healthy", null, null], ["Degraded", null, null], ["Unhealthy", null, null], ["Unknown", null, null]])),
+    ...__sidex_types.checker<HealthStatus>((): __sidex_types.Check => __sidex_types.record([["specVersion", __sidex_types.builtin("string"), true], ["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["bootId", __sidex_types.builtin("string"), false], ["observedAtMs", __sidex_types.builtin("u64"), false], ["maxAgeMs", __sidex_types.builtin("u64"), false], ["owner", __sidex_types.builtin("string"), true], ["tag", __sidex_types.builtin("string"), true], ["message", __sidex_types.builtin("string"), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };
 /**
  * Answer to whether criteria are met.
@@ -203,12 +196,12 @@ export const Answer = {
     ...__sidex_types.checker<Answer>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Yes", null, null], ["No", null, null], ["Unknown", null, null]])),
 };
 /**
- * Why a node's evidence was not used or its rule was not applied.
+ * Problem that keeps a node's evidence or rule from determining its answers.
  */
- export type Reason = ("Missing" | "OtherBoot" | "OwnerMismatch" | "TagMismatch" | "Future" | "Expired" | "Conflict" | "Cycle" | "Unsupported");
+ export type HealthProblem = ("Missing" | "OtherBoot" | "OwnerMismatch" | "TagMismatch" | "Future" | "Expired" | "Conflict" | "Cycle" | "Unsupported");
 
-export const Reason = {
-    ...__sidex_types.checker<Reason>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Missing", null, null], ["OtherBoot", null, null], ["OwnerMismatch", null, null], ["TagMismatch", null, null], ["Future", null, null], ["Expired", null, null], ["Conflict", null, null], ["Cycle", null, null], ["Unsupported", null, null]])),
+export const HealthProblem = {
+    ...__sidex_types.checker<HealthProblem>((): __sidex_types.Check => __sidex_types.variant("external", "tag", [["Missing", null, null], ["OtherBoot", null, null], ["OwnerMismatch", null, null], ["TagMismatch", null, null], ["Future", null, null], ["Expired", null, null], ["Conflict", null, null], ["Cycle", null, null], ["Unsupported", null, null]])),
 };
 /**
  * Boot and time in which evidence is evaluated.
@@ -244,14 +237,14 @@ export const HealthClockSample = {
  export type HealthReport = { /**
                                             * One result per node ID, in the order of the node definitions.
                                             */
-                                                        "nodes": HealthNodeResult[], /**
+                                                        "results": HealthNodeResult[], /**
                                             * Diagnostics about health records and directory configurations, and those added during
                                             * evaluation.
                                             */
                                                         "diagnostics": __schema_common.Diagnostic[] };
 
 export const HealthReport = {
-    ...__sidex_types.checker<HealthReport>((): __sidex_types.Check => __sidex_types.record([["nodes", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeResult)), false], ["diagnostics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_common.Diagnostic)), false]], [])),
+    ...__sidex_types.checker<HealthReport>((): __sidex_types.Check => __sidex_types.record([["results", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeResult)), false], ["diagnostics", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => __schema_common.Diagnostic)), false]], [])),
 };
 /**
  * Answers of one node.
@@ -272,16 +265,16 @@ export const HealthReport = {
                                             * IDs of the inputs of an aggregate node; empty for other nodes.
                                             */
                                                         "inputs": HealthNodeId[], /**
-                                            * Why the node's evidence was not used or its rule was not applied.
+                                            * Problem that kept the node's evidence or rule from determining its answers.
                                             */
-                                                        "reason"?: Reason, /**
+                                                        "problem"?: HealthProblem, /**
                                             * Message of the fresh evidence.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
-                                            * Details of the fresh evidence.
+                                            * Annotations of the fresh evidence.
                                             */
-                                                        "details"?: { [key: string]: __sidex_types.builtins.Json } };
+                                                        "annotations"?: { [key: string]: __sidex_types.builtins.Json } };
 
 export const HealthNodeResult = {
-    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["reason", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Reason), true], ["message", __sidex_types.builtin("string"), true], ["details", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
+    ...__sidex_types.checker<HealthNodeResult>((): __sidex_types.Check => __sidex_types.record([["id", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId), false], ["owner", __sidex_types.builtin("string"), true], ["usable", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["healthy", __sidex_types.lazy((): __sidex_types.Checker<unknown> => Answer), false], ["inputs", __sidex_types.sequence(__sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthNodeId)), false], ["problem", __sidex_types.lazy((): __sidex_types.Checker<unknown> => HealthProblem), true], ["message", __sidex_types.builtin("string"), true], ["annotations", __sidex_types.map(__sidex_types.builtin("string"), __sidex_types.builtin("json")), true]], [])),
 };

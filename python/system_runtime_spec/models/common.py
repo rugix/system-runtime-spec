@@ -11,11 +11,11 @@ from . import _sidex  # noqa: F401
 
 
 class Diagnostic(_sidex.Model):
-    """A record that was skipped or used despite a problem."""
+    """A record, directory configuration, or directory that was skipped or used despite a problem."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     severity: Severity = pydantic.Field(description="Whether the results may not reflect the records concerned.")
-    kind: RecordKind = pydantic.Field(description="Kind of records concerned.")
+    kind: DiagnosticKind = pydantic.Field(description="Kind of the records or directory configurations concerned.")
     message: str = pydantic.Field(description="Description of the problem; not specified and differs between implementations.")
     path: str | None = pydantic.Field(default=None, description="Path of the file or directory concerned.")
 
@@ -24,5 +24,5 @@ class Diagnostic(_sidex.Model):
 type Severity = Literal["Error", "Warning"]
 
 
-# Kind of records, named after the record types.
-type RecordKind = Literal["ComponentDeclaration", "HealthNode", "HealthStatus", "MetricDefinition", "MetricSample", "DirectoryConfig"]
+# Kind of the records or directory configurations that a diagnostic concerns.
+type DiagnosticKind = Literal["ComponentDeclaration", "HealthNode", "HealthStatus", "MetricDefinition", "MetricSample", "DirectoryConfig"]

@@ -3,12 +3,12 @@ import {
   InvalidRecord, type Record, type RecordModelKind, type RecordModels, decode, diagnostic,
 } from "./decoding.js";
 import { evaluate } from "./evaluation.js";
-import type { Diagnostic, RecordKind } from "./generated/common.js";
+import type { Diagnostic, DiagnosticKind } from "./generated/common.js";
 import type { CompatibilityReport, ComponentDeclaration } from "./generated/component.js";
 import type { HealthContext, HealthNode, HealthReport, HealthStatus } from "./generated/health.js";
 import type { MetricDefinition, MetricSample } from "./generated/metric.js";
 
-const HEALTH_KINDS: readonly RecordKind[] = ["HealthNode", "HealthStatus", "MetricDefinition", "MetricSample"];
+const HEALTH_KINDS: readonly DiagnosticKind[] = ["HealthNode", "HealthStatus", "MetricDefinition", "MetricSample"];
 
 type RecordLists = { [K in RecordModelKind]: Record<RecordModels[K]>[] };
 
@@ -165,7 +165,7 @@ export class Records {
     return (this.#records[kind] as Record<RecordModels[K]>[]).map((record) => record.value);
   }
 
-  #diagnosticsAbout(kinds: readonly RecordKind[]): Diagnostic[] {
+  #diagnosticsAbout(kinds: readonly DiagnosticKind[]): Diagnostic[] {
     return this.#diagnostics.filter((d) => kinds.includes(d.kind));
   }
 

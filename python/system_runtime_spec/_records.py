@@ -17,12 +17,12 @@ from ._decoding import (
     diagnostic,
     to_json,
 )
-from .models.common import Diagnostic, RecordKind
+from .models.common import Diagnostic, DiagnosticKind
 from .models.component import CompatibilityReport, ComponentDeclaration
 from .models.health import HealthContext, HealthNode, HealthReport, HealthStatus
 from .models.metric import MetricDefinition, MetricSample
 
-_HEALTH_KINDS: tuple[RecordKind, ...] = (
+_HEALTH_KINDS: tuple[DiagnosticKind, ...] = (
     "HealthNode",
     "HealthStatus",
     "MetricDefinition",
@@ -40,7 +40,7 @@ class Records:
     """
 
     def __init__(self) -> None:
-        self._records: dict[RecordKind, list[Record[Any]]] = {
+        self._records: dict[DiagnosticKind, list[Record[Any]]] = {
             kind: [] for kind in KINDS.values() if kind != "DirectoryConfig"
         }
         self._diagnostics: list[Diagnostic] = []
@@ -186,10 +186,10 @@ class Records:
         )
         return f"Records({counts}, diagnostics: {len(self._diagnostics)})"
 
-    def _values[M: pydantic.BaseModel](self, kind: RecordKind) -> tuple[M, ...]:
+    def _values[M: pydantic.BaseModel](self, kind: DiagnosticKind) -> tuple[M, ...]:
         return tuple(cast(M, record.value) for record in self._records[kind])
 
-    def _diagnostics_about(self, *kinds: RecordKind) -> list[Diagnostic]:
+    def _diagnostics_about(self, *kinds: DiagnosticKind) -> list[Diagnostic]:
         return [item for item in self._diagnostics if item.kind in kinds]
 
     def _add(self, record: Record[Any]) -> None:
@@ -202,7 +202,7 @@ class Records:
         result._diagnostics = list(self._diagnostics)
         return result
 
-    def _original(self, kind: RecordKind) -> list[Json]:
+    def _original(self, kind: DiagnosticKind) -> list[Json]:
         return [record.json for record in self._records[kind]]
 
     def _only(self, *, components: bool, health: bool) -> Records:

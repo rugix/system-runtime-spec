@@ -4,7 +4,7 @@
   "type": "object",
   "description": "Result of evaluating health.",
   "properties": {
-    "nodes": {
+    "results": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/system_runtime.health.HealthNodeResult"
@@ -18,20 +18,20 @@
     }
   },
   "required": [
-    "nodes",
+    "results",
     "diagnostics"
   ],
   "unevaluatedProperties": false,
   "$defs": {
     "system_runtime.common.Diagnostic": {
       "type": "object",
-      "description": "A record that was skipped or used despite a problem.",
+      "description": "A record, directory configuration, or directory that was skipped or used despite a problem.",
       "properties": {
         "severity": {
           "$ref": "#/$defs/system_runtime.common.Severity"
         },
         "kind": {
-          "$ref": "#/$defs/system_runtime.common.RecordKind"
+          "$ref": "#/$defs/system_runtime.common.DiagnosticKind"
         },
         "message": {
           "type": "string"
@@ -47,7 +47,7 @@
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.common.RecordKind": {
+    "system_runtime.common.DiagnosticKind": {
       "enum": [
         "ComponentDeclaration",
         "HealthNode",
@@ -56,7 +56,7 @@
         "MetricSample",
         "DirectoryConfig"
       ],
-      "description": "Kind of records, named after the record types."
+      "description": "Kind of the records or directory configurations that a diagnostic concerns."
     },
     "system_runtime.common.Severity": {
       "enum": [
@@ -99,13 +99,13 @@
             "$ref": "#/$defs/system_runtime.health.HealthNodeId"
           }
         },
-        "reason": {
-          "$ref": "#/$defs/system_runtime.health.Reason"
+        "problem": {
+          "$ref": "#/$defs/system_runtime.health.HealthProblem"
         },
         "message": {
           "type": "string"
         },
-        "details": {
+        "annotations": {
           "type": "object",
           "additionalProperties": {}
         }
@@ -118,7 +118,7 @@
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.health.Reason": {
+    "system_runtime.health.HealthProblem": {
       "enum": [
         "Missing",
         "OtherBoot",
@@ -130,7 +130,7 @@
         "Cycle",
         "Unsupported"
       ],
-      "description": "Why a node's evidence was not used or its rule was not applied."
+      "description": "Problem that keeps a node's evidence or rule from determining its answers."
     }
   }
 }

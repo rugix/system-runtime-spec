@@ -55,13 +55,13 @@
   "$defs": {
     "system_runtime.common.Diagnostic": {
       "type": "object",
-      "description": "A record that was skipped or used despite a problem.",
+      "description": "A record, directory configuration, or directory that was skipped or used despite a problem.",
       "properties": {
         "severity": {
           "$ref": "#/$defs/system_runtime.common.Severity"
         },
         "kind": {
-          "$ref": "#/$defs/system_runtime.common.RecordKind"
+          "$ref": "#/$defs/system_runtime.common.DiagnosticKind"
         },
         "message": {
           "type": "string"
@@ -77,7 +77,7 @@
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.common.RecordKind": {
+    "system_runtime.common.DiagnosticKind": {
       "enum": [
         "ComponentDeclaration",
         "HealthNode",
@@ -86,7 +86,7 @@
         "MetricSample",
         "DirectoryConfig"
       ],
-      "description": "Kind of records, named after the record types."
+      "description": "Kind of the records or directory configurations that a diagnostic concerns."
     },
     "system_runtime.common.Severity": {
       "enum": [
@@ -159,6 +159,9 @@
         "owner": {
           "type": "string"
         },
+        "label": {
+          "type": "string"
+        },
         "version": {
           "type": "string"
         },
@@ -211,6 +214,14 @@
         "node"
       ],
       "unevaluatedProperties": false
+    },
+    "system_runtime.health.Answer": {
+      "enum": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "description": "Answer to whether criteria are met."
     },
     "system_runtime.health.Attachment": {
       "type": "object",
@@ -412,15 +423,6 @@
         }
       ]
     },
-    "system_runtime.health.HealthState": {
-      "enum": [
-        "Healthy",
-        "Degraded",
-        "Unhealthy",
-        "Unknown"
-      ],
-      "description": "Summary of the answers of a node."
-    },
     "system_runtime.health.HealthStatus": {
       "type": "object",
       "description": "Result of a check, published while the system runs.",
@@ -431,8 +433,11 @@
         "id": {
           "$ref": "#/$defs/system_runtime.health.HealthNodeId"
         },
-        "state": {
-          "$ref": "#/$defs/system_runtime.health.HealthState"
+        "usable": {
+          "$ref": "#/$defs/system_runtime.health.Answer"
+        },
+        "healthy": {
+          "$ref": "#/$defs/system_runtime.health.Answer"
         },
         "bootId": {
           "type": "string"
@@ -464,10 +469,6 @@
         "message": {
           "type": "string"
         },
-        "details": {
-          "type": "object",
-          "additionalProperties": {}
-        },
         "annotations": {
           "type": "object",
           "additionalProperties": {}
@@ -475,7 +476,8 @@
       },
       "required": [
         "id",
-        "state",
+        "usable",
+        "healthy",
         "bootId",
         "observedAtMs",
         "maxAgeMs"
@@ -623,10 +625,6 @@
         },
         "message": {
           "type": "string"
-        },
-        "details": {
-          "type": "object",
-          "additionalProperties": {}
         },
         "annotations": {
           "type": "object",

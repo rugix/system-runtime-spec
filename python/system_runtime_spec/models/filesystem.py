@@ -20,7 +20,7 @@ class DirectoryConfig(_sidex.Model):
     """Directories that a contributor adds, as absolute paths without `..` segments.
 
     A segment consisting only of `*` matches every directory at that level whose name does not
-    start with `.`, in byte order, but no symlink."""
+    start with `.`, in byte order, except symlinks."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")

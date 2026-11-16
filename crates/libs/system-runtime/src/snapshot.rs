@@ -2,7 +2,7 @@ use sidex::types::{JsonValue, Map, Str};
 
 use crate::Records;
 use crate::records::{RecordModel, SPEC_VERSION, SUPPORTED_MAJOR, parse_spec_version, to_json};
-use crate::types::common::{Diagnostic, RecordKind};
+use crate::types::common::{Diagnostic, DiagnosticKind};
 use crate::types::component::ComponentDeclaration;
 use crate::types::health::{HealthClockSample, HealthNode, HealthStatus};
 use crate::types::metric::{MetricDefinition, MetricSample};
@@ -33,10 +33,10 @@ impl Parts {
         health: true,
     };
 
-    fn includes(self, kind: RecordKind) -> bool {
+    fn includes(self, kind: DiagnosticKind) -> bool {
         match kind {
-            RecordKind::DirectoryConfig => true,
-            RecordKind::ComponentDeclaration => self.components,
+            DiagnosticKind::DirectoryConfig => true,
+            DiagnosticKind::ComponentDeclaration => self.components,
             _ => self.health,
         }
     }
@@ -65,7 +65,7 @@ impl Default for Parts {
 ///
 /// let received = Snapshot::from_json(&json).unwrap();
 /// let report = received.records().evaluate_health(&received.clock().context);
-/// assert_eq!(report.nodes.len(), 1);
+/// assert_eq!(report.results.len(), 1);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
@@ -178,12 +178,6 @@ impl Snapshot {
             ));
         }
         let clock = value.get("clock").cloned().unwrap_or_default();
-        let timestamp = clock.get("timestamp").and_then(JsonValue::as_str);
-        if !timestamp.is_some_and(valid_timestamp) {
-            return Err(SnapshotError::InvalidClock(format!(
-                "invalid timestamp {timestamp:?}"
-            )));
-        }
         let clock: HealthClockSample = sidex::formats::json::from_value(&clock)
             .map_err(|error| SnapshotError::InvalidClock(error.to_string()))?;
         let present = HEALTH_FIELDS.map(|field| value.get(field).is_some());
@@ -246,36 +240,6 @@ fn read_diagnostic(item: JsonValue) -> Result<Diagnostic, SnapshotError> {
     }
     sidex::formats::json::from_value(&JsonValue::Map(item))
         .map_err(|error| SnapshotError::InvalidDiagnostic(error.to_string()))
-}
-
-fn valid_timestamp(text: &str) -> bool {
-    let bytes = text.as_bytes();
-    let digits = |range: std::ops::Range<usize>| {
-        bytes
-            .get(range)
-            .is_some_and(|part| part.iter().all(u8::is_ascii_digit))
-    };
-    let fraction = bytes
-        .get(19..bytes.len().saturating_sub(1))
-        .unwrap_or_default();
-    bytes.len() >= 20
-        && digits(0..4)
-        && bytes[4] == b'-'
-        && digits(5..7)
-        && bytes[7] == b'-'
-        && digits(8..10)
-        && bytes[10] == b'T'
-        && digits(11..13)
-        && bytes[13] == b':'
-        && digits(14..16)
-        && bytes[16] == b':'
-        && digits(17..19)
-        && &bytes[17..19] != b"60"
-        && bytes.ends_with(b"Z")
-        && (fraction.is_empty()
-            || (fraction.len() > 1
-                && fraction[0] == b'.'
-                && fraction[1..].iter().all(u8::is_ascii_digit)))
 }
 
 fn list(value: &JsonValue, field: &'static str) -> Result<Vec<JsonValue>, SnapshotError> {

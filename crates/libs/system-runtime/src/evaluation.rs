@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::Records;
 use crate::records::Record;
-use crate::types::common::{Diagnostic, RecordKind, Severity};
+use crate::types::common::{Diagnostic, DiagnosticKind, Severity};
 use crate::types::health::*;
 use crate::types::metric::{MetricDefinition, MetricRange, MetricSample};
 
@@ -37,15 +37,6 @@ impl Records {
 type Answers = (Answer, Answer);
 
 const UNKNOWN: Answers = (Answer::Unknown, Answer::Unknown);
-
-fn state_answers(state: HealthState) -> Answers {
-    match state {
-        HealthState::Healthy => (Answer::Yes, Answer::Yes),
-        HealthState::Degraded => (Answer::Yes, Answer::No),
-        HealthState::Unhealthy => (Answer::No, Answer::No),
-        HealthState::Unknown => UNKNOWN,
-    }
-}
 
 fn conjunction(answers: impl IntoIterator<Item = Answer>) -> Answer {
     let mut result = Answer::Yes;
@@ -123,11 +114,11 @@ struct Evaluation<'a> {
 impl<'a> Evaluation<'a> {
     fn new(records: &Records, context: &'a HealthContext) -> Self {
         let diagnostics = records.diagnostics_about(&[
-            RecordKind::HealthNode,
-            RecordKind::HealthStatus,
-            RecordKind::MetricDefinition,
-            RecordKind::MetricSample,
-            RecordKind::DirectoryConfig,
+            DiagnosticKind::HealthNode,
+            DiagnosticKind::HealthStatus,
+            DiagnosticKind::MetricDefinition,
+            DiagnosticKind::MetricSample,
+            DiagnosticKind::DirectoryConfig,
         ]);
         let nodes = &records.health_nodes;
         let mut order = Vec::new();
@@ -156,7 +147,7 @@ impl<'a> Evaluation<'a> {
             if group.len() > 1 {
                 evaluation.diagnose(
                     Severity::Error,
-                    RecordKind::HealthNode,
+                    DiagnosticKind::HealthNode,
                     format!("several nodes have the ID {id:?}"),
                 );
                 evaluation.conflicts.insert(id);
@@ -170,10 +161,19 @@ impl<'a> Evaluation<'a> {
         }
         evaluation.resolve_inputs();
         evaluation.on_cycle = evaluation.find_cycles();
+        for id in evaluation.order.clone() {
+            if evaluation.on_cycle.contains(&id) {
+                evaluation.diagnose(
+                    Severity::Warning,
+                    DiagnosticKind::HealthNode,
+                    format!("node {id:?} is on a cycle"),
+                );
+            }
+        }
         evaluation
     }
 
-    fn diagnose(&mut self, severity: Severity, kind: RecordKind, message: String) {
+    fn diagnose(&mut self, severity: Severity, kind: DiagnosticKind, message: String) {
         if self.reported.insert(message.clone()) {
             self.diagnostics
                 .push(Diagnostic::new(severity, kind, message));
@@ -232,7 +232,7 @@ impl<'a> Evaluation<'a> {
             self.inputs.insert(id.clone(), inputs);
         }
         for message in missing {
-            self.diagnose(Severity::Warning, RecordKind::HealthNode, message);
+            self.diagnose(Severity::Warning, DiagnosticKind::HealthNode, message);
         }
     }
 
@@ -305,25 +305,25 @@ impl<'a> Evaluation<'a> {
     }
 
     fn report(mut self) -> HealthReport {
-        let mut nodes = Vec::new();
+        let mut results = Vec::new();
         for id in self.order.clone() {
             if self.conflicts.contains(&id) {
-                nodes.push(HealthNodeResult {
+                results.push(HealthNodeResult {
                     id: HealthNodeId(id),
                     owner: None,
                     usable: Answer::Unknown,
                     healthy: Answer::Unknown,
                     inputs: Vec::new(),
-                    reason: Some(Reason::Conflict),
+                    problem: Some(HealthProblem::Conflict),
                     message: None,
-                    details: None,
+                    annotations: None,
                 });
             } else {
-                nodes.push(self.result(&id));
+                results.push(self.result(&id));
             }
         }
         HealthReport {
-            nodes,
+            results,
             diagnostics: self.diagnostics,
         }
     }
@@ -354,15 +354,15 @@ impl<'a> Evaluation<'a> {
                 .flatten()
                 .map(|(child, _)| HealthNodeId(child.clone()))
                 .collect(),
-            reason: None,
+            problem: None,
             message: None,
-            details: None,
+            annotations: None,
         };
         let rule = node.rule.clone();
         if self.on_cycle.contains(id) {
-            result.reason = Some(Reason::Cycle);
+            result.problem = Some(HealthProblem::Cycle);
         } else if self.unsupported.contains(id) {
-            result.reason = Some(Reason::Unsupported);
+            result.problem = Some(HealthProblem::Unsupported);
         } else {
             match rule {
                 None => self.observe(
@@ -383,31 +383,31 @@ impl<'a> Evaluation<'a> {
     }
 
     /// Return why evidence is not fresh, or None if it is fresh.
-    fn freshness_reason(
+    fn freshness_problem(
         &self,
         evidence: &Evidence<'_>,
         owner: Option<&str>,
         tag: Option<&str>,
         max_ages: &[Option<u64>],
-    ) -> Option<Reason> {
+    ) -> Option<HealthProblem> {
         if evidence.boot_id != self.context.boot_id {
-            return Some(Reason::OtherBoot);
+            return Some(HealthProblem::OtherBoot);
         }
         if owner.is_some_and(|owner| evidence.owner != Some(owner)) {
-            return Some(Reason::OwnerMismatch);
+            return Some(HealthProblem::OwnerMismatch);
         }
         if tag.is_some_and(|tag| evidence.tag != Some(tag)) {
-            return Some(Reason::TagMismatch);
+            return Some(HealthProblem::TagMismatch);
         }
         if evidence.observed_at_ms > self.context.now_ms {
-            return Some(Reason::Future);
+            return Some(HealthProblem::Future);
         }
         let age = self.context.now_ms - evidence.observed_at_ms;
         if std::iter::once(evidence.max_age_ms)
             .chain(max_ages.iter().flatten().copied())
             .any(|limit| age >= limit)
         {
-            return Some(Reason::Expired);
+            return Some(HealthProblem::Expired);
         }
         None
     }
@@ -417,14 +417,14 @@ impl<'a> Evaluation<'a> {
         if count > 1 {
             self.diagnose(
                 Severity::Warning,
-                RecordKind::HealthStatus,
+                DiagnosticKind::HealthStatus,
                 format!("several status records for {id:?}"),
             );
-            result.reason = Some(Reason::Conflict);
+            result.problem = Some(HealthProblem::Conflict);
             return;
         }
         let Some(status) = self.statuses.get(id).and_then(|statuses| statuses.first()) else {
-            result.reason = Some(Reason::Missing);
+            result.problem = Some(HealthProblem::Missing);
             return;
         };
         let owner = self.nodes[id].value.owner.as_deref();
@@ -436,22 +436,22 @@ impl<'a> Evaluation<'a> {
             owner: record.owner.as_deref(),
             tag: record.tag.as_deref(),
         };
-        if let Some(reason) = self.freshness_reason(
+        if let Some(problem) = self.freshness_problem(
             &evidence,
             owner,
             rule.expected_tag.as_deref(),
             &[rule.max_age_ms],
         ) {
-            result.reason = Some(reason);
+            result.problem = Some(problem);
             return;
         }
         if status.unsupported {
-            result.reason = Some(Reason::Unsupported);
+            result.problem = Some(HealthProblem::Unsupported);
         } else {
-            (result.usable, result.healthy) = state_answers(record.state);
+            (result.usable, result.healthy) = (record.usable, record.healthy);
         }
         result.message = record.message.clone();
-        result.details = record.details.clone();
+        result.annotations = record.annotations.clone();
     }
 
     fn threshold(&mut self, result: &mut HealthNodeResult, id: &str, rule: &ThresholdRule) {
@@ -459,20 +459,20 @@ impl<'a> Evaluation<'a> {
         let definitions = self.metrics.get(&metric).map_or(0, Vec::len);
         let samples = self.samples.get(&metric).map_or(0, Vec::len);
         if definitions == 0 {
-            result.reason = Some(Reason::Missing);
+            result.problem = Some(HealthProblem::Missing);
             return;
         }
         let definition = self.metrics[&metric][0].value.clone();
         let mut conflicts = Vec::new();
         if definitions > 1 {
             conflicts.push((
-                RecordKind::MetricDefinition,
+                DiagnosticKind::MetricDefinition,
                 format!("several definitions of {metric:?}"),
             ));
         }
         if samples > 1 {
             conflicts.push((
-                RecordKind::MetricSample,
+                DiagnosticKind::MetricSample,
                 format!("several samples of {metric:?}"),
             ));
         }
@@ -482,7 +482,7 @@ impl<'a> Evaluation<'a> {
             .is_some_and(|unit| *unit != definition.unit)
         {
             conflicts.push((
-                RecordKind::HealthNode,
+                DiagnosticKind::HealthNode,
                 format!("unit of {id:?} differs from {metric:?}"),
             ));
         }
@@ -490,7 +490,7 @@ impl<'a> Evaluation<'a> {
             for (kind, message) in conflicts {
                 self.diagnose(Severity::Warning, kind, message);
             }
-            result.reason = Some(Reason::Conflict);
+            result.problem = Some(HealthProblem::Conflict);
             return;
         }
         let Some(sample) = self
@@ -498,7 +498,7 @@ impl<'a> Evaluation<'a> {
             .get(&metric)
             .and_then(|samples| samples.first())
         else {
-            result.reason = Some(Reason::Missing);
+            result.problem = Some(HealthProblem::Missing);
             return;
         };
         let record = &sample.value;
@@ -509,13 +509,13 @@ impl<'a> Evaluation<'a> {
             owner: record.owner.as_deref(),
             tag: record.tag.as_deref(),
         };
-        if let Some(reason) = self.freshness_reason(
+        if let Some(problem) = self.freshness_problem(
             &evidence,
             definition.owner.as_deref(),
             definition.expected_tag.as_deref(),
             &[definition.max_age_ms, rule.max_age_ms],
         ) {
-            result.reason = Some(reason);
+            result.problem = Some(problem);
             return;
         }
         (result.usable, result.healthy) = if contains(&rule.healthy, record.value) {
@@ -526,7 +526,7 @@ impl<'a> Evaluation<'a> {
             (Answer::No, Answer::No)
         };
         result.message = record.message.clone();
-        result.details = record.details.clone();
+        result.annotations = record.annotations.clone();
     }
 
     fn aggregate(&mut self, result: &mut HealthNodeResult, id: &str, rule: &AggregationRule) {
@@ -537,7 +537,7 @@ impl<'a> Evaluation<'a> {
             .collect();
         let counted: Vec<Answers> = answers
             .iter()
-            .filter(|(mode, _)| *mode != InputMode::Optional)
+            .filter(|(mode, _)| *mode == InputMode::Counted)
             .map(|(_, answers)| *answers)
             .collect();
         let with_mode = |wanted: InputMode| {

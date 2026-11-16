@@ -1,31 +1,24 @@
 from collections.abc import Sequence
 
 from ._decoding import Record, diagnostic
-from .models.common import Diagnostic, RecordKind, Severity
+from .models.common import Diagnostic, DiagnosticKind, Severity
 from .models.health import (
     Answer,
     HealthContext,
     HealthNode,
     HealthNodeResult,
+    HealthProblem,
     HealthReport,
     HealthRule_Aggregate,
     HealthRule_Observed,
     HealthRule_Threshold,
-    HealthState,
     HealthStatus,
     InputMode,
-    Reason,
 )
 from .models.metric import MetricDefinition, MetricRange, MetricSample
 
 type Answers = tuple[Answer, Answer]
 
-_STATE_ANSWERS: dict[HealthState, Answers] = {
-    "Healthy": ("Yes", "Yes"),
-    "Degraded": ("Yes", "No"),
-    "Unhealthy": ("No", "No"),
-    "Unknown": ("Unknown", "Unknown"),
-}
 _UNKNOWN: Answers = ("Unknown", "Unknown")
 
 
@@ -105,9 +98,12 @@ class _Evaluation:
         self.inputs: dict[str, list[tuple[str, InputMode]]] = {}
         self._resolve_inputs()
         self.on_cycle = self._find_cycles()
+        for id in self.order:
+            if id in self.on_cycle:
+                self._diagnose("Warning", "HealthNode", f"node {id!r} is on a cycle")
         self.results: dict[str, HealthNodeResult] = {}
 
-    def _diagnose(self, severity: Severity, kind: RecordKind, message: str) -> None:
+    def _diagnose(self, severity: Severity, kind: DiagnosticKind, message: str) -> None:
         if message not in self.reported:
             self.reported.add(message)
             self.diagnostics.append(diagnostic(severity, kind, message))
@@ -200,19 +196,19 @@ class _Evaluation:
         return on_cycle
 
     def report(self) -> HealthReport:
-        nodes = [
+        results = [
             HealthNodeResult(
                 id=id,
                 usable="Unknown",
                 healthy="Unknown",
                 inputs=[],
-                reason="Conflict",
+                problem="Conflict",
             )
             if id in self.conflicts
             else self._result(id)
             for id in self.order
         ]
-        return HealthReport(nodes=nodes, diagnostics=self.diagnostics)
+        return HealthReport(results=results, diagnostics=self.diagnostics)
 
     def _answers(self, id: str) -> Answers:
         if id in self.nodes:
@@ -233,9 +229,9 @@ class _Evaluation:
         )
         rule = node.rule
         if id in self.on_cycle:
-            result.reason = "Cycle"
+            result.problem = "Cycle"
         elif id in self.unsupported:
-            result.reason = "Unsupported"
+            result.problem = "Unsupported"
         elif isinstance(rule, HealthRule_Threshold):
             self._threshold(result, node, rule)
         elif isinstance(rule, HealthRule_Aggregate):
@@ -245,13 +241,13 @@ class _Evaluation:
         self.results[id] = result
         return result
 
-    def _freshness_reason(
+    def _freshness_problem(
         self,
         evidence: HealthStatus | MetricSample,
         owner: str | None,
         tag: str | None,
         max_ages: list[int | None],
-    ) -> Reason | None:
+    ) -> HealthProblem | None:
         """Return why evidence is not fresh, or None if it is fresh."""
         if evidence.boot_id != self.context.boot_id:
             return "OtherBoot"
@@ -275,24 +271,24 @@ class _Evaluation:
             self._diagnose(
                 "Warning", "HealthStatus", f"several status records for {node.id!r}"
             )
-            result.reason = "Conflict"
+            result.problem = "Conflict"
             return
         if not statuses:
-            result.reason = "Missing"
+            result.problem = "Missing"
             return
         status = statuses[0]
-        reason = self._freshness_reason(
+        problem = self._freshness_problem(
             status.value, node.owner, rule.expected_tag, [rule.max_age_ms]
         )
-        if reason is not None:
-            result.reason = reason
+        if problem is not None:
+            result.problem = problem
             return
         if status.unsupported:
-            result.reason = "Unsupported"
+            result.problem = "Unsupported"
         else:
-            result.usable, result.healthy = _STATE_ANSWERS[status.value.state]
+            result.usable, result.healthy = status.value.usable, status.value.healthy
         result.message = status.value.message
-        result.details = status.value.details
+        result.annotations = status.value.annotations
 
     def _threshold(
         self, result: HealthNodeResult, node: HealthNode, rule: HealthRule_Threshold
@@ -301,10 +297,10 @@ class _Evaluation:
         definitions = self.metrics.get(metric, [])
         samples = self.samples.get(metric, [])
         if not definitions:
-            result.reason = "Missing"
+            result.problem = "Missing"
             return
         definition = definitions[0].value
-        conflicts: list[tuple[RecordKind, str]] = []
+        conflicts: list[tuple[DiagnosticKind, str]] = []
         if len(definitions) > 1:
             conflicts.append(("MetricDefinition", f"several definitions of {metric!r}"))
         if len(samples) > 1:
@@ -316,20 +312,20 @@ class _Evaluation:
         if conflicts:
             for kind, message in conflicts:
                 self._diagnose("Warning", kind, message)
-            result.reason = "Conflict"
+            result.problem = "Conflict"
             return
         if not samples:
-            result.reason = "Missing"
+            result.problem = "Missing"
             return
         sample = samples[0].value
-        reason = self._freshness_reason(
+        problem = self._freshness_problem(
             sample,
             definition.owner,
             definition.expected_tag,
             [definition.max_age_ms, rule.max_age_ms],
         )
-        if reason is not None:
-            result.reason = reason
+        if problem is not None:
+            result.problem = problem
             return
         if _contains(rule.healthy, sample.value):
             result.usable, result.healthy = "Yes", "Yes"
@@ -338,12 +334,12 @@ class _Evaluation:
         else:
             result.usable, result.healthy = "No", "No"
         result.message = sample.message
-        result.details = sample.details
+        result.annotations = sample.annotations
 
     def _aggregate(self, result: HealthNodeResult, rule: HealthRule_Aggregate) -> None:
         inputs = self.inputs[result.id]
         answers = {child: self._answers(child) for child, _ in inputs}
-        counted = [answers[child] for child, mode in inputs if mode != "Optional"]
+        counted = [answers[child] for child, mode in inputs if mode == "Counted"]
         mandatory = [answers[child] for child, mode in inputs if mode == "Mandatory"]
         optional = [answers[child] for child, mode in inputs if mode == "Optional"]
         min_healthy = rule.min_healthy if rule.min_healthy is not None else len(counted)

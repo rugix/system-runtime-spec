@@ -8,7 +8,7 @@ from typing import Any, cast
 import pydantic
 
 from ._version import Version, parse_requirement
-from .models.common import Diagnostic, RecordKind, Severity
+from .models.common import Diagnostic, DiagnosticKind, Severity
 from .models.component import ComponentDeclaration
 from .models.filesystem import DirectoryConfig
 from .models.health import (
@@ -31,7 +31,7 @@ type RecordModel = (
 
 type Json = Any
 
-KINDS: dict[type[pydantic.BaseModel], RecordKind] = {
+KINDS: dict[type[pydantic.BaseModel], DiagnosticKind] = {
     ComponentDeclaration: "ComponentDeclaration",
     HealthNode: "HealthNode",
     HealthStatus: "HealthStatus",
@@ -45,7 +45,7 @@ _ID = re.compile(r"[!-~]+")
 _U64_MAX = 2**64 - 1
 
 _RULE_TYPES = ("Observed", "Threshold", "Aggregate")
-_STATES = ("Healthy", "Degraded", "Unhealthy", "Unknown")
+_ANSWERS = ("Yes", "No", "Unknown")
 _MODES = ("Counted", "Mandatory", "Optional")
 
 
@@ -73,7 +73,7 @@ def to_json(model: pydantic.BaseModel) -> Json:
 
 
 def diagnostic(
-    severity: Severity, kind: RecordKind, message: str, path: str | None = None
+    severity: Severity, kind: DiagnosticKind, message: str, path: str | None = None
 ) -> Diagnostic:
     return Diagnostic(severity=severity, kind=kind, message=message, path=path)
 
@@ -83,7 +83,7 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
     if not isinstance(value, Mapping):
         raise InvalidRecord("record is not a JSON object")
     original = copy.deepcopy(dict(value))
-    data = _integral(original)
+    data = copy.deepcopy(original)
     kind = KINDS[model]
     newer = _check_version(kind, data)
     unsupported = False
@@ -91,12 +91,12 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
     if model is HealthNode:
         unsupported = _node_fallbacks(data, attachments)
     elif model is HealthStatus:
-        state = data.get("state")
-        if state not in _STATES:
-            if not isinstance(state, str):
-                raise InvalidRecord("state is not a string")
+        for key in ("usable", "healthy"):
+            if not isinstance(data.get(key), str):
+                raise InvalidRecord(f"{key} is not a string")
+        if data["usable"] not in _ANSWERS or data["healthy"] not in _ANSWERS:
             unsupported = True
-            data["state"] = "Unknown"
+            data["usable"] = data["healthy"] = "Unknown"
     try:
         instance = model.model_validate(data)
     except pydantic.ValidationError as error:
@@ -113,17 +113,6 @@ def decode[M: pydantic.BaseModel](model: type[M], value: Json) -> Record[M]:
     return Record(original, instance, newer, unsupported, frozenset(attachments))
 
 
-def _integral(value: Json) -> Json:
-    """Read integral JSON numbers, such as `1.0`, as integers."""
-    if isinstance(value, float) and value.is_integer():
-        return int(value)
-    if isinstance(value, dict):
-        return {key: _integral(item) for key, item in value.items()}
-    if isinstance(value, list):
-        return [_integral(item) for item in value]
-    return value
-
-
 def parse_spec_version(text: object) -> tuple[int, int] | None:
     if not isinstance(text, str):
         return None
@@ -136,7 +125,7 @@ def parse_spec_version(text: object) -> tuple[int, int] | None:
     return major, minor
 
 
-def _check_version(kind: RecordKind, record: dict[str, Json]) -> bool:
+def _check_version(kind: DiagnosticKind, record: dict[str, Json]) -> bool:
     """Check a record's version; return whether it is a newer minor version."""
     if "specVersion" not in record:
         return False
@@ -279,6 +268,10 @@ def _check_ranges(healthy: MetricRange, usable: MetricRange) -> None:
 
 def _validate_status(record: HealthStatus) -> None:
     _check_positive(record.max_age_ms, "maxAgeMs")
+    if record.healthy == "Yes" and record.usable != "Yes":
+        raise InvalidRecord("healthy is Yes but usable is not")
+    if record.usable == "No" and record.healthy != "No":
+        raise InvalidRecord("usable is No but healthy is not")
 
 
 def _validate_metric(record: MetricDefinition) -> None:
@@ -316,7 +309,7 @@ def check_directory_path(path: str) -> None:
             raise InvalidRecord(f"path contains a partial wildcard: {path!r}")
 
 
-_VALIDATORS: dict[RecordKind, Callable[[Any], None]] = {
+_VALIDATORS: dict[DiagnosticKind, Callable[[Any], None]] = {
     "ComponentDeclaration": _validate_component,
     "HealthNode": _validate_node,
     "HealthStatus": _validate_status,

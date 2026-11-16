@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "system_runtime.common.RecordKind",
+  "$id": "system_runtime.common.DiagnosticKind",
   "enum": [
     "ComponentDeclaration",
     "HealthNode",
@@ -9,5 +9,5 @@
     "MetricSample",
     "DirectoryConfig"
   ],
-  "description": "Kind of records, named after the record types."
+  "description": "Kind of the records or directory configurations that a diagnostic concerns."
 }

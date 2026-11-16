@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "system_runtime.filesystem.DirectoryConfig",
   "type": "object",
-  "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, but no symlink.",
+  "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, except symlinks.",
   "properties": {
     "specVersion": {
       "type": "string"

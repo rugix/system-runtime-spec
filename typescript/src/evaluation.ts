@@ -1,8 +1,8 @@
 import { builtins } from "@sidex/types";
-import type { Diagnostic, RecordKind, Severity } from "./generated/common.js";
+import type { Diagnostic, DiagnosticKind, Severity } from "./generated/common.js";
 import type {
-  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthReport, HealthState,
-  HealthStatus, InputMode, ObservationRule, Reason, ThresholdRule,
+  AggregationRule, Answer, HealthContext, HealthNode, HealthNodeId, HealthNodeResult, HealthProblem,
+  HealthReport, HealthStatus, InputMode, ObservationRule, ThresholdRule,
 } from "./generated/health.js";
 import type { MetricDefinition, MetricRange, MetricSample } from "./generated/metric.js";
 import { type Record, diagnostic } from "./decoding.js";
@@ -10,12 +10,6 @@ import { type Record, diagnostic } from "./decoding.js";
 type Answers = [Answer, Answer];
 
 const UNKNOWN: Answers = ["Unknown", "Unknown"];
-const STATE_ANSWERS: { [S in HealthState]: Answers } = {
-  Healthy: ["Yes", "Yes"],
-  Degraded: ["Yes", "No"],
-  Unhealthy: ["No", "No"],
-  Unknown: UNKNOWN,
-};
 const { U64, F64 } = builtins;
 
 function conjunction(answers: Answer[]): Answer {
@@ -96,9 +90,14 @@ class Evaluation {
     }
     this.resolveInputs();
     this.onCycle = this.findCycles();
+    for (const id of this.order) {
+      if (this.onCycle.has(id)) {
+        this.diagnose("Warning", "HealthNode", `node ${JSON.stringify(id)} is on a cycle`);
+      }
+    }
   }
 
-  private diagnose(severity: Severity, kind: RecordKind, message: string): void {
+  private diagnose(severity: Severity, kind: DiagnosticKind, message: string): void {
     if (this.reported.has(message)) return;
     this.reported.add(message);
     this.diagnostics.push(diagnostic(severity, kind, message));
@@ -192,11 +191,11 @@ class Evaluation {
   }
 
   report(): HealthReport {
-    const nodes = this.order.map((id): HealthNodeResult =>
+    const results = this.order.map((id): HealthNodeResult =>
       this.conflicts.has(id)
-        ? { id: id as HealthNodeId, usable: "Unknown", healthy: "Unknown", inputs: [], reason: "Conflict" }
+        ? { id: id as HealthNodeId, usable: "Unknown", healthy: "Unknown", inputs: [], problem: "Conflict" }
         : this.result(id));
-    return { nodes, diagnostics: this.diagnostics };
+    return { results, diagnostics: this.diagnostics };
   }
 
   private answers(id: string): Answers {
@@ -217,8 +216,8 @@ class Evaluation {
       inputs: (this.inputs.get(id) ?? []).map(([child]) => child as HealthNodeId),
     };
     const rule = node.rule ?? { type: "Observed" };
-    if (this.onCycle.has(id)) result.reason = "Cycle";
-    else if (this.unsupported.has(id)) result.reason = "Unsupported";
+    if (this.onCycle.has(id)) result.problem = "Cycle";
+    else if (this.unsupported.has(id)) result.problem = "Unsupported";
     else if (rule.type === "Observed") this.observe(result, node, rule);
     else if (rule.type === "Threshold") this.threshold(result, node, rule);
     else this.aggregate(result, rule);
@@ -227,12 +226,12 @@ class Evaluation {
   }
 
   /** Return why evidence is not fresh, or undefined if it is fresh. */
-  private freshnessReason(
+  private freshnessProblem(
     evidence: HealthStatus | MetricSample,
     owner: string | undefined,
     tag: string | undefined,
     maxAges: (builtins.U64 | undefined)[],
-  ): Reason | undefined {
+  ): HealthProblem | undefined {
     if (evidence.bootId !== this.context.bootId) return "OtherBoot";
     if (owner !== undefined && evidence.owner !== owner) return "OwnerMismatch";
     if (tag !== undefined && evidence.tag !== tag) return "TagMismatch";
@@ -246,31 +245,34 @@ class Evaluation {
     return undefined;
   }
 
-  private copyMessageAndDetails(result: HealthNodeResult, evidence: HealthStatus | MetricSample): void {
+  private copyMessageAndAnnotations(
+    result: HealthNodeResult,
+    evidence: HealthStatus | MetricSample,
+  ): void {
     if (evidence.message !== undefined) result.message = evidence.message;
-    if (evidence.details !== undefined) result.details = evidence.details;
+    if (evidence.annotations !== undefined) result.annotations = evidence.annotations;
   }
 
   private observe(result: HealthNodeResult, node: HealthNode, rule: ObservationRule): void {
     const statuses = this.statuses.get(node.id) ?? [];
     if (statuses.length > 1) {
       this.diagnose("Warning", "HealthStatus", `several status records for ${JSON.stringify(node.id)}`);
-      result.reason = "Conflict";
+      result.problem = "Conflict";
       return;
     }
     if (statuses.length === 0) {
-      result.reason = "Missing";
+      result.problem = "Missing";
       return;
     }
     const [status] = statuses;
-    const reason = this.freshnessReason(status.value, node.owner, rule.expectedTag, [rule.maxAgeMs]);
-    if (reason !== undefined) {
-      result.reason = reason;
+    const problem = this.freshnessProblem(status.value, node.owner, rule.expectedTag, [rule.maxAgeMs]);
+    if (problem !== undefined) {
+      result.problem = problem;
       return;
     }
-    if (status.unsupported) result.reason = "Unsupported";
-    else [result.usable, result.healthy] = STATE_ANSWERS[status.value.state];
-    this.copyMessageAndDetails(result, status.value);
+    if (status.unsupported) result.problem = "Unsupported";
+    else [result.usable, result.healthy] = [status.value.usable, status.value.healthy];
+    this.copyMessageAndAnnotations(result, status.value);
   }
 
   private threshold(result: HealthNodeResult, node: HealthNode, rule: ThresholdRule): void {
@@ -278,11 +280,11 @@ class Evaluation {
     const definitions = this.metrics.get(metric) ?? [];
     const samples = this.samples.get(metric) ?? [];
     if (definitions.length === 0) {
-      result.reason = "Missing";
+      result.problem = "Missing";
       return;
     }
     const definition = definitions[0].value;
-    const conflicts: [RecordKind, string][] = [];
+    const conflicts: [DiagnosticKind, string][] = [];
     if (definitions.length > 1) conflicts.push(["MetricDefinition", `several definitions of ${JSON.stringify(metric)}`]);
     if (samples.length > 1) conflicts.push(["MetricSample", `several samples of ${JSON.stringify(metric)}`]);
     if (rule.unit !== undefined && rule.unit !== definition.unit) {
@@ -290,30 +292,30 @@ class Evaluation {
     }
     if (conflicts.length > 0) {
       for (const [kind, message] of conflicts) this.diagnose("Warning", kind, message);
-      result.reason = "Conflict";
+      result.problem = "Conflict";
       return;
     }
     if (samples.length === 0) {
-      result.reason = "Missing";
+      result.problem = "Missing";
       return;
     }
     const sample = samples[0].value;
-    const reason = this.freshnessReason(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
-    if (reason !== undefined) {
-      result.reason = reason;
+    const problem = this.freshnessProblem(sample, definition.owner, definition.expectedTag, [definition.maxAgeMs, rule.maxAgeMs]);
+    if (problem !== undefined) {
+      result.problem = problem;
       return;
     }
     const value = F64.toNumber(sample.value);
     [result.usable, result.healthy] = contains(rule.healthy, value)
       ? ["Yes", "Yes"]
       : contains(rule.usable, value) ? ["Yes", "No"] : ["No", "No"];
-    this.copyMessageAndDetails(result, sample);
+    this.copyMessageAndAnnotations(result, sample);
   }
 
   private aggregate(result: HealthNodeResult, rule: AggregationRule): void {
     const inputs = (this.inputs.get(result.id) as [string, InputMode][])
       .map(([child, mode]): [InputMode, Answers] => [mode, this.answers(child)]);
-    const counted = inputs.filter(([mode]) => mode !== "Optional").map(([, answers]) => answers);
+    const counted = inputs.filter(([mode]) => mode === "Counted").map(([, answers]) => answers);
     const withMode = (wanted: InputMode) => inputs.filter(([mode]) => mode === wanted).map(([, answers]) => answers);
     const minHealthy = rule.minHealthy === undefined ? BigInt(counted.length) : U64.toBigInt(rule.minHealthy);
     const minUsable = rule.minUsable === undefined ? minHealthy : U64.toBigInt(rule.minUsable);

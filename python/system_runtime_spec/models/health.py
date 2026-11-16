@@ -45,7 +45,7 @@ class ThresholdRule(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     metric: _schema_metric.MetricId = pydantic.Field(description="ID of the metric.")
-    unit: str | None = pydantic.Field(default=None, description="Unit of the ranges, as a UCUM code; must equal the metric's unit.")
+    unit: str | None = pydantic.Field(default=None, description="Unit that the ranges assume, as a UCUM code.")
     healthy: _schema_metric.MetricRange = pydantic.Field(description="Range in which the desired criteria are met; a subset of the usable range.")
     usable: _schema_metric.MetricRange = pydantic.Field(description="Range in which the minimum criteria are met.")
     max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
@@ -82,14 +82,14 @@ class HealthStatus(_sidex.Model):
 
     spec_version: str | None = pydantic.Field(default=None, description="Version of the specification that the record follows; omitted means `1.0`.", validation_alias="specVersion", serialization_alias="specVersion")
     id: HealthNodeId = pydantic.Field(description="ID of the observed node.")
-    state: HealthState = pydantic.Field(description="Result of the check.")
+    usable: Answer = pydantic.Field(description="Whether the minimum criteria are met.")
+    healthy: Answer = pydantic.Field(description="Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires\n`No`.")
     boot_id: str = pydantic.Field(description="ID of the boot during which the check took place.", validation_alias="bootId", serialization_alias="bootId")
     observed_at_ms: _sidex.U64 = pydantic.Field(description="Boot-time clock value, in milliseconds, when the check took place.", validation_alias="observedAtMs", serialization_alias="observedAtMs")
     max_age_ms: _sidex.U64 = pydantic.Field(description="Duration, in milliseconds, for which the status record is valid; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
     owner: str | None = pydantic.Field(default=None, description="Owner of the status record.")
-    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
-    message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display, in any structure.")
+    tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that produced the evidence.")
+    message: str | None = pydantic.Field(default=None, description="Explanation for people, such as the output of a check; can span several lines.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
@@ -113,7 +113,7 @@ class HealthReport(_sidex.Model):
     """Result of evaluating health."""
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
-    nodes: list[HealthNodeResult] = pydantic.Field(description="One result per node ID, in the order of the node definitions.")
+    results: list[HealthNodeResult] = pydantic.Field(description="One result per node ID, in the order of the node definitions.")
     diagnostics: list[_schema_common.Diagnostic] = pydantic.Field(description="Diagnostics about health records and directory configurations, and those added during\nevaluation.")
 
 
@@ -126,9 +126,9 @@ class HealthNodeResult(_sidex.Model):
     usable: Answer = pydantic.Field(description="Whether the minimum criteria are met.")
     healthy: Answer = pydantic.Field(description="Whether the desired criteria are met.")
     inputs: list[HealthNodeId] = pydantic.Field(description="IDs of the inputs of an aggregate node; empty for other nodes.")
-    reason: Reason | None = pydantic.Field(default=None, description="Why the node's evidence was not used or its rule was not applied.")
+    problem: HealthProblem | None = pydantic.Field(default=None, description="Problem that kept the node's evidence or rule from determining its answers.")
     message: str | None = pydantic.Field(default=None, description="Message of the fresh evidence.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Details of the fresh evidence.")
+    annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Annotations of the fresh evidence.")
 
 
 class HealthRule_Observed(_sidex.Model):
@@ -146,7 +146,7 @@ class HealthRule_Threshold(_sidex.Model):
 
     type: Literal["Threshold"] = "Threshold"
     metric: _schema_metric.MetricId = pydantic.Field(description="ID of the metric.")
-    unit: str | None = pydantic.Field(default=None, description="Unit of the ranges, as a UCUM code; must equal the metric's unit.")
+    unit: str | None = pydantic.Field(default=None, description="Unit that the ranges assume, as a UCUM code.")
     healthy: _schema_metric.MetricRange = pydantic.Field(description="Range in which the desired criteria are met; a subset of the usable range.")
     usable: _schema_metric.MetricRange = pydantic.Field(description="Range in which the minimum criteria are met.")
     max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
@@ -173,13 +173,9 @@ type HealthRule = Annotated[HealthRule_Observed | HealthRule_Threshold | HealthR
 type InputMode = Literal["Counted", "Mandatory", "Optional"]
 
 
-# Summary of the answers of a node.
-type HealthState = Literal["Healthy", "Degraded", "Unhealthy", "Unknown"]
-
-
 # Answer to whether criteria are met.
 type Answer = Literal["Yes", "No", "Unknown"]
 
 
-# Why a node's evidence was not used or its rule was not applied.
-type Reason = Literal["Missing", "OtherBoot", "OwnerMismatch", "TagMismatch", "Future", "Expired", "Conflict", "Cycle", "Unsupported"]
+# Problem that keeps a node's evidence or rule from determining its answers.
+type HealthProblem = Literal["Missing", "OtherBoot", "OwnerMismatch", "TagMismatch", "Future", "Expired", "Conflict", "Cycle", "Unsupported"]

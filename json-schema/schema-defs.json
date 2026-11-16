@@ -1,13 +1,13 @@
 {
   "system_runtime.common.Diagnostic": {
     "type": "object",
-    "description": "A record that was skipped or used despite a problem.",
+    "description": "A record, directory configuration, or directory that was skipped or used despite a problem.",
     "properties": {
       "severity": {
         "$ref": "#/components/schemas/system_runtime.common.Severity"
       },
       "kind": {
-        "$ref": "#/components/schemas/system_runtime.common.RecordKind"
+        "$ref": "#/components/schemas/system_runtime.common.DiagnosticKind"
       },
       "message": {
         "type": "string"
@@ -23,7 +23,7 @@
     ],
     "unevaluatedProperties": false
   },
-  "system_runtime.common.RecordKind": {
+  "system_runtime.common.DiagnosticKind": {
     "enum": [
       "ComponentDeclaration",
       "HealthNode",
@@ -32,7 +32,7 @@
       "MetricSample",
       "DirectoryConfig"
     ],
-    "description": "Kind of records, named after the record types."
+    "description": "Kind of the records or directory configurations that a diagnostic concerns."
   },
   "system_runtime.common.Severity": {
     "enum": [
@@ -240,6 +240,9 @@
       "owner": {
         "type": "string"
       },
+      "label": {
+        "type": "string"
+      },
       "version": {
         "type": "string"
       },
@@ -334,7 +337,7 @@
   },
   "system_runtime.filesystem.DirectoryConfig": {
     "type": "object",
-    "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, but no symlink.",
+    "description": "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, except symlinks.",
     "properties": {
       "specVersion": {
         "type": "string"
@@ -606,13 +609,13 @@
           "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
         }
       },
-      "reason": {
-        "$ref": "#/components/schemas/system_runtime.health.Reason"
+      "problem": {
+        "$ref": "#/components/schemas/system_runtime.health.HealthProblem"
       },
       "message": {
         "type": "string"
       },
-      "details": {
+      "annotations": {
         "type": "object",
         "additionalProperties": {}
       }
@@ -625,11 +628,25 @@
     ],
     "unevaluatedProperties": false
   },
+  "system_runtime.health.HealthProblem": {
+    "enum": [
+      "Missing",
+      "OtherBoot",
+      "OwnerMismatch",
+      "TagMismatch",
+      "Future",
+      "Expired",
+      "Conflict",
+      "Cycle",
+      "Unsupported"
+    ],
+    "description": "Problem that keeps a node's evidence or rule from determining its answers."
+  },
   "system_runtime.health.HealthReport": {
     "type": "object",
     "description": "Result of evaluating health.",
     "properties": {
-      "nodes": {
+      "results": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/system_runtime.health.HealthNodeResult"
@@ -643,7 +660,7 @@
       }
     },
     "required": [
-      "nodes",
+      "results",
       "diagnostics"
     ],
     "unevaluatedProperties": false
@@ -746,15 +763,6 @@
       }
     ]
   },
-  "system_runtime.health.HealthState": {
-    "enum": [
-      "Healthy",
-      "Degraded",
-      "Unhealthy",
-      "Unknown"
-    ],
-    "description": "Summary of the answers of a node."
-  },
   "system_runtime.health.HealthStatus": {
     "type": "object",
     "description": "Result of a check, published while the system runs.",
@@ -765,8 +773,11 @@
       "id": {
         "$ref": "#/components/schemas/system_runtime.health.HealthNodeId"
       },
-      "state": {
-        "$ref": "#/components/schemas/system_runtime.health.HealthState"
+      "usable": {
+        "$ref": "#/components/schemas/system_runtime.health.Answer"
+      },
+      "healthy": {
+        "$ref": "#/components/schemas/system_runtime.health.Answer"
       },
       "bootId": {
         "type": "string"
@@ -798,10 +809,6 @@
       "message": {
         "type": "string"
       },
-      "details": {
-        "type": "object",
-        "additionalProperties": {}
-      },
       "annotations": {
         "type": "object",
         "additionalProperties": {}
@@ -809,7 +816,8 @@
     },
     "required": [
       "id",
-      "state",
+      "usable",
+      "healthy",
       "bootId",
       "observedAtMs",
       "maxAgeMs"
@@ -843,20 +851,6 @@
     },
     "required": [],
     "unevaluatedProperties": false
-  },
-  "system_runtime.health.Reason": {
-    "enum": [
-      "Missing",
-      "OtherBoot",
-      "OwnerMismatch",
-      "TagMismatch",
-      "Future",
-      "Expired",
-      "Conflict",
-      "Cycle",
-      "Unsupported"
-    ],
-    "description": "Why a node's evidence was not used or its rule was not applied."
   },
   "system_runtime.health.ThresholdRule": {
     "type": "object",
@@ -1024,10 +1018,6 @@
       },
       "message": {
         "type": "string"
-      },
-      "details": {
-        "type": "object",
-        "additionalProperties": {}
       },
       "annotations": {
         "type": "object",

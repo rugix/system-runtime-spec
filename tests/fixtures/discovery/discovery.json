@@ -31,6 +31,7 @@
         "specVersion": "1.0",
         "id": "runtime",
         "owner": "rugix.system",
+        "label": "Runtime",
         "version": "2"
       },
       {
@@ -90,7 +91,8 @@
     "healthStatuses": [
       {
         "id": "app",
-        "state": "Healthy",
+        "usable": "Yes",
+        "healthy": "Yes",
         "bootId": "boot",
         "observedAtMs": 90,
         "maxAgeMs": 20,

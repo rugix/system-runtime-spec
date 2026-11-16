@@ -29,13 +29,13 @@
   "$defs": {
     "system_runtime.common.Diagnostic": {
       "type": "object",
-      "description": "A record that was skipped or used despite a problem.",
+      "description": "A record, directory configuration, or directory that was skipped or used despite a problem.",
       "properties": {
         "severity": {
           "$ref": "#/$defs/system_runtime.common.Severity"
         },
         "kind": {
-          "$ref": "#/$defs/system_runtime.common.RecordKind"
+          "$ref": "#/$defs/system_runtime.common.DiagnosticKind"
         },
         "message": {
           "type": "string"
@@ -51,7 +51,7 @@
       ],
       "unevaluatedProperties": false
     },
-    "system_runtime.common.RecordKind": {
+    "system_runtime.common.DiagnosticKind": {
       "enum": [
         "ComponentDeclaration",
         "HealthNode",
@@ -60,7 +60,7 @@
         "MetricSample",
         "DirectoryConfig"
       ],
-      "description": "Kind of records, named after the record types."
+      "description": "Kind of the records or directory configurations that a diagnostic concerns."
     },
     "system_runtime.common.Severity": {
       "enum": [

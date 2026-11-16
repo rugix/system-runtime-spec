@@ -9,13 +9,13 @@ pub mod common {
         clippy::cargo,
         dead_code
     )]
-    #[doc = "A record that was skipped or used despite a problem.\n"]
+    #[doc = "A record, directory configuration, or directory that was skipped or used despite a problem.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct Diagnostic {
         #[doc = "Whether the results may not reflect the records concerned.\n"]
         pub severity: Severity,
-        #[doc = "Kind of records concerned.\n"]
-        pub kind: RecordKind,
+        #[doc = "Kind of the records or directory configurations concerned.\n"]
+        pub kind: DiagnosticKind,
         #[doc = "Description of the problem; not specified and differs between implementations.\n"]
         pub message: ::std::string::String,
         #[doc = "Path of the file or directory concerned.\n"]
@@ -23,7 +23,7 @@ pub mod common {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for Diagnostic {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::common::Diagnostic" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("severity" , :: sidex :: shape :: shape_of :: < Severity > ,) . with_docs ("Whether the results may not reflect the records concerned.\n") , :: sidex :: shape :: FieldShape :: new ("kind" , :: sidex :: shape :: shape_of :: < RecordKind > ,) . with_docs ("Kind of records concerned.\n") , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Description of the problem; not specified and differs between implementations.\n") , :: sidex :: shape :: FieldShape :: new ("path" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Path of the file or directory concerned.\n") . optional ()]))) . with_docs ("A record that was skipped or used despite a problem.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::common::Diagnostic" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("severity" , :: sidex :: shape :: shape_of :: < Severity > ,) . with_docs ("Whether the results may not reflect the records concerned.\n") , :: sidex :: shape :: FieldShape :: new ("kind" , :: sidex :: shape :: shape_of :: < DiagnosticKind > ,) . with_docs ("Kind of the records or directory configurations concerned.\n") , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Description of the problem; not specified and differs between implementations.\n") , :: sidex :: shape :: FieldShape :: new ("path" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Path of the file or directory concerned.\n") . optional ()]))) . with_docs ("A record, directory configuration, or directory that was skipped or used despite a problem.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for Diagnostic {
@@ -57,7 +57,7 @@ pub mod common {
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
             let mut __field_0 = ::std::option::Option::<Severity>::None;
-            let mut __field_1 = ::std::option::Option::<RecordKind>::None;
+            let mut __field_1 = ::std::option::Option::<DiagnosticKind>::None;
             let mut __field_2 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -69,7 +69,7 @@ pub mod common {
                     }
                     1usize => {
                         __field_1 = ::std::option::Option::Some(
-                            <RecordKind as ::sidex::Decode>::decode(decoder)?,
+                            <DiagnosticKind as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     2usize => {
@@ -117,7 +117,7 @@ pub mod common {
         #[doc = "Creates a new [`Diagnostic`]."]
         pub fn new(
             severity: Severity,
-            kind: RecordKind,
+            kind: DiagnosticKind,
             message: impl ::std::convert::Into<::std::string::String>,
         ) -> Self {
             Self {
@@ -138,12 +138,12 @@ pub mod common {
             self
         }
         #[doc = "Sets the value of `kind`."]
-        pub fn set_kind(&mut self, kind: RecordKind) -> &mut Self {
+        pub fn set_kind(&mut self, kind: DiagnosticKind) -> &mut Self {
             self.kind = kind;
             self
         }
         #[doc = "Sets the value of `kind`."]
-        pub fn with_kind(mut self, kind: RecordKind) -> Self {
+        pub fn with_kind(mut self, kind: DiagnosticKind) -> Self {
             self.kind = kind;
             self
         }
@@ -253,9 +253,9 @@ pub mod common {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "Kind of records, named after the record types.\n"]
+    #[doc = "Kind of the records or directory configurations that a diagnostic concerns.\n"]
     #[derive(Clone, Debug, PartialEq, Copy, Eq)]
-    pub enum RecordKind {
+    pub enum DiagnosticKind {
         #[doc = "Component declarations.\n"]
         ComponentDeclaration,
         #[doc = "Health nodes.\n"]
@@ -270,9 +270,9 @@ pub mod common {
         DirectoryConfig,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for RecordKind {
+    impl ::sidex::Shaped for DiagnosticKind {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::common::RecordKind",
+            "::system_runtime::common::DiagnosticKind",
             ::sidex::shape::ShapeKind::Variant(
                 ::sidex::shape::VariantShape::new(&[
                     ::sidex::shape::CaseShape::new(
@@ -294,7 +294,7 @@ pub mod common {
                 .json_tagging(::sidex::formats::json::Tagging::External),
             ),
         )
-        .with_docs("Kind of records, named after the record types.\n")
+        .with_docs("Kind of the records or directory configurations that a diagnostic concerns.\n")
         .with_attrs(&[
             ::sidex::shape::Attr::List {
                 path: "json",
@@ -316,14 +316,14 @@ pub mod common {
         ]);
     }
     #[automatically_derived]
-    impl ::sidex::Encode for RecordKind {
+    impl ::sidex::Encode for DiagnosticKind {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Variant(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::VariantView for RecordKind {
+    impl ::sidex::encode::VariantView for DiagnosticKind {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -350,7 +350,7 @@ pub mod common {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for RecordKind {
+    impl ::sidex::Decode for DiagnosticKind {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -375,7 +375,7 @@ pub mod common {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for RecordKind {
+    impl ::serde::Serialize for DiagnosticKind {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -384,7 +384,7 @@ pub mod common {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for RecordKind {
+    impl<'de> ::serde::Deserialize<'de> for DiagnosticKind {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -410,6 +410,8 @@ pub mod component {
         pub id: ::std::string::String,
         #[doc = "Owner of the declaration, which replaces or removes it as a whole.\n"]
         pub owner: ::std::option::Option<::std::string::String>,
+        #[doc = "Human-readable name of the component.\n"]
+        pub label: ::std::option::Option<::std::string::String>,
         #[doc = "Version of the component, also provided as its implicit capability.\n"]
         pub version: ::std::option::Option<::std::string::String>,
         #[doc = "Capabilities the component provides.\n"]
@@ -427,7 +429,7 @@ pub mod component {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for ComponentDeclaration {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::component::ComponentDeclaration" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Unique ID of the component within the composition.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the declaration, which replaces or removes it as a whole.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the component, also provided as its implicit capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("provides" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilityDeclaration , > > ,) . with_docs ("Capabilities the component provides.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("claims" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < ClaimDeclaration , > > ,) . with_docs ("Resources the component claims.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("requires" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that each need to match a capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("conflicts" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that must not match any capability, including the component's own.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("One part of a system, such as the system image, an app, a runtime, or a hardware module.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::component::ComponentDeclaration" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Unique ID of the component within the composition.\n") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the declaration, which replaces or removes it as a whole.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("label" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Human-readable name of the component.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the component, also provided as its implicit capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("provides" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilityDeclaration , > > ,) . with_docs ("Capabilities the component provides.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("claims" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < ClaimDeclaration , > > ,) . with_docs ("Resources the component claims.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("requires" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that each need to match a capability.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("conflicts" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < CapabilitySelectorDeclaration , > > ,) . with_docs ("Selectors that must not match any capability, including the component's own.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("One part of a system, such as the system image, an app, a runtime, or a hardware module.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for ComponentDeclaration {
@@ -453,26 +455,30 @@ pub mod component {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 3usize => self
-                    .version
+                    .label
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 4usize => self
-                    .provides
+                    .version
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 5usize => self
-                    .claims
+                    .provides
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 6usize => self
-                    .requires
+                    .claims
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 7usize => self
-                    .conflicts
+                    .requires
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 8usize => self
+                    .conflicts
+                    .as_ref()
+                    .map(|value| ::sidex::Encode::encode(value)),
+                9usize => self
                     .annotations
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
@@ -490,14 +496,15 @@ pub mod component {
             let mut __field_1 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_2 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
-            let mut __field_4 =
+            let mut __field_4 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_5 =
                 ::std::option::Option::<::std::vec::Vec<CapabilityDeclaration>>::None;
-            let mut __field_5 = ::std::option::Option::<::std::vec::Vec<ClaimDeclaration>>::None;
-            let mut __field_6 =
-                ::std::option::Option::<::std::vec::Vec<CapabilitySelectorDeclaration>>::None;
+            let mut __field_6 = ::std::option::Option::<::std::vec::Vec<ClaimDeclaration>>::None;
             let mut __field_7 =
                 ::std::option::Option::<::std::vec::Vec<CapabilitySelectorDeclaration>>::None;
-            let mut __field_8 = ::std::option::Option::<
+            let mut __field_8 =
+                ::std::option::Option::<::std::vec::Vec<CapabilitySelectorDeclaration>>::None;
+            let mut __field_9 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -523,25 +530,23 @@ pub mod component {
                         )
                     }
                     4usize => {
-                        __field_4 = ::std::option::Option::Some(<::std::vec::Vec<
+                        __field_4 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
+                    }
+                    5usize => {
+                        __field_5 = ::std::option::Option::Some(<::std::vec::Vec<
                             CapabilityDeclaration,
                         > as ::sidex::Decode>::decode(
                             decoder
                         )?)
                     }
-                    5usize => {
-                        __field_5 = ::std::option::Option::Some(
+                    6usize => {
+                        __field_6 = ::std::option::Option::Some(
                             <::std::vec::Vec<ClaimDeclaration> as ::sidex::Decode>::decode(
                                 decoder,
                             )?,
                         )
-                    }
-                    6usize => {
-                        __field_6 = ::std::option::Option::Some(<::std::vec::Vec<
-                            CapabilitySelectorDeclaration,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
                     }
                     7usize => {
                         __field_7 = ::std::option::Option::Some(<::std::vec::Vec<
@@ -551,7 +556,14 @@ pub mod component {
                         )?)
                     }
                     8usize => {
-                        __field_8 = ::std::option::Option::Some(<::std::collections::BTreeMap<
+                        __field_8 = ::std::option::Option::Some(<::std::vec::Vec<
+                            CapabilitySelectorDeclaration,
+                        > as ::sidex::Decode>::decode(
+                            decoder
+                        )?)
+                    }
+                    9usize => {
+                        __field_9 = ::std::option::Option::Some(<::std::collections::BTreeMap<
                             ::std::string::String,
                             ::sidex::types::JsonValue,
                         > as ::sidex::Decode>::decode(
@@ -566,12 +578,13 @@ pub mod component {
                 spec_version: __field_0,
                 id: __field_1.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
                 owner: __field_2,
-                version: __field_3,
-                provides: __field_4,
-                claims: __field_5,
-                requires: __field_6,
-                conflicts: __field_7,
-                annotations: __field_8,
+                label: __field_3,
+                version: __field_4,
+                provides: __field_5,
+                claims: __field_6,
+                requires: __field_7,
+                conflicts: __field_8,
+                annotations: __field_9,
             })
         }
     }
@@ -599,6 +612,7 @@ pub mod component {
                 id: id.into(),
                 spec_version: ::std::default::Default::default(),
                 owner: ::std::default::Default::default(),
+                label: ::std::default::Default::default(),
                 version: ::std::default::Default::default(),
                 provides: ::std::default::Default::default(),
                 claims: ::std::default::Default::default(),
@@ -647,6 +661,19 @@ pub mod component {
         #[doc = "Sets the value of `owner`."]
         pub fn with_owner(mut self, owner: ::std::option::Option<::std::string::String>) -> Self {
             self.owner = owner;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn set_label(
+            &mut self,
+            label: ::std::option::Option<::std::string::String>,
+        ) -> &mut Self {
+            self.label = label;
+            self
+        }
+        #[doc = "Sets the value of `label`."]
+        pub fn with_label(mut self, label: ::std::option::Option<::std::string::String>) -> Self {
+            self.label = label;
             self
         }
         #[doc = "Sets the value of `version`."]
@@ -2053,7 +2080,7 @@ pub mod filesystem {
         clippy::cargo,
         dead_code
     )]
-    #[doc = "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, but no symlink.\n"]
+    #[doc = "Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, except symlinks.\n"]
     #[derive(Clone, Debug, PartialEq)]
     pub struct DirectoryConfig {
         #[doc = "Version of the specification that the record follows; omitted means `1.0`.\n"]
@@ -2071,7 +2098,7 @@ pub mod filesystem {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for DirectoryConfig {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::filesystem::DirectoryConfig" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of component declarations.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("health_nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of health nodes.\n") . optional () . json_name ("healthNodes") , :: sidex :: shape :: FieldShape :: new ("health_statuses" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of status records.\n") . optional () . json_name ("healthStatuses") , :: sidex :: shape :: FieldShape :: new ("metrics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of metric definitions.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("metric_samples" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of metric samples.\n") . optional () . json_name ("metricSamples")]))) . with_docs ("Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, but no symlink.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::filesystem::DirectoryConfig" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("components" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of component declarations.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("health_nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of health nodes.\n") . optional () . json_name ("healthNodes") , :: sidex :: shape :: FieldShape :: new ("health_statuses" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of status records.\n") . optional () . json_name ("healthStatuses") , :: sidex :: shape :: FieldShape :: new ("metrics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of metric definitions.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("metric_samples" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < :: std :: string :: String , > > ,) . with_docs ("Directories of metric samples.\n") . optional () . json_name ("metricSamples")]))) . with_docs ("Directories that a contributor adds, as absolute paths without `..` segments.\n\nA segment consisting only of `*` matches every directory at that level whose name does not\nstart with `.`, in byte order, except symlinks.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for DirectoryConfig {
@@ -3265,7 +3292,7 @@ pub mod health {
     pub struct ThresholdRule {
         #[doc = "ID of the metric.\n"]
         pub metric: super::metric::MetricId,
-        #[doc = "Unit of the ranges, as a UCUM code; must equal the metric's unit.\n"]
+        #[doc = "Unit that the ranges assume, as a UCUM code.\n"]
         pub unit: ::std::option::Option<::std::string::String>,
         #[doc = "Range in which the desired criteria are met; a subset of the usable range.\n"]
         pub healthy: super::metric::MetricRange,
@@ -3288,7 +3315,7 @@ pub mod health {
                     "unit",
                     ::sidex::shape::shape_of::<::std::string::String>,
                 )
-                .with_docs("Unit of the ranges, as a UCUM code; must equal the metric's unit.\n")
+                .with_docs("Unit that the ranges assume, as a UCUM code.\n")
                 .optional(),
                 ::sidex::shape::FieldShape::new(
                     "healthy",
@@ -3878,14 +3905,14 @@ pub mod health {
     pub enum InputMode {
         #[doc = "The input counts toward `min_usable` and `min_healthy`.\n"]
         Counted,
-        #[doc = "The input counts, and the node is only usable and healthy if the input is.\n"]
+        #[doc = "The input does not count; the node is only usable and healthy if the input is.\n"]
         Mandatory,
         #[doc = "The input does not count; the node is only healthy if the input is healthy.\n"]
         Optional,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for InputMode {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::InputMode" , :: sidex :: shape :: ShapeKind :: Variant (:: sidex :: shape :: VariantShape :: new (& [:: sidex :: shape :: CaseShape :: new ("Counted" , :: std :: option :: Option :: None) . with_docs ("The input counts toward `min_usable` and `min_healthy`.\n") , :: sidex :: shape :: CaseShape :: new ("Mandatory" , :: std :: option :: Option :: None) . with_docs ("The input counts, and the node is only usable and healthy if the input is.\n") , :: sidex :: shape :: CaseShape :: new ("Optional" , :: std :: option :: Option :: None) . with_docs ("The input does not count; the node is only healthy if the input is healthy.\n")]) . json_tagging (:: sidex :: formats :: json :: Tagging :: External))) . with_docs ("How an input affects the answers of an aggregate node.\n") . with_attrs (& [:: sidex :: shape :: Attr :: List { path : "json" , args : & [:: sidex :: shape :: Attr :: Assign { path : "tagged" , value : :: sidex :: shape :: AttrValue :: Path ("externally") }] } , :: sidex :: shape :: Attr :: List { path : "rust" , args : & [:: sidex :: shape :: Attr :: List { path : "derive" , args : & [:: sidex :: shape :: Attr :: Path ("Copy") , :: sidex :: shape :: Attr :: Path ("Eq")] }] }]) ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::InputMode" , :: sidex :: shape :: ShapeKind :: Variant (:: sidex :: shape :: VariantShape :: new (& [:: sidex :: shape :: CaseShape :: new ("Counted" , :: std :: option :: Option :: None) . with_docs ("The input counts toward `min_usable` and `min_healthy`.\n") , :: sidex :: shape :: CaseShape :: new ("Mandatory" , :: std :: option :: Option :: None) . with_docs ("The input does not count; the node is only usable and healthy if the input is.\n") , :: sidex :: shape :: CaseShape :: new ("Optional" , :: std :: option :: Option :: None) . with_docs ("The input does not count; the node is only healthy if the input is healthy.\n")]) . json_tagging (:: sidex :: formats :: json :: Tagging :: External))) . with_docs ("How an input affects the answers of an aggregate node.\n") . with_attrs (& [:: sidex :: shape :: Attr :: List { path : "json" , args : & [:: sidex :: shape :: Attr :: Assign { path : "tagged" , value : :: sidex :: shape :: AttrValue :: Path ("externally") }] } , :: sidex :: shape :: Attr :: List { path : "rust" , args : & [:: sidex :: shape :: Attr :: List { path : "derive" , args : & [:: sidex :: shape :: Attr :: Path ("Copy") , :: sidex :: shape :: Attr :: Path ("Eq")] }] }]) ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for InputMode {
@@ -3961,8 +3988,10 @@ pub mod health {
         pub spec_version: ::std::option::Option<::std::string::String>,
         #[doc = "ID of the observed node.\n"]
         pub id: HealthNodeId,
-        #[doc = "Result of the check.\n"]
-        pub state: HealthState,
+        #[doc = "Whether the minimum criteria are met.\n"]
+        pub usable: Answer,
+        #[doc = "Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires\n`No`.\n"]
+        pub healthy: Answer,
         #[doc = "ID of the boot during which the check took place.\n"]
         pub boot_id: ::std::string::String,
         #[doc = "Boot-time clock value, in milliseconds, when the check took place.\n"]
@@ -3971,14 +4000,10 @@ pub mod health {
         pub max_age_ms: u64,
         #[doc = "Owner of the status record.\n"]
         pub owner: ::std::option::Option<::std::string::String>,
-        #[doc = "Opaque label identifying the configuration or instance that took the evidence.\n"]
+        #[doc = "Opaque label identifying the configuration or instance that produced the evidence.\n"]
         pub tag: ::std::option::Option<::std::string::String>,
-        #[doc = "Explanation supplied by the writer.\n"]
+        #[doc = "Explanation for people, such as the output of a check; can span several lines.\n"]
         pub message: ::std::option::Option<::std::string::String>,
-        #[doc = "Further information about the observation, for display, in any structure.\n"]
-        pub details: ::std::option::Option<
-            ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-        >,
         #[doc = "Further data that the specification does not define, with namespaced member names.\n"]
         pub annotations: ::std::option::Option<
             ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
@@ -3986,7 +4011,7 @@ pub mod health {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthStatus {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthStatus" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("ID of the observed node.\n") , :: sidex :: shape :: FieldShape :: new ("state" , :: sidex :: shape :: shape_of :: < HealthState > ,) . with_docs ("Result of the check.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the check took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the check took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the status record is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the status record.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that took the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation supplied by the writer.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("details" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further information about the observation, for display, in any structure.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Result of a check, published while the system runs.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthStatus" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < HealthNodeId > ,) . with_docs ("ID of the observed node.\n") , :: sidex :: shape :: FieldShape :: new ("usable" , :: sidex :: shape :: shape_of :: < Answer > ,) . with_docs ("Whether the minimum criteria are met.\n") , :: sidex :: shape :: FieldShape :: new ("healthy" , :: sidex :: shape :: shape_of :: < Answer > ,) . with_docs ("Whether the desired criteria are met; `Yes` requires usable `Yes`, and usable `No` requires\n`No`.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the check took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the check took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the status record is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the status record.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that produced the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation for people, such as the output of a check; can span several lines.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Result of a check, published while the system runs.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for HealthStatus {
@@ -4007,26 +4032,23 @@ pub mod health {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.id)),
-                2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.state)),
-                3usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.boot_id)),
-                4usize => {
+                2usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.usable)),
+                3usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.healthy)),
+                4usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.boot_id)),
+                5usize => {
                     ::std::option::Option::Some(::sidex::Encode::encode(&self.observed_at_ms))
                 }
-                5usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.max_age_ms)),
-                6usize => self
+                6usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.max_age_ms)),
+                7usize => self
                     .owner
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
-                7usize => self
+                8usize => self
                     .tag
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
-                8usize => self
-                    .message
-                    .as_ref()
-                    .map(|value| ::sidex::Encode::encode(value)),
                 9usize => self
-                    .details
+                    .message
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 10usize => self
@@ -4045,16 +4067,14 @@ pub mod health {
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
             let mut __field_0 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_1 = ::std::option::Option::<HealthNodeId>::None;
-            let mut __field_2 = ::std::option::Option::<HealthState>::None;
-            let mut __field_3 = ::std::option::Option::<::std::string::String>::None;
-            let mut __field_4 = ::std::option::Option::<u64>::None;
+            let mut __field_2 = ::std::option::Option::<Answer>::None;
+            let mut __field_3 = ::std::option::Option::<Answer>::None;
+            let mut __field_4 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_5 = ::std::option::Option::<u64>::None;
-            let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
+            let mut __field_6 = ::std::option::Option::<u64>::None;
             let mut __field_7 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_8 = ::std::option::Option::<::std::string::String>::None;
-            let mut __field_9 = ::std::option::Option::<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >::None;
+            let mut __field_9 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_10 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >::None;
@@ -4072,26 +4092,26 @@ pub mod health {
                     }
                     2usize => {
                         __field_2 = ::std::option::Option::Some(
-                            <HealthState as ::sidex::Decode>::decode(decoder)?,
+                            <Answer as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     3usize => {
                         __field_3 = ::std::option::Option::Some(
-                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                            <Answer as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     4usize => {
-                        __field_4 =
-                            ::std::option::Option::Some(<u64 as ::sidex::Decode>::decode(decoder)?)
+                        __field_4 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
                     }
                     5usize => {
                         __field_5 =
                             ::std::option::Option::Some(<u64 as ::sidex::Decode>::decode(decoder)?)
                     }
                     6usize => {
-                        __field_6 = ::std::option::Option::Some(
-                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
-                        )
+                        __field_6 =
+                            ::std::option::Option::Some(<u64 as ::sidex::Decode>::decode(decoder)?)
                     }
                     7usize => {
                         __field_7 = ::std::option::Option::Some(
@@ -4104,12 +4124,9 @@ pub mod health {
                         )
                     }
                     9usize => {
-                        __field_9 = ::std::option::Option::Some(<::std::collections::BTreeMap<
-                            ::std::string::String,
-                            ::sidex::types::JsonValue,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
+                        __field_9 = ::std::option::Option::Some(
+                            <::std::string::String as ::sidex::Decode>::decode(decoder)?,
+                        )
                     }
                     10usize => {
                         __field_10 = ::std::option::Option::Some(<::std::collections::BTreeMap<
@@ -4126,18 +4143,19 @@ pub mod health {
             ::std::result::Result::Ok(Self {
                 spec_version: __field_0,
                 id: __field_1.ok_or_else(|| ::sidex::DecodeError::new("missing field `id`"))?,
-                state: __field_2
-                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `state`"))?,
-                boot_id: __field_3
+                usable: __field_2
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `usable`"))?,
+                healthy: __field_3
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthy`"))?,
+                boot_id: __field_4
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `bootId`"))?,
-                observed_at_ms: __field_4
+                observed_at_ms: __field_5
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `observedAtMs`"))?,
-                max_age_ms: __field_5
+                max_age_ms: __field_6
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `maxAgeMs`"))?,
-                owner: __field_6,
-                tag: __field_7,
-                message: __field_8,
-                details: __field_9,
+                owner: __field_7,
+                tag: __field_8,
+                message: __field_9,
                 annotations: __field_10,
             })
         }
@@ -4163,14 +4181,16 @@ pub mod health {
         #[doc = "Creates a new [`HealthStatus`]."]
         pub fn new(
             id: HealthNodeId,
-            state: HealthState,
+            usable: Answer,
+            healthy: Answer,
             boot_id: impl ::std::convert::Into<::std::string::String>,
             observed_at_ms: u64,
             max_age_ms: u64,
         ) -> Self {
             Self {
                 id: id,
-                state: state,
+                usable: usable,
+                healthy: healthy,
                 boot_id: boot_id.into(),
                 observed_at_ms: observed_at_ms,
                 max_age_ms: max_age_ms,
@@ -4178,7 +4198,6 @@ pub mod health {
                 owner: ::std::default::Default::default(),
                 tag: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
-                details: ::std::default::Default::default(),
                 annotations: ::std::default::Default::default(),
             }
         }
@@ -4208,14 +4227,24 @@ pub mod health {
             self.id = id;
             self
         }
-        #[doc = "Sets the value of `state`."]
-        pub fn set_state(&mut self, state: HealthState) -> &mut Self {
-            self.state = state;
+        #[doc = "Sets the value of `usable`."]
+        pub fn set_usable(&mut self, usable: Answer) -> &mut Self {
+            self.usable = usable;
             self
         }
-        #[doc = "Sets the value of `state`."]
-        pub fn with_state(mut self, state: HealthState) -> Self {
-            self.state = state;
+        #[doc = "Sets the value of `usable`."]
+        pub fn with_usable(mut self, usable: Answer) -> Self {
+            self.usable = usable;
+            self
+        }
+        #[doc = "Sets the value of `healthy`."]
+        pub fn set_healthy(&mut self, healthy: Answer) -> &mut Self {
+            self.healthy = healthy;
+            self
+        }
+        #[doc = "Sets the value of `healthy`."]
+        pub fn with_healthy(mut self, healthy: Answer) -> Self {
+            self.healthy = healthy;
             self
         }
         #[doc = "Sets the value of `boot_id`."]
@@ -4293,26 +4322,6 @@ pub mod health {
             self.message = message;
             self
         }
-        #[doc = "Sets the value of `details`."]
-        pub fn set_details(
-            &mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> &mut Self {
-            self.details = details;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn with_details(
-            mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> Self {
-            self.details = details;
-            self
-        }
         #[doc = "Sets the value of `annotations`."]
         pub fn set_annotations(
             &mut self,
@@ -4332,92 +4341,6 @@ pub mod health {
         ) -> Self {
             self.annotations = annotations;
             self
-        }
-    }
-    #[doc = "Summary of the answers of a node.\n"]
-    #[derive(Clone, Debug, PartialEq, Copy, Eq)]
-    pub enum HealthState {
-        #[doc = "The desired criteria are met.\n"]
-        Healthy,
-        #[doc = "The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.\n"]
-        Degraded,
-        #[doc = "The minimum criteria are not met.\n"]
-        Unhealthy,
-        #[doc = "Whether the minimum criteria are met is unknown.\n"]
-        Unknown,
-    }
-    #[automatically_derived]
-    impl ::sidex::Shaped for HealthState {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthState" , :: sidex :: shape :: ShapeKind :: Variant (:: sidex :: shape :: VariantShape :: new (& [:: sidex :: shape :: CaseShape :: new ("Healthy" , :: std :: option :: Option :: None) . with_docs ("The desired criteria are met.\n") , :: sidex :: shape :: CaseShape :: new ("Degraded" , :: std :: option :: Option :: None) . with_docs ("The minimum criteria are met; whether the desired criteria are met is `No` or `Unknown`.\n") , :: sidex :: shape :: CaseShape :: new ("Unhealthy" , :: std :: option :: Option :: None) . with_docs ("The minimum criteria are not met.\n") , :: sidex :: shape :: CaseShape :: new ("Unknown" , :: std :: option :: Option :: None) . with_docs ("Whether the minimum criteria are met is unknown.\n")]) . json_tagging (:: sidex :: formats :: json :: Tagging :: External))) . with_docs ("Summary of the answers of a node.\n") . with_attrs (& [:: sidex :: shape :: Attr :: List { path : "json" , args : & [:: sidex :: shape :: Attr :: Assign { path : "tagged" , value : :: sidex :: shape :: AttrValue :: Path ("externally") }] } , :: sidex :: shape :: Attr :: List { path : "rust" , args : & [:: sidex :: shape :: Attr :: List { path : "derive" , args : & [:: sidex :: shape :: Attr :: Path ("Copy") , :: sidex :: shape :: Attr :: Path ("Eq")] }] }]) ;
-    }
-    #[automatically_derived]
-    impl ::sidex::Encode for HealthState {
-        fn encode(&self) -> ::sidex::View<'_> {
-            ::sidex::View::Variant(self)
-        }
-    }
-    #[automatically_derived]
-    #[allow(deprecated)]
-    impl ::sidex::encode::VariantView for HealthState {
-        fn shape(&self) -> &'static ::sidex::Shape {
-            <Self as ::sidex::Shaped>::SHAPE
-        }
-        fn case(&self) -> usize {
-            match *self {
-                Self::Healthy => 0usize,
-                Self::Degraded => 1usize,
-                Self::Unhealthy => 2usize,
-                Self::Unknown => 3usize,
-            }
-        }
-        fn payload(&self) -> ::std::option::Option<::sidex::View<'_>> {
-            match self {
-                Self::Healthy => ::std::option::Option::None,
-                Self::Degraded => ::std::option::Option::None,
-                Self::Unhealthy => ::std::option::Option::None,
-                Self::Unknown => ::std::option::Option::None,
-            }
-        }
-    }
-    #[automatically_derived]
-    #[allow(deprecated)]
-    impl ::sidex::Decode for HealthState {
-        fn decode(
-            decoder: &mut dyn ::sidex::Decoder,
-        ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
-            let mut out = ::std::option::Option::<Self>::None;
-            decoder.variant(<Self as ::sidex::Shaped>::SHAPE, &mut |case, decoder| {
-                out = ::std::option::Option::Some(match case {
-                    0usize => Self::Healthy,
-                    1usize => Self::Degraded,
-                    2usize => Self::Unhealthy,
-                    3usize => Self::Unknown,
-                    _ => {
-                        return ::std::result::Result::Err(::sidex::DecodeError::new(
-                            "unknown case",
-                        ));
-                    }
-                });
-                ::std::result::Result::Ok(())
-            })?;
-            out.ok_or_else(|| ::sidex::DecodeError::new("missing case"))
-        }
-    }
-    #[automatically_derived]
-    impl ::serde::Serialize for HealthState {
-        fn serialize<__S: ::serde::Serializer>(
-            &self,
-            serializer: __S,
-        ) -> ::std::result::Result<__S::Ok, __S::Error> {
-            ::sidex::serde::serialize(self, serializer)
-        }
-    }
-    #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for HealthState {
-        fn deserialize<__D: ::serde::Deserializer<'de>>(
-            deserializer: __D,
-        ) -> ::std::result::Result<Self, __D::Error> {
-            ::sidex::serde::deserialize(deserializer)
         }
     }
     #[doc = "Answer to whether criteria are met.\n"]
@@ -4501,9 +4424,9 @@ pub mod health {
             ::sidex::serde::deserialize(deserializer)
         }
     }
-    #[doc = "Why a node's evidence was not used or its rule was not applied.\n"]
+    #[doc = "Problem that keeps a node's evidence or rule from determining its answers.\n"]
     #[derive(Clone, Debug, PartialEq, Copy, Eq)]
-    pub enum Reason {
+    pub enum HealthProblem {
         #[doc = "The evidence or the metric definition does not exist.\n"]
         Missing,
         #[doc = "The evidence belongs to another boot.\n"]
@@ -4520,13 +4443,13 @@ pub mod health {
         Conflict,
         #[doc = "The node is on a cycle.\n"]
         Cycle,
-        #[doc = "A rule type, state, or input mode is unknown to the evaluator.\n"]
+        #[doc = "A rule type, answer, or input mode is unknown to the evaluator.\n"]
         Unsupported,
     }
     #[automatically_derived]
-    impl ::sidex::Shaped for Reason {
+    impl ::sidex::Shaped for HealthProblem {
         const SHAPE: &'static ::sidex::Shape = &::sidex::Shape::new(
-            "::system_runtime::health::Reason",
+            "::system_runtime::health::HealthProblem",
             ::sidex::shape::ShapeKind::Variant(
                 ::sidex::shape::VariantShape::new(&[
                     ::sidex::shape::CaseShape::new("Missing", ::std::option::Option::None)
@@ -4547,13 +4470,13 @@ pub mod health {
                         .with_docs("The node is on a cycle.\n"),
                     ::sidex::shape::CaseShape::new("Unsupported", ::std::option::Option::None)
                         .with_docs(
-                            "A rule type, state, or input mode is unknown to the evaluator.\n",
+                            "A rule type, answer, or input mode is unknown to the evaluator.\n",
                         ),
                 ])
                 .json_tagging(::sidex::formats::json::Tagging::External),
             ),
         )
-        .with_docs("Why a node's evidence was not used or its rule was not applied.\n")
+        .with_docs("Problem that keeps a node's evidence or rule from determining its answers.\n")
         .with_attrs(&[
             ::sidex::shape::Attr::List {
                 path: "json",
@@ -4575,14 +4498,14 @@ pub mod health {
         ]);
     }
     #[automatically_derived]
-    impl ::sidex::Encode for Reason {
+    impl ::sidex::Encode for HealthProblem {
         fn encode(&self) -> ::sidex::View<'_> {
             ::sidex::View::Variant(self)
         }
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::encode::VariantView for Reason {
+    impl ::sidex::encode::VariantView for HealthProblem {
         fn shape(&self) -> &'static ::sidex::Shape {
             <Self as ::sidex::Shaped>::SHAPE
         }
@@ -4615,7 +4538,7 @@ pub mod health {
     }
     #[automatically_derived]
     #[allow(deprecated)]
-    impl ::sidex::Decode for Reason {
+    impl ::sidex::Decode for HealthProblem {
         fn decode(
             decoder: &mut dyn ::sidex::Decoder,
         ) -> ::std::result::Result<Self, ::sidex::DecodeError> {
@@ -4643,7 +4566,7 @@ pub mod health {
         }
     }
     #[automatically_derived]
-    impl ::serde::Serialize for Reason {
+    impl ::serde::Serialize for HealthProblem {
         fn serialize<__S: ::serde::Serializer>(
             &self,
             serializer: __S,
@@ -4652,7 +4575,7 @@ pub mod health {
         }
     }
     #[automatically_derived]
-    impl<'de> ::serde::Deserialize<'de> for Reason {
+    impl<'de> ::serde::Deserialize<'de> for HealthProblem {
         fn deserialize<__D: ::serde::Deserializer<'de>>(
             deserializer: __D,
         ) -> ::std::result::Result<Self, __D::Error> {
@@ -4917,13 +4840,13 @@ pub mod health {
     #[derive(Clone, Debug, PartialEq)]
     pub struct HealthReport {
         #[doc = "One result per node ID, in the order of the node definitions.\n"]
-        pub nodes: ::std::vec::Vec<HealthNodeResult>,
+        pub results: ::std::vec::Vec<HealthNodeResult>,
         #[doc = "Diagnostics about health records and directory configurations, and those added during\nevaluation.\n"]
         pub diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
     }
     #[automatically_derived]
     impl ::sidex::Shaped for HealthReport {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthReport" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("nodes" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < HealthNodeResult , > > ,) . with_docs ("One result per node ID, in the order of the node definitions.\n") , :: sidex :: shape :: FieldShape :: new ("diagnostics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < super :: common :: Diagnostic , > > ,) . with_docs ("Diagnostics about health records and directory configurations, and those added during\nevaluation.\n")]))) . with_docs ("Result of evaluating health.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::health::HealthReport" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("results" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < HealthNodeResult , > > ,) . with_docs ("One result per node ID, in the order of the node definitions.\n") , :: sidex :: shape :: FieldShape :: new ("diagnostics" , :: sidex :: shape :: shape_of :: < :: std :: vec :: Vec < super :: common :: Diagnostic , > > ,) . with_docs ("Diagnostics about health records and directory configurations, and those added during\nevaluation.\n")]))) . with_docs ("Result of evaluating health.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for HealthReport {
@@ -4939,7 +4862,7 @@ pub mod health {
         }
         fn field(&self, index: usize) -> ::std::option::Option<::sidex::View<'_>> {
             match index {
-                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.nodes)),
+                0usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.results)),
                 1usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.diagnostics)),
                 _ => ::std::option::Option::None,
             }
@@ -4975,8 +4898,8 @@ pub mod health {
                 ::std::result::Result::Ok(())
             })?;
             ::std::result::Result::Ok(Self {
-                nodes: __field_0
-                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `nodes`"))?,
+                results: __field_0
+                    .ok_or_else(|| ::sidex::DecodeError::new("missing field `results`"))?,
                 diagnostics: __field_1
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `diagnostics`"))?,
             })
@@ -5002,22 +4925,22 @@ pub mod health {
     impl HealthReport {
         #[doc = "Creates a new [`HealthReport`]."]
         pub fn new(
-            nodes: ::std::vec::Vec<HealthNodeResult>,
+            results: ::std::vec::Vec<HealthNodeResult>,
             diagnostics: ::std::vec::Vec<super::common::Diagnostic>,
         ) -> Self {
             Self {
-                nodes: nodes,
+                results: results,
                 diagnostics: diagnostics,
             }
         }
-        #[doc = "Sets the value of `nodes`."]
-        pub fn set_nodes(&mut self, nodes: ::std::vec::Vec<HealthNodeResult>) -> &mut Self {
-            self.nodes = nodes;
+        #[doc = "Sets the value of `results`."]
+        pub fn set_results(&mut self, results: ::std::vec::Vec<HealthNodeResult>) -> &mut Self {
+            self.results = results;
             self
         }
-        #[doc = "Sets the value of `nodes`."]
-        pub fn with_nodes(mut self, nodes: ::std::vec::Vec<HealthNodeResult>) -> Self {
-            self.nodes = nodes;
+        #[doc = "Sets the value of `results`."]
+        pub fn with_results(mut self, results: ::std::vec::Vec<HealthNodeResult>) -> Self {
+            self.results = results;
             self
         }
         #[doc = "Sets the value of `diagnostics`."]
@@ -5050,12 +4973,12 @@ pub mod health {
         pub healthy: Answer,
         #[doc = "IDs of the inputs of an aggregate node; empty for other nodes.\n"]
         pub inputs: ::std::vec::Vec<HealthNodeId>,
-        #[doc = "Why the node's evidence was not used or its rule was not applied.\n"]
-        pub reason: ::std::option::Option<Reason>,
+        #[doc = "Problem that kept the node's evidence or rule from determining its answers.\n"]
+        pub problem: ::std::option::Option<HealthProblem>,
         #[doc = "Message of the fresh evidence.\n"]
         pub message: ::std::option::Option<::std::string::String>,
-        #[doc = "Details of the fresh evidence.\n"]
-        pub details: ::std::option::Option<
+        #[doc = "Annotations of the fresh evidence.\n"]
+        pub annotations: ::std::option::Option<
             ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
         >,
     }
@@ -5081,11 +5004,14 @@ pub mod health {
                     ::sidex::shape::shape_of::<::std::vec::Vec<HealthNodeId>>,
                 )
                 .with_docs("IDs of the inputs of an aggregate node; empty for other nodes.\n"),
-                ::sidex::shape::FieldShape::new("reason", ::sidex::shape::shape_of::<Reason>)
-                    .with_docs(
-                        "Why the node's evidence was not used or its rule was not applied.\n",
-                    )
-                    .optional(),
+                ::sidex::shape::FieldShape::new(
+                    "problem",
+                    ::sidex::shape::shape_of::<HealthProblem>,
+                )
+                .with_docs(
+                    "Problem that kept the node's evidence or rule from determining its answers.\n",
+                )
+                .optional(),
                 ::sidex::shape::FieldShape::new(
                     "message",
                     ::sidex::shape::shape_of::<::std::string::String>,
@@ -5093,7 +5019,7 @@ pub mod health {
                 .with_docs("Message of the fresh evidence.\n")
                 .optional(),
                 ::sidex::shape::FieldShape::new(
-                    "details",
+                    "annotations",
                     ::sidex::shape::shape_of::<
                         ::std::collections::BTreeMap<
                             ::std::string::String,
@@ -5101,7 +5027,7 @@ pub mod health {
                         >,
                     >,
                 )
-                .with_docs("Details of the fresh evidence.\n")
+                .with_docs("Annotations of the fresh evidence.\n")
                 .optional(),
             ])),
         )
@@ -5130,7 +5056,7 @@ pub mod health {
                 3usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.healthy)),
                 4usize => ::std::option::Option::Some(::sidex::Encode::encode(&self.inputs)),
                 5usize => self
-                    .reason
+                    .problem
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 6usize => self
@@ -5138,7 +5064,7 @@ pub mod health {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 7usize => self
-                    .details
+                    .annotations
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 _ => ::std::option::Option::None,
@@ -5156,7 +5082,7 @@ pub mod health {
             let mut __field_2 = ::std::option::Option::<Answer>::None;
             let mut __field_3 = ::std::option::Option::<Answer>::None;
             let mut __field_4 = ::std::option::Option::<::std::vec::Vec<HealthNodeId>>::None;
-            let mut __field_5 = ::std::option::Option::<Reason>::None;
+            let mut __field_5 = ::std::option::Option::<HealthProblem>::None;
             let mut __field_6 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_7 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
@@ -5190,7 +5116,7 @@ pub mod health {
                     }
                     5usize => {
                         __field_5 = ::std::option::Option::Some(
-                            <Reason as ::sidex::Decode>::decode(decoder)?,
+                            <HealthProblem as ::sidex::Decode>::decode(decoder)?,
                         )
                     }
                     6usize => {
@@ -5219,9 +5145,9 @@ pub mod health {
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `healthy`"))?,
                 inputs: __field_4
                     .ok_or_else(|| ::sidex::DecodeError::new("missing field `inputs`"))?,
-                reason: __field_5,
+                problem: __field_5,
                 message: __field_6,
-                details: __field_7,
+                annotations: __field_7,
             })
         }
     }
@@ -5256,9 +5182,9 @@ pub mod health {
                 healthy: healthy,
                 inputs: inputs,
                 owner: ::std::default::Default::default(),
-                reason: ::std::default::Default::default(),
+                problem: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
-                details: ::std::default::Default::default(),
+                annotations: ::std::default::Default::default(),
             }
         }
         #[doc = "Sets the value of `id`."]
@@ -5314,14 +5240,14 @@ pub mod health {
             self.inputs = inputs;
             self
         }
-        #[doc = "Sets the value of `reason`."]
-        pub fn set_reason(&mut self, reason: ::std::option::Option<Reason>) -> &mut Self {
-            self.reason = reason;
+        #[doc = "Sets the value of `problem`."]
+        pub fn set_problem(&mut self, problem: ::std::option::Option<HealthProblem>) -> &mut Self {
+            self.problem = problem;
             self
         }
-        #[doc = "Sets the value of `reason`."]
-        pub fn with_reason(mut self, reason: ::std::option::Option<Reason>) -> Self {
-            self.reason = reason;
+        #[doc = "Sets the value of `problem`."]
+        pub fn with_problem(mut self, problem: ::std::option::Option<HealthProblem>) -> Self {
+            self.problem = problem;
             self
         }
         #[doc = "Sets the value of `message`."]
@@ -5340,24 +5266,24 @@ pub mod health {
             self.message = message;
             self
         }
-        #[doc = "Sets the value of `details`."]
-        pub fn set_details(
+        #[doc = "Sets the value of `annotations`."]
+        pub fn set_annotations(
             &mut self,
-            details: ::std::option::Option<
+            annotations: ::std::option::Option<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >,
         ) -> &mut Self {
-            self.details = details;
+            self.annotations = annotations;
             self
         }
-        #[doc = "Sets the value of `details`."]
-        pub fn with_details(
+        #[doc = "Sets the value of `annotations`."]
+        pub fn with_annotations(
             mut self,
-            details: ::std::option::Option<
+            annotations: ::std::option::Option<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >,
         ) -> Self {
-            self.details = details;
+            self.annotations = annotations;
             self
         }
     }
@@ -5771,14 +5697,10 @@ pub mod metric {
         pub max_age_ms: u64,
         #[doc = "Owner of the sample.\n"]
         pub owner: ::std::option::Option<::std::string::String>,
-        #[doc = "Opaque label identifying the configuration or instance that took the evidence.\n"]
+        #[doc = "Opaque label identifying the configuration or instance that produced the evidence.\n"]
         pub tag: ::std::option::Option<::std::string::String>,
-        #[doc = "Explanation supplied by the writer.\n"]
+        #[doc = "Explanation for people; can span several lines.\n"]
         pub message: ::std::option::Option<::std::string::String>,
-        #[doc = "Further information about the observation, for display, in any structure.\n"]
-        pub details: ::std::option::Option<
-            ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-        >,
         #[doc = "Further data that the specification does not define, with namespaced member names.\n"]
         pub annotations: ::std::option::Option<
             ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
@@ -5786,7 +5708,7 @@ pub mod metric {
     }
     #[automatically_derived]
     impl ::sidex::Shaped for MetricSample {
-        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::metric::MetricSample" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < MetricId > ,) . with_docs ("ID of the metric.\n") , :: sidex :: shape :: FieldShape :: new ("value" , :: sidex :: shape :: shape_of :: < f64 > ,) . with_docs ("Measured value in the metric's unit; must be finite.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the measurement took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the measurement took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the sample is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the sample.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that took the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation supplied by the writer.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("details" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further information about the observation, for display, in any structure.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Current measurement of a metric, published while the system runs.\n") ;
+        const SHAPE : & 'static :: sidex :: Shape = & :: sidex :: Shape :: new ("::system_runtime::metric::MetricSample" , :: sidex :: shape :: ShapeKind :: Record (:: sidex :: shape :: RecordShape :: new (& [:: sidex :: shape :: FieldShape :: new ("spec_version" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Version of the specification that the record follows; omitted means `1.0`.\n") . optional () . json_name ("specVersion") , :: sidex :: shape :: FieldShape :: new ("id" , :: sidex :: shape :: shape_of :: < MetricId > ,) . with_docs ("ID of the metric.\n") , :: sidex :: shape :: FieldShape :: new ("value" , :: sidex :: shape :: shape_of :: < f64 > ,) . with_docs ("Measured value in the metric's unit; must be finite.\n") , :: sidex :: shape :: FieldShape :: new ("boot_id" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("ID of the boot during which the measurement took place.\n") . json_name ("bootId") , :: sidex :: shape :: FieldShape :: new ("observed_at_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Boot-time clock value, in milliseconds, when the measurement took place.\n") . json_name ("observedAtMs") , :: sidex :: shape :: FieldShape :: new ("max_age_ms" , :: sidex :: shape :: shape_of :: < u64 > ,) . with_docs ("Duration, in milliseconds, for which the sample is valid; must be positive.\n") . json_name ("maxAgeMs") , :: sidex :: shape :: FieldShape :: new ("owner" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Owner of the sample.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("tag" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Opaque label identifying the configuration or instance that produced the evidence.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("message" , :: sidex :: shape :: shape_of :: < :: std :: string :: String > ,) . with_docs ("Explanation for people; can span several lines.\n") . optional () , :: sidex :: shape :: FieldShape :: new ("annotations" , :: sidex :: shape :: shape_of :: < :: std :: collections :: BTreeMap < :: std :: string :: String , :: sidex :: types :: JsonValue , > > ,) . with_docs ("Further data that the specification does not define, with namespaced member names.\n") . optional ()]))) . with_docs ("Current measurement of a metric, published while the system runs.\n") ;
     }
     #[automatically_derived]
     impl ::sidex::Encode for MetricSample {
@@ -5826,10 +5748,6 @@ pub mod metric {
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
                 9usize => self
-                    .details
-                    .as_ref()
-                    .map(|value| ::sidex::Encode::encode(value)),
-                10usize => self
                     .annotations
                     .as_ref()
                     .map(|value| ::sidex::Encode::encode(value)),
@@ -5853,9 +5771,6 @@ pub mod metric {
             let mut __field_7 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_8 = ::std::option::Option::<::std::string::String>::None;
             let mut __field_9 = ::std::option::Option::<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >::None;
-            let mut __field_10 = ::std::option::Option::<
                 ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
             >::None;
             decoder.record(<Self as ::sidex::Shaped>::SHAPE, &mut |index, decoder| {
@@ -5910,14 +5825,6 @@ pub mod metric {
                             decoder
                         )?)
                     }
-                    10usize => {
-                        __field_10 = ::std::option::Option::Some(<::std::collections::BTreeMap<
-                            ::std::string::String,
-                            ::sidex::types::JsonValue,
-                        > as ::sidex::Decode>::decode(
-                            decoder
-                        )?)
-                    }
                     _ => {}
                 }
                 ::std::result::Result::Ok(())
@@ -5936,8 +5843,7 @@ pub mod metric {
                 owner: __field_6,
                 tag: __field_7,
                 message: __field_8,
-                details: __field_9,
-                annotations: __field_10,
+                annotations: __field_9,
             })
         }
     }
@@ -5977,7 +5883,6 @@ pub mod metric {
                 owner: ::std::default::Default::default(),
                 tag: ::std::default::Default::default(),
                 message: ::std::default::Default::default(),
-                details: ::std::default::Default::default(),
                 annotations: ::std::default::Default::default(),
             }
         }
@@ -6090,26 +5995,6 @@ pub mod metric {
             message: ::std::option::Option<::std::string::String>,
         ) -> Self {
             self.message = message;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn set_details(
-            &mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> &mut Self {
-            self.details = details;
-            self
-        }
-        #[doc = "Sets the value of `details`."]
-        pub fn with_details(
-            mut self,
-            details: ::std::option::Option<
-                ::std::collections::BTreeMap<::std::string::String, ::sidex::types::JsonValue>,
-            >,
-        ) -> Self {
-            self.details = details;
             self
         }
         #[doc = "Sets the value of `annotations`."]

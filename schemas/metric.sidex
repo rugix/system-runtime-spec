@@ -42,12 +42,10 @@ record MetricSample {
     max_age_ms: u64,
     /// Owner of the sample.
     owner?: string,
-    /// Opaque label identifying the configuration or instance that took the evidence.
+    /// Opaque label identifying the configuration or instance that produced the evidence.
     tag?: string,
-    /// Explanation supplied by the writer.
+    /// Explanation for people; can span several lines.
     message?: string,
-    /// Further information about the observation, for display, in any structure.
-    details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
 }

@@ -36,7 +36,7 @@ for a part to publish its records.
 ## Documents
 
 - **[Specification](SPEC.md):** the normative definition of records, versions, compatibility
-  checking, health evaluation, discovery, and transport.
+  checking, health evaluation, discovery, and transport, together with the [schemas](schemas/).
 - **[Rugix documentation](https://rugix.io/docs/ctrl/next/reference/system-runtime/):** an
   introduction with a worked example and an explanation of the design.
 
@@ -45,7 +45,7 @@ for a part to publish its records.
 | Path | Contents |
 | --- | --- |
 | [`SPEC.md`](SPEC.md) | The specification. |
-| [`schemas/`](schemas/) | The record types in [Sidex](https://github.com/silitics/sidex). |
+| [`schemas/`](schemas/) | The record types in [Sidex](https://github.com/silitics/sidex), part of the specification. |
 | [`json-schema/`](json-schema/) | JSON Schemas generated from the Sidex schemas. |
 | [`tests/fixtures/`](tests/fixtures/) | The conformance suite, shared by all implementations. |
 | [`crates/libs/system-runtime/`](crates/libs/system-runtime/) | The Rust implementation. |
@@ -68,7 +68,8 @@ specification.
 ## Development
 
 The repository uses [mise](https://mise.jdx.dev) for its tooling. To regenerate the models and
-JSON Schemas from the Sidex schemas and to run all checks, including the conformance suite:
+JSON Schemas from the Sidex schemas and to run all checks, including the conformance suite and a
+check that `SPEC.md` quotes the schemas exactly:
 
 ```sh
 mise install
