@@ -46,7 +46,7 @@ record MetricSample {
     tag?: string,
     /// Explanation supplied by the writer.
     message?: string,
-    /// Further information about the observation, for display, in any structure.
+    /// Further information about the observation, for display.
     details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],

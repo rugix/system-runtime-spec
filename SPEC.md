@@ -119,8 +119,7 @@ The sections that matter most for each role are:
   [8.8](#88-evaluation-and-reports), and [12](#12-evolution).
 
 An implementation conforms to the specification for a role if it satisfies all requirements that
-apply to that role. The [conformance suite](tests/fixtures/) tests all parts; if a test case
-contradicts the specification, the test case is wrong.
+apply to that role. The [conformance suite](tests/fixtures/) tests all parts.
 
 ## 4. Records
 
@@ -145,15 +144,17 @@ publish invalid records.
 
 ### 4.2 Identifiers
 
-Records are identified by IDs. IDs, owners ([Section 4.3](#43-owners)), and the IDs of
+Component declarations, health nodes, and metric definitions are identified by IDs; status records
+refer to health nodes by their IDs, metric samples refer to metrics, and directory configurations
+have no IDs. IDs, owners ([Section 4.3](#43-owners)), and the IDs of
 capabilities and claims ([Section 7](#7-components)) are non-empty strings of ASCII letters, digits,
 and ASCII punctuation characters, such as `.`, `-`, and `_`. They contain no spaces and no other
 characters. They are case-sensitive, compared by exact equality, and sorted by their bytes.
 
-Each kind of record has its own namespace: a component, a health node, and a metric MAY share an
-ID without referring to each other. Within a namespace, the records of all contributors share the
-IDs. The IDs of components, health nodes, and metrics SHOULD therefore start with a prefix that the
-contributor controls, followed by a dot, such as `telemetry.database`.
+Components, health nodes, and metrics each have their own namespace: a component, a health node, and
+a metric MAY share an ID without referring to each other. Within a namespace, the records of all
+contributors share the IDs. The IDs of components, health nodes, and metrics SHOULD therefore start
+with a prefix that the contributor controls, followed by a dot, such as `telemetry.database`.
 
 ### 4.3 Owners
 
@@ -161,8 +162,7 @@ Component declarations, health nodes, status records, metric definitions, and me
 an optional `owner`. The owner names the contributor that supplies the record, such as a system
 image or an app, and that replaces or removes the record as a whole.
 
-Owners do not scope IDs: records of different owners need distinct IDs within their namespace, and
-the parts define what happens if they share one. Records without an owner are valid.
+Owners do not scope IDs: records of different owners need distinct IDs within their namespace.
 
 An update of a contributor replaces all component declarations, health nodes, and metric definitions
 of its owner. A writer that performs an update MUST ensure that, once the updated records take
@@ -297,8 +297,8 @@ Versions are ordered by _precedence_:
 ### 6.3 Version Requirements
 
 A _version requirement_ is either `*`, which matches every version, or a comma-separated list of
-comparators, all of which MUST match. A comparator consists of an optional operator and a version,
-optionally followed by the wildcard `.*`:
+comparators, which matches a version if all comparators do. A comparator consists of an optional
+operator and a version, optionally followed by the wildcard `.*`:
 
 ```text
 requirement = ws ( "*" | comparator { "," comparator } ) ws
@@ -346,10 +346,8 @@ and _after_ the line if they are greater. Release components compare as in
 
 ## 7. Components
 
-A _component_ is one part of a system, such as the system image, an app, a runtime, or a hardware
-module. Together, the components of a system form its _composition_. Components declare what they
-provide and require, and a compatibility checker determines whether the composition is
-_consistent_.
+The components of a system form its _composition_. Each component declares what it provides and
+what it requires, and a compatibility checker determines whether the composition is _consistent_.
 
 ### 7.1 Component Declarations
 
@@ -450,21 +448,20 @@ record ClaimDeclaration {
 A component that claims the same resource several times claims it once. Claims do not provide
 capabilities.
 
-> **Note:** Each requirement is met on its own, possibly by different components. A component that
-> works with `libfoo` only from version 2 on, if it is present at all, declares the conflict
-> `{"id": "libfoo", "version": "<2"}`. Alternatives, such as two database engines, provide a common
-> capability, such as `database.sql`. IDs of capabilities and claims need shared conventions, such
-> as `network.tcp.8080` for a TCP port.
+> **Note:** Each requirement is met on its own, possibly by different components, so a component
+> that needs two properties of the same provider requires one capability that states both. A
+> component that works with `libfoo` only from version 2 on, if it is present at all, declares the
+> conflict `{"id": "libfoo", "version": "<2"}`. Alternatives, such as two database engines, provide
+> a common capability, such as `database.sql`. IDs of capabilities and claims need shared
+> conventions, such as `network.tcp.8080` for a TCP port.
 
 ### 7.4 Consistency
 
 A compatibility checker evaluates a composition, which is a list of component declarations, together
-with the diagnostics about component declarations and directory configurations
-([Section 5](#5-diagnostics)). It skips declarations that are not valid records, for example,
-because they contain an invalid version or version requirement, or a capability or selector with
-both a version and a value, and adds a diagnostic with the severity `Error` for each. It considers
-every explicit and implicit capability of every remaining component. The composition is _consistent_
-if and only if:
+with the diagnostics about component declarations and directory configurations. It skips invalid
+declarations ([Section 5](#5-diagnostics)), such as declarations with an invalid version, and
+considers every explicit and implicit capability of the remaining components. The composition is
+_consistent_ if and only if:
 
 - there are no diagnostics with the severity `Error`,
 - no two components have the same ID,
@@ -549,6 +546,9 @@ a capability it matches. Problems MUST appear in this order:
    several capabilities produces one problem per capability, in the order of the providing
    components, with each component's implicit capability before its explicit ones.
 
+Problems contain the selectors and capabilities as declared, with the fields that the schema
+defines.
+
 > **Example:** An app requires `{"id": "docker.compose", "version": ">=2.20,<3"}`. If an update of
 > the system image removes Docker Compose 2, the report of the candidate composition is:
 >
@@ -566,10 +566,6 @@ a capability it matches. Problems MUST appear in this order:
 > }
 > ```
 
-Problems contain the selectors and capabilities as declared, with the fields that the schema
-defines. Two problems are _equal_ if they have the same kind and equal fields. Two diagnostics are
-_equal_ if they have equal fields, apart from their messages.
-
 ### 7.6 Candidate Compositions
 
 A _candidate composition_ is the composition that would result from an update. An update replaces
@@ -584,10 +580,10 @@ The candidate composition is built from the current composition:
 1. Remove the declarations with a replaced owner.
 2. Append the new declarations, in the order that the update supplies them.
 
-Its diagnostics are the current diagnostics and those about the new declarations. Checking the
-candidate composition finds broken requirements before the update takes place, because the
-remaining declarations keep their requirements. A snapshot ([Section 11.1](#111-snapshots)) contains
-the current composition, so a fleet-management server can check an update before sending it.
+Its diagnostics are the current diagnostics and those about the new declarations. Because the
+remaining declarations keep their requirements, checking the candidate composition finds broken
+requirements before the update takes place. A fleet-management server can do so with the
+composition of a snapshot ([Section 11.1](#111-snapshots)) before it sends an update.
 
 > **Note:** Declarations without an owner are never removed. This suits facts about the device
 > itself, such as the revision of its board. A declaration that is meant to be replaced needs an
@@ -595,8 +591,9 @@ the current composition, so a fleet-management server can check an update before
 
 > **Note:** If the current composition is already inconsistent, so is every candidate composition
 > that keeps its problems. A consumer can accept a candidate composition whose problems and error
-> diagnostics all occur in the current composition, so that existing problems do not block updates
-> that do not make them worse.
+> diagnostics all occur in the current composition, provided that the update adds no diagnostics
+> about its own declarations, so that existing problems do not block updates that do not make them
+> worse.
 
 ## 8. Health
 
@@ -682,8 +679,7 @@ variant HealthRule {
 
 [Sections 8.4](#84-observed-nodes-and-status-records), [8.6](#86-threshold-nodes), and
 [8.7](#87-aggregate-nodes) define the rules, and [Section 9](#9-links-between-components-and-health)
-the associated components. A node whose rule type is unknown
-to the evaluator has the answers `Unknown`/`Unknown`, with the reason `Unsupported`.
+the associated components.
 
 The inputs of aggregate nodes, including attached inputs, form directed edges from each aggregate
 node to its inputs. The graph SHOULD be acyclic; nodes on a cycle are not evaluated
@@ -712,7 +708,8 @@ that does not exist SHOULD treat it as having the answers `Unknown`/`Unknown`.
 > }
 > ```
 >
-> Because the node lists its inputs, an input whose records are missing is `Unknown`.
+> Because the node lists its inputs, an input whose records are missing is `Unknown`. An aggregate
+> node whose inputs only attach themselves cannot tell that a contributor is missing entirely.
 
 ### 8.3 Evidence
 
@@ -725,8 +722,7 @@ it does not change when the system adjusts its time.
 Status records ([Section 8.4](#84-observed-nodes-and-status-records)) and metric samples
 ([Section 8.5](#85-metrics)) share the fields of evidence: `bootId`, `observedAtMs`, `maxAgeMs`,
 `owner`, `tag`, `message`, `details`, and `annotations`. The `details` explain an observation to
-people, such as the output of a check. The result of a node carries the details of its fresh
-evidence; they do not affect evaluation.
+people, such as the output of a check.
 
 On Linux, `bootId` is the UUID in `/proc/sys/kernel/random/boot_id`, without the trailing newline,
 and the boot-time clock is `CLOCK_BOOTTIME`. Writers MUST use the same boot-time clock as the
@@ -761,9 +757,9 @@ Evidence is _fresh_ if all of the following hold, checked in this order:
    `maxAgeMs` of the records it is checked against. Otherwise, the reason is `Expired`.
 
 The first condition that does not hold determines the reason. Evidence that is not fresh is not
-used, and the node's answers are `Unknown`/`Unknown` with that reason. Only fresh evidence is
-interpreted: if it is fresh, the node's result carries its `message` and `details`, and the rules of
-the node's type determine the answers.
+used, and the node's answers are `Unknown`/`Unknown` with that reason. If evidence is fresh, the
+rules of the node's type determine the answers from it, and the node's result carries its `message`
+and `details`.
 
 > **Example:** A status record observed at 42000 ms with a `maxAgeMs` of 15000 is fresh until
 > just before 57000 ms. If its node declares a `maxAgeMs` of 10000, it is fresh until just before
@@ -808,7 +804,7 @@ record HealthStatus {
     tag?: string,
     /// Explanation supplied by the writer.
     message?: string,
-    /// Further information about the observation, for display, in any structure.
+    /// Further information about the observation, for display.
     details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
@@ -836,12 +832,15 @@ ignored.
 Otherwise, the status record of an observed node is checked against the node: its owner against
 the node's `owner`, its tag against the rule's `expectedTag`, and its age against the rule's
 `maxAgeMs`. If the status record is fresh, the node's answers correspond to its `state` as defined
-in [Section 8.1](#81-health-answers). If the state is unknown to the evaluator, the node's answers
-are `Unknown`/`Unknown`, with the reason `Unsupported`.
+in [Section 8.1](#81-health-answers).
 
 > **Note:** A check reports `Degraded` when it is usable but not fully healthy, for example, a
 > disk check that sees little free space. It reports `Unknown` when it cannot reach a conclusion,
 > for example, because a dependency of the check itself is unavailable.
+
+> **Note:** A status record cannot express the answers `Yes`/`Unknown` and `Unknown`/`No`, so it
+> cannot relay the result of an evaluation. A system that passes on the health of another system,
+> such as an attached device, passes on that system's own snapshot ([Section 11](#11-transport)).
 
 ### 8.5 Metrics
 
@@ -896,7 +895,7 @@ record MetricSample {
     tag?: string,
     /// Explanation supplied by the writer.
     message?: string,
-    /// Further information about the observation, for display, in any structure.
+    /// Further information about the observation, for display.
     details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
@@ -911,11 +910,11 @@ are unknown ([Section 8.6](#86-threshold-nodes)). Samples without a definition a
 
 Units are case-sensitive codes of the [Unified Code for Units of Measure][ucum] (UCUM), as in
 OpenTelemetry, such as `Cel` for degrees Celsius, `By` for bytes, `s` for seconds, `1` for
-fractions, `By/s` for data rates, and `{process}` for counts of processes. Writers MUST use a valid
-UCUM code and SHOULD use a base unit without a prefix, such as `s` and `By`, so that thresholds of
-different contributors compare without conversion. Health evaluation compares units only as
-strings ([Section 8.6](#86-threshold-nodes)) and never converts values. Readers MUST NOT reject a
-metric because of its unit code.
+fractions, where 1 is 100 percent, `By/s` for data rates, and `{process}` for counts of processes.
+Writers MUST use a valid UCUM code and SHOULD use a base unit without a prefix, such as `s` and
+`By`, so that thresholds of different contributors compare without conversion. Health evaluation
+compares units only as strings ([Section 8.6](#86-threshold-nodes)) and never converts values.
+Readers MUST NOT reject a metric because of its unit code.
 
 [ucum]: https://ucum.org/ucum
 
@@ -928,7 +927,7 @@ A threshold node derives its answers by comparing a metric sample with two range
 record ThresholdRule {
     /// ID of the metric.
     metric: MetricId,
-    /// Unit of the ranges, as a UCUM code; must equal the metric's unit.
+    /// Unit that the ranges assume, as a UCUM code.
     unit?: string,
     /// Range in which the desired criteria are met; a subset of the usable range.
     healthy: MetricRange,
@@ -1057,14 +1056,12 @@ attachment. Attached inputs follow the inputs of the rule, in the order of the d
 attaching nodes. Attachments to nodes that do not exist or are no aggregate nodes are ignored, so
 that contributors can attach to nodes that are not always present.
 
-If an input or attachment has a mode unknown to the evaluator, the aggregate node's answers are
-`Unknown`/`Unknown`, with the reason `Unsupported`. If a node is an input more than once, listed or
-attached, it counts as one input, at the position of its first occurrence. Its mode is the mode of
-the first input of the rule that refers to it or, if the rule does not list it, the mode of its
-first attachment, so that the aggregate node's own rule decides how its inputs count. An input of
-the rule that refers to no node has the answers `Unknown`/`Unknown`, and the evaluator adds a
-diagnostic with the severity `Warning` for it; the input appears in the node's result, but has no
-result of its own.
+If a node is an input more than once, listed or attached, it counts as one input, at the position of
+its first occurrence. Its mode is the mode of the first input of the rule that refers to it or, if
+the rule does not list it, the mode of its first attachment, so that the aggregate node's own rule
+decides how its inputs count. An input of the rule that refers to no node has the answers
+`Unknown`/`Unknown`, and the evaluator adds a diagnostic with the severity `Warning` for it; the
+input appears in the node's result, but has no result of its own.
 
 Inputs with the modes `Counted` and `Mandatory` are the _counted inputs_.
 
@@ -1206,9 +1203,8 @@ A skipped node or directory configuration can have provided inputs of other node
 healthier than they are. A consumer that makes a decision, such as whether to commit an update,
 SHOULD NOT base it on a report with diagnostics of the severity `Error` and the kinds `HealthNode`
 or `DirectoryConfig`, unless it is configured to. Skipped evidence and metric definitions make the
-nodes that use them unknown, unless a writer published another record with the same ID, which
-[Sections 8.4](#84-observed-nodes-and-status-records) and [8.5](#85-metrics) forbid. A consumer can
-also be configured to require a report without any error diagnostics.
+nodes that use them unknown, unless another record with the same ID remains. A consumer can also
+require a report without any error diagnostics.
 
 ## 9. Links Between Components and Health
 
@@ -1252,14 +1248,12 @@ added by directory configurations ([Section 10.4](#104-directory-configurations)
 ### 10.2 Files
 
 Each record is a regular file with the extension `.json` that contains exactly one record of the
-kind of its directory. The file name has no meaning; the record's ID determines its identity.
+kind of its directory. The file name has no meaning.
 
 A writer MUST write a file so that readers never see a partially written file. It SHOULD write the
 record to a temporary file in the same directory, whose name starts with `.` or has another
 extension, and then rename the temporary file to the final name. There are no transactions across
 files.
-
-Directories do not authenticate writers ([Section 13](#13-security-considerations)).
 
 > **Note:** To let an unprivileged service publish its evidence without giving it access to the
 > files of other services, give the service a directory of its own and add the directory with a
@@ -1290,13 +1284,14 @@ record, a reader MUST skip it and report a diagnostic with the severity `Error`
 same way.
 
 Each record has the level of the directory through which the reader read it. A file that the reader
-reaches through directories of several levels has the highest of these levels. Component
-declarations, health nodes, and metric definitions override records of the same kind with the same
-ID and the same owner from lower levels: of these records, a reader keeps only those from the
-highest level, at their own positions. Two records have the same owner if both have none or both
-have equal owners. Records with the same ID and different owners do not override each other; like
-evidence with the same ID, they are subject to the rules of their part. Invalid records do not
-override other records. Directory configurations have no IDs and cannot be overridden.
+reaches through directories of several levels keeps the position of its first visit and has the
+highest of these levels. Component declarations, health nodes, and metric definitions override
+records of the same kind with the same ID and the same owner from lower levels: of these records, a
+reader keeps only those from the highest level, at their own positions. Two records have the same
+owner if both have none or both have equal owners. Records with the same ID and different owners do
+not override each other; like evidence with the same ID, they are subject to the rules of their
+part. Invalid records do not override other records. Directory configurations have no IDs and cannot
+be overridden.
 
 > **Note:** An override carries the owner of the record it overrides, so the next update of that
 > owner removes it ([Section 4.3](#43-owners)) and it cannot outlive the record it changes. Whoever
@@ -1398,11 +1393,9 @@ none.
 A snapshot MUST contain the original records. A system that relays a snapshot is a writer of it
 and MUST NOT change it, in particular not the observation times or validity durations.
 
-The `specVersion` of a snapshot is the version of this specification that the snapshot's own fields
-follow, such as `1.0` ([Section 12](#12-evolution)). The records in it keep their own versions. A
-reader MUST NOT interpret a snapshot unless it supports its version. A reader supports the versions
-with its own major version, and applies the fallbacks of [Section 12](#12-evolution) to newer minor
-versions.
+The records in a snapshot keep their own `specVersion`. A reader MUST NOT interpret a snapshot
+unless it supports the snapshot's `specVersion`, which it does for all versions of its own major
+version; it applies the fallbacks of [Section 12](#12-evolution) to newer minor versions.
 
 ### 11.2 Clock Correlation
 
@@ -1425,9 +1418,8 @@ timestamps ignore leap seconds, as Unix time does.
 Evaluating a snapshot with the context of its clock sample evaluates the collected evidence at the
 time of the clock sample. For evidence from the boot of the clock sample, its estimated wall-clock
 time is the clock sample's `timestamp`, truncated to milliseconds, minus `nowMs − observedAtMs`
-milliseconds. The estimate has millisecond precision. Evidence from another boot, evidence with an
-observation time after the clock sample, and evidence whose estimate lies outside the years 0001 to
-9999 have no estimated wall-clock time.
+milliseconds. Evidence from another boot, evidence with an observation time after the clock sample,
+and evidence whose estimate lies outside the years 0001 to 9999 have no estimated wall-clock time.
 
 > **Example:** With the clock sample `{"context": {"bootId": "…", "nowMs": 45000}, "timestamp":
 > "2026-10-14T12:00:00Z"}`, a status record observed at 42000 ms was observed at about
@@ -1451,9 +1443,9 @@ uses them, applying the fallbacks of this section, and reports a diagnostic with
 The schemas describe what writers produce. Implementations MUST ignore fields they do not know,
 and MUST treat values they do not know as follows:
 
-- **Health evaluators** treat an unknown rule type or status state as unsupported: the node's
-  answers are `Unknown`/`Unknown`, with the reason `Unsupported`. An unknown input mode makes the
-  aggregate node's answers unsupported in the same way.
+- **Health evaluators** treat an unknown rule type, or an unknown state of a fresh status record,
+  as unsupported: the node's answers are `Unknown`/`Unknown`, with the reason `Unsupported`. An
+  unknown input mode makes the aggregate node's answers unsupported in the same way.
 - **Consumers** report an unknown compatibility problem without further detail and treat an
   unknown reason as no reason.
 - **Readers of snapshots and consumers** treat a diagnostic of an unknown kind as of the kind

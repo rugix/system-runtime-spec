@@ -81,7 +81,7 @@ export const MetricDefinition = {
                                             * Explanation supplied by the writer.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
-                                            * Further information about the observation, for display, in any structure.
+                                            * Further information about the observation, for display.
                                             */
                                                         "details"?: { [key: string]: __sidex_types.builtins.Json }, /**
                                             * Further data that the specification does not define, with namespaced member names.

@@ -42,7 +42,7 @@ class MetricSample(_sidex.Model):
     owner: str | None = pydantic.Field(default=None, description="Owner of the sample.")
     tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
     message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display, in any structure.")
+    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 

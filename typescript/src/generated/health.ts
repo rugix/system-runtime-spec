@@ -76,7 +76,7 @@ export const ObservationRule = {
                                             * ID of the metric.
                                             */
                                                         "metric": __schema_metric.MetricId, /**
-                                            * Unit of the ranges, as a UCUM code; must equal the metric's unit.
+                                            * Unit that the ranges assume, as a UCUM code.
                                             */
                                                         "unit"?: __sidex_types.builtins.String, /**
                                             * Range in which the desired criteria are met; a subset of the usable range.
@@ -176,7 +176,7 @@ export const InputMode = {
                                             * Explanation supplied by the writer.
                                             */
                                                         "message"?: __sidex_types.builtins.String, /**
-                                            * Further information about the observation, for display, in any structure.
+                                            * Further information about the observation, for display.
                                             */
                                                         "details"?: { [key: string]: __sidex_types.builtins.Json }, /**
                                             * Further data that the specification does not define, with namespaced member names.

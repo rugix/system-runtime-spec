@@ -45,7 +45,7 @@ class ThresholdRule(_sidex.Model):
     model_config = pydantic.ConfigDict(populate_by_name=True, serialize_by_alias=True, defer_build=True)
 
     metric: _schema_metric.MetricId = pydantic.Field(description="ID of the metric.")
-    unit: str | None = pydantic.Field(default=None, description="Unit of the ranges, as a UCUM code; must equal the metric's unit.")
+    unit: str | None = pydantic.Field(default=None, description="Unit that the ranges assume, as a UCUM code.")
     healthy: _schema_metric.MetricRange = pydantic.Field(description="Range in which the desired criteria are met; a subset of the usable range.")
     usable: _schema_metric.MetricRange = pydantic.Field(description="Range in which the minimum criteria are met.")
     max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")
@@ -89,7 +89,7 @@ class HealthStatus(_sidex.Model):
     owner: str | None = pydantic.Field(default=None, description="Owner of the status record.")
     tag: str | None = pydantic.Field(default=None, description="Opaque label identifying the configuration or instance that took the evidence.")
     message: str | None = pydantic.Field(default=None, description="Explanation supplied by the writer.")
-    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display, in any structure.")
+    details: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further information about the observation, for display.")
     annotations: dict[str, _sidex.Json] | None = pydantic.Field(default=None, description="Further data that the specification does not define, with namespaced member names.")
 
 
@@ -146,7 +146,7 @@ class HealthRule_Threshold(_sidex.Model):
 
     type: Literal["Threshold"] = "Threshold"
     metric: _schema_metric.MetricId = pydantic.Field(description="ID of the metric.")
-    unit: str | None = pydantic.Field(default=None, description="Unit of the ranges, as a UCUM code; must equal the metric's unit.")
+    unit: str | None = pydantic.Field(default=None, description="Unit that the ranges assume, as a UCUM code.")
     healthy: _schema_metric.MetricRange = pydantic.Field(description="Range in which the desired criteria are met; a subset of the usable range.")
     usable: _schema_metric.MetricRange = pydantic.Field(description="Range in which the minimum criteria are met.")
     max_age_ms: _sidex.U64 | None = pydantic.Field(default=None, description="Upper limit for the age of samples, in milliseconds; must be positive.", validation_alias="maxAgeMs", serialization_alias="maxAgeMs")

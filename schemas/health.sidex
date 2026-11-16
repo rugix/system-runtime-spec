@@ -51,7 +51,7 @@ record ObservationRule {
 record ThresholdRule {
     /// ID of the metric.
     metric: MetricId,
-    /// Unit of the ranges, as a UCUM code; must equal the metric's unit.
+    /// Unit that the ranges assume, as a UCUM code.
     unit?: string,
     /// Range in which the desired criteria are met; a subset of the usable range.
     healthy: MetricRange,
@@ -119,7 +119,7 @@ record HealthStatus {
     tag?: string,
     /// Explanation supplied by the writer.
     message?: string,
-    /// Further information about the observation, for display, in any structure.
+    /// Further information about the observation, for display.
     details?: [string: json],
     /// Further data that the specification does not define, with namespaced member names.
     annotations?: [string: json],
