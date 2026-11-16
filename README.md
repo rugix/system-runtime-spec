@@ -1,8 +1,7 @@
 # System Runtime Specification
 
 > [!IMPORTANT]
-> **Draft:** Version 1.0 of the specification is a draft. Records and their meaning may still
-> change incompatibly before it is final.
+> **Draft:** Version 1.0 of the specification is a draft and may still change incompatibly.
 
 The System Runtime Specification is a common format for describing a system's components and its
 health at runtime. It is developed by the [Rugix](https://rugix.org) project, but does not depend
@@ -15,12 +14,12 @@ publishes small records that describe only itself, and tools combine them into a
 whole system:
 
 - **Components:** Parts declare what they provide and require. A compatibility checker evaluates
-  the declarations together, for example, to reject an update before installing it if an
-  installed app needs something the update removes.
-- **Health:** Services publish the results of their checks, and parts declare health nodes that
-  combine the results into the health of larger functions, such as an app. A health evaluator
-  determines whether each node is usable and whether it is fully healthy, for example, so that an
-  update controller commits an update only once the updated system is healthy.
+  the declarations together, for example, to reject an update that removes something an installed
+  app needs.
+- **Health:** Services publish the results of their checks, and health nodes combine the results
+  into the health of larger functions, such as an app. A health evaluator determines whether each
+  node is usable and fully healthy, for example, so that an update controller commits an update
+  only once the system is healthy.
 
 For example, a system image that ships Docker Compose 2.27 declares:
 
@@ -89,9 +88,10 @@ of each package implements version 1.0 (draft) of the specification.
 ## Command-Line Tool
 
 The `system-runtime` command-line tool lists the components of a Linux system, checks whether they
-are compatible, before or after an update, and evaluates the system's health. Scripts can use its
-exit codes, for example, to commit an update only once the telemetry app is healthy. If the app
-also declares a health node `app.telemetry`, an update hook runs:
+are compatible, before or after an update, and evaluates the system's health.
+
+Scripts can use its exit codes, for example, to commit an update only once the telemetry app is
+healthy. If the app declares a health node `app.telemetry`, an update hook runs:
 
 ```sh
 system-runtime health check app.telemetry
@@ -107,9 +107,9 @@ describes the commands.
 
 ## Development
 
-The repository uses [mise](https://mise.jdx.dev) for its tooling. `mise run generate` regenerates
-the models and JSON Schemas from the Sidex schemas. `mise run check` runs all checks, including the
-conformance suite and a check that `SPEC.md` quotes the schemas exactly:
+Development requires [mise](https://mise.jdx.dev). `mise run generate` generates the models and
+JSON Schemas from the Sidex schemas. `mise run check` runs all checks, such as the conformance
+suite and a check that `SPEC.md` quotes the schemas exactly:
 
 ```sh
 mise install
